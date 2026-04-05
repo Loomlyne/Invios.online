@@ -49,6 +49,7 @@ Make it dead simple for a service business to send a polished branded quote or i
 - **Build reality**: Side project, not immediate business validation — design can be ambitious, but implementation still needs ruthless phasing.
 - **Quality bar**: Public-facing documents and links must feel polished enough to send to real clients — trust is part of the product.
 - **Design workflow**: All frontend design work must start with `aidesigner-frontend` and `ui-ux-pro-max` — user explicitly requested this workflow for the project.
+- **Execution workflow**: Every phase should assume Supabase backend + Vercel hosting, check both in parallel during planning/execution, and bias phase completion toward deployed-and-verified output.
 
 ## Key Decisions
 
@@ -59,6 +60,7 @@ Make it dead simple for a service business to send a polished branded quote or i
 | Treat invoicing workflow as the core, not accounting | Keeps the product differentiated and small-business relevant without bloating into bookkeeping | — Pending |
 | Support UAE tax-document structure from the start | Document architecture is expensive to retrofit later | — Pending |
 | Build in phased slices even if the long-term vision is large | This is the only sane way to ship a side-project with HoneyBook-level ambitions | — Pending |
+| Treat deployment as part of phase completion | The user wants each finished phase checked through the real hosting path, not left as local-only work | — Pending |
 
 ## Evolution
 

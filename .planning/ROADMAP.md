@@ -39,6 +39,10 @@ UX-01
 **Design prerequisite**
 - Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
 
+**Infra / deploy prerequisite**
+- While planning and executing this phase, check Supabase and Vercel implications in parallel.
+- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
+
 **UI hint**: yes
 
 ### Phase 2: Clients & Document Engine
@@ -60,6 +64,10 @@ INV-01, INV-02, INV-03, INV-04, INV-05, INV-06, INV-07, INV-08
 **Design prerequisite**
 - Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
 
+**Infra / deploy prerequisite**
+- While planning and executing this phase, check Supabase and Vercel implications in parallel.
+- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
+
 **UI hint**: yes
 
 ### Phase 3: Dashboard & Cash Flow
@@ -80,6 +88,10 @@ UX-02
 
 **Design prerequisite**
 - Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
+
+**Infra / deploy prerequisite**
+- While planning and executing this phase, check Supabase and Vercel implications in parallel.
+- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
 
 **UI hint**: yes
 
@@ -103,6 +115,10 @@ UX-03, UX-04
 **Design prerequisite**
 - Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
 
+**Infra / deploy prerequisite**
+- While planning and executing this phase, check Supabase and Vercel implications in parallel.
+- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
+
 **UI hint**: yes
 
 ### Phase 5: Automation & Recovery
@@ -121,5 +137,9 @@ AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05
 
 **Design prerequisite**
 - Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
+
+**Infra / deploy prerequisite**
+- While planning and executing this phase, check Supabase and Vercel implications in parallel.
+- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
 
 **UI hint**: yes

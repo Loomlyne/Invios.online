@@ -16,6 +16,12 @@
 - Then invoke `ui-ux-pro-max`
 - This is now a project-level rule and should be enforced automatically in UI-bearing phases
 
+## Execution Workflow
+- Backend is always assumed to be Supabase
+- Hosting is always assumed to be Vercel
+- Research, discussion, planning, and execution should check Supabase and Vercel in parallel whenever relevant
+- A finished phase should bias toward deployed-and-verified, not just code completed locally
+
 ## User Direction
 - User explicitly chose the ambitious direction: full HoneyBook-style clone
 - Practical recommendation is still phased delivery, not giant-scope implementation in one pass

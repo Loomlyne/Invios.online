@@ -112,6 +112,20 @@ This is mandatory for:
 - any redesign or visual polish task
 
 Project-specific note: the user explicitly opted this project into the AIDesigner workflow for frontend design work, so using AIDesigner for design generation/refinement is approved when a design task starts.
+
+## Infrastructure Workflow Enforcement
+
+For every research, discussion, planning, and execution pass in this repo:
+
+1. Assume the backend is Supabase
+2. Assume the hosting platform is Vercel
+3. Check both tracks in parallel whenever the phase touches auth, data, storage, environment variables, routing, jobs, public links, or deployment behavior
+4. When a phase finishes with working code, deploy it and verify the live Vercel result instead of stopping at local completion
+
+This means:
+- Supabase schema, auth, storage, RLS, and environment assumptions should be validated as the phase is being planned/executed
+- Vercel deployability, env wiring, route/runtime compatibility, and live verification should be treated as part of phase completion
+- "Done" for a phase should bias toward "deployed and checked", not just "code written"
 <!-- GSD:workflow-end -->
 
 
