@@ -109,57 +109,57 @@
 
 | Requirement ID | Planned Phase |
 |----------------|---------------|
-| AUTH-01 | TBD |
-| AUTH-02 | TBD |
-| AUTH-03 | TBD |
-| AUTH-04 | TBD |
-| ONB-01 | TBD |
-| ONB-02 | TBD |
-| ONB-03 | TBD |
-| ONB-04 | TBD |
-| ONB-05 | TBD |
-| DASH-01 | TBD |
-| DASH-02 | TBD |
-| DASH-03 | TBD |
-| DASH-04 | TBD |
-| CLNT-01 | TBD |
-| CLNT-02 | TBD |
-| CLNT-03 | TBD |
-| CLNT-04 | TBD |
-| QUOT-01 | TBD |
-| QUOT-02 | TBD |
-| QUOT-03 | TBD |
-| QUOT-04 | TBD |
-| QUOT-05 | TBD |
-| QUOT-06 | TBD |
-| QUOT-07 | TBD |
-| INV-01 | TBD |
-| INV-02 | TBD |
-| INV-03 | TBD |
-| INV-04 | TBD |
-| INV-05 | TBD |
-| INV-06 | TBD |
-| INV-07 | TBD |
-| INV-08 | TBD |
-| OPS-01 | TBD |
-| OPS-02 | TBD |
-| OPS-03 | TBD |
-| OPS-04 | TBD |
-| OPS-05 | TBD |
-| PUB-01 | TBD |
-| PUB-02 | TBD |
-| PUB-03 | TBD |
-| PUB-04 | TBD |
-| AUTO-01 | TBD |
-| AUTO-02 | TBD |
-| AUTO-03 | TBD |
-| AUTO-04 | TBD |
-| AUTO-05 | TBD |
-| SET-01 | TBD |
-| SET-02 | TBD |
-| SET-03 | TBD |
-| SET-04 | TBD |
-| UX-01 | TBD |
-| UX-02 | TBD |
-| UX-03 | TBD |
-| UX-04 | TBD |
+| AUTH-01 | Phase 1 |
+| AUTH-02 | Phase 1 |
+| AUTH-03 | Phase 1 |
+| AUTH-04 | Phase 1 |
+| ONB-01 | Phase 1 |
+| ONB-02 | Phase 1 |
+| ONB-03 | Phase 1 |
+| ONB-04 | Phase 1 |
+| ONB-05 | Phase 1 |
+| DASH-01 | Phase 3 |
+| DASH-02 | Phase 3 |
+| DASH-03 | Phase 3 |
+| DASH-04 | Phase 3 |
+| CLNT-01 | Phase 2 |
+| CLNT-02 | Phase 2 |
+| CLNT-03 | Phase 2 |
+| CLNT-04 | Phase 2 |
+| QUOT-01 | Phase 2 |
+| QUOT-02 | Phase 2 |
+| QUOT-03 | Phase 2 |
+| QUOT-04 | Phase 2 |
+| QUOT-05 | Phase 2 |
+| QUOT-06 | Phase 2 |
+| QUOT-07 | Phase 2 |
+| INV-01 | Phase 2 |
+| INV-02 | Phase 2 |
+| INV-03 | Phase 2 |
+| INV-04 | Phase 2 |
+| INV-05 | Phase 2 |
+| INV-06 | Phase 2 |
+| INV-07 | Phase 2 |
+| INV-08 | Phase 2 |
+| OPS-01 | Phase 3 |
+| OPS-02 | Phase 3 |
+| OPS-03 | Phase 3 |
+| OPS-04 | Phase 3 |
+| OPS-05 | Phase 3 |
+| PUB-01 | Phase 4 |
+| PUB-02 | Phase 4 |
+| PUB-03 | Phase 4 |
+| PUB-04 | Phase 4 |
+| AUTO-01 | Phase 5 |
+| AUTO-02 | Phase 5 |
+| AUTO-03 | Phase 5 |
+| AUTO-04 | Phase 5 |
+| AUTO-05 | Phase 5 |
+| SET-01 | Phase 1 |
+| SET-02 | Phase 1 |
+| SET-03 | Phase 4 |
+| SET-04 | Phase 4 |
+| UX-01 | Phase 1 |
+| UX-02 | Phase 3 |
+| UX-03 | Phase 4 |
+| UX-04 | Phase 4 |
