@@ -48,6 +48,7 @@ Make it dead simple for a service business to send a polished branded quote or i
 - **Market context**: UAE-aware from day 1 with AED, TRN, tax invoice support, and bilingual document rendering — avoids rewriting core document architecture later.
 - **Build reality**: Side project, not immediate business validation — design can be ambitious, but implementation still needs ruthless phasing.
 - **Quality bar**: Public-facing documents and links must feel polished enough to send to real clients — trust is part of the product.
+- **Design workflow**: All frontend design work must start with `aidesigner-frontend` and `ui-ux-pro-max` — user explicitly requested this workflow for the project.
 
 ## Key Decisions
 

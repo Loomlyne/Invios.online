@@ -36,6 +36,9 @@ UX-01
 3. The app shell feels usable on small mobile widths and can be prepared for installability.
 4. Core business profile and default document settings persist correctly.
 
+**Design prerequisite**
+- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
+
 **UI hint**: yes
 
 ### Phase 2: Clients & Document Engine
@@ -54,6 +57,9 @@ INV-01, INV-02, INV-03, INV-04, INV-05, INV-06, INV-07, INV-08
 3. Preview, public share, and PDF export all show the same branded document structure.
 4. An accepted quotation can be converted into an invoice without retyping everything.
 
+**Design prerequisite**
+- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
+
 **UI hint**: yes
 
 ### Phase 3: Dashboard & Cash Flow
@@ -71,6 +77,9 @@ UX-02
 2. Users can record multiple payments and expenses against a single invoice.
 3. Invoice status updates automatically based on payment records and due date.
 4. Profit amount and margin are visible per invoice and reflect expense changes correctly.
+
+**Design prerequisite**
+- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
 
 **UI hint**: yes
 
@@ -91,6 +100,9 @@ UX-03, UX-04
 4. English/Arabic bilingual rendering and RTL-safe layout work for core document surfaces.
 5. Canonical slugs and alias redirects preserve working links when names change.
 
+**Design prerequisite**
+- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
+
 **UI hint**: yes
 
 ### Phase 5: Automation & Recovery
@@ -106,5 +118,8 @@ AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05
 2. Restoring an older version is safe and does not silently corrupt financial state.
 3. Users can configure recurring billing schedules for repeat invoice generation.
 4. Reminder timing rules can be configured and reminder sends are logged to prevent duplicates.
+
+**Design prerequisite**
+- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
 
 **UI hint**: yes

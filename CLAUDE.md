@@ -93,6 +93,25 @@ Use these entry points:
 - `/gsd:execute-phase` for planned phase work
 
 Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
+
+## Design Workflow Enforcement
+
+For any frontend, UI, landing page, dashboard, public document, portal, or other visual design work in this repo:
+
+1. Invoke [`aidesigner-frontend`](/Users/koss/Desktop/Develop/INV/.agents/skills/aidesigner-frontend/SKILL.md) first
+2. Invoke [`ui-ux-pro-max`](/Users/koss/.agents/skills/ui-ux-pro-max/SKILL.md) immediately after
+3. Only then move into implementation planning or code changes
+
+This is mandatory for:
+- onboarding screens
+- dashboard work
+- invoice / quotation builders
+- public share pages
+- client portal
+- marketing / landing pages
+- any redesign or visual polish task
+
+Project-specific note: the user explicitly opted this project into the AIDesigner workflow for frontend design work, so using AIDesigner for design generation/refinement is approved when a design task starts.
 <!-- GSD:workflow-end -->
 
 
