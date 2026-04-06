@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-last_updated: "2026-04-06T13:45:18.301Z"
+status: Executing Phase 02
+last_updated: "2026-04-06T17:04:54.104Z"
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 9
+  completed_plans: 4
 ---
 
 # STATE
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Make it dead simple for a service business to send a polished branded quote or invoice and reliably know what has been paid, what is still due, and what profit remains.
-**Current focus:** Phase 01 — foundation-onboarding
+**Current focus:** Phase 02 — clients-document-engine
 
 ## Current Status
 
@@ -31,6 +31,8 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - Phase 1 Plan 01 complete (app shell, onboarding wizard, settings workspace, mobile nav)
 - Phase 1 Plan 02 complete (D-09 redirect wired, UX-01/SET-01/SET-02 verified)
 - Phase 1 Plan 03 complete (AUTH-03 E2E sign-out test, Vercel deployment human-verified) — Phase 1 DONE
+- Phase 2 context captured (9 decisions: share modal, direct PDF download, contextual status buttons, builder→detail redirect, direct conversion, source lock, simple client cards, billed+quoted totals)
+- Phase 2 Plan 00 complete (Wave 0 Zod schema test scaffolds: clients, quotations, invoices — 49 tests passing)
 
 ## Decisions
 
@@ -38,11 +40,15 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - **D-16 SUPERSEDED**: mobile nav uses horizontal scroll chips (`overflow-x-auto` + `shrink-0`), no bottom tab bar introduced
 - **Settings action names**: persistence is via `saveBusinessProfileAction`, `saveBrandingStepAction`, `saveDefaultsAction` (not `update*` prefix)
 - [Phase 01-foundation-onboarding]: Sign-out E2E uses createConfirmedUser+signIn to avoid onboarding wizard obscuring the sign-out button
+- [Phase 02-clients-document-engine]: documentLineItemSchema requires id field (z.string().min(1)) — test fixtures must include id
+- [Phase 02-clients-document-engine]: Wave 0 schema tests use pure Zod validation without server action mocking — import from @/lib/billing directly
 
 ## Session State
 
-- Stopped at: Completed 01-03-PLAN.md — Phase 1 fully complete
-- Resume from: Phase 02
+- Stopped at: Completed 02-00-PLAN.md — Wave 0 test scaffolds done, 49 tests passing
+- Resume from: Plan 02-01 (clients CRUD actions)
 - Latest artifacts:
-  - `.planning/phases/01-foundation-onboarding/01-03-SUMMARY.md`
-  - `e2e/app-flow.spec.ts`
+  - `.planning/phases/02-clients-document-engine/02-00-SUMMARY.md`
+  - `src/actions/clients.test.ts`
+  - `src/actions/quotations.test.ts`
+  - `src/actions/invoices.test.ts`

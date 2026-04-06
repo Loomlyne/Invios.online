@@ -12,7 +12,7 @@ Coverage: 100%
 | # | Phase | Goal | Requirements |
 |---|-------|------|--------------|
 | 1 | Foundation & Onboarding | Get a new user signed in, branded, and ready to work from an installable app shell | AUTH-01..04, ONB-01..05, SET-01..02, UX-01 |
-| 2 | Clients & Document Engine | Let the user create clients, quotations, and invoices with live previews, PDFs, and shareable outputs | CLNT-01..04, QUOT-01..07, INV-01..08 |
+| 2 | 1/6 | In Progress|  |
 | 3 | Dashboard & Cash Flow | Make the operator clearly see what was billed, collected, due, and profitable | DASH-01..04, OPS-01..05, UX-02 |
 | 4 | Public Trust Surfaces | Make public document experiences and compliance/localization feel professional and reliable | PUB-01..04, SET-03..04, UX-03, UX-04 |
 | 5 | Automation & Recovery | Add version safety, recurring workflows, and reminder automation without breaking financial truth | AUTO-01..05 |
@@ -62,10 +62,10 @@ CLNT-01, CLNT-02, CLNT-03, CLNT-04
 QUOT-01, QUOT-02, QUOT-03, QUOT-04, QUOT-05, QUOT-06, QUOT-07  
 INV-01, INV-02, INV-03, INV-04, INV-05, INV-06, INV-07, INV-08
 
-**Plans:** 6 plans
+**Plans:** 1/6 plans executed
 
 Plans:
-- [ ] 02-00-PLAN.md — Wave 0 behavioral test scaffolds (client/quotation/invoice schema validation)
+- [x] 02-00-PLAN.md — Wave 0 behavioral test scaffolds (client/quotation/invoice schema validation)
 - [ ] 02-01-PLAN.md — Build ShareModal, DocumentStatusActions, and DocumentSummaryRow components
 - [ ] 02-02-PLAN.md — Builder D-04 status dropdown removal + D-06 conversion redirect fix + PDF maxDuration
 - [ ] 02-03-PLAN.md — Wire invoice and quotation detail pages with new components + D-07 lock
