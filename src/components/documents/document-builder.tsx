@@ -15,6 +15,7 @@ import {
 } from "@/actions/quotations";
 import { DocumentLayoutDiagnostics } from "@/components/documents/document-layout-diagnostics";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
+import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -80,7 +81,6 @@ export function DocumentBuilder({
   const [notes, setNotes] = useState(initialValue?.notes ?? context.userState.settings.defaultNotes);
   const [terms, setTerms] = useState(initialValue?.terms ?? context.userState.settings.defaultTerms);
   const [trn, setTrn] = useState(initialValue?.trn ?? context.userState.profile.trn);
-  const [statusValue, setStatusValue] = useState<string>(initialValue?.status ?? "draft");
   const [invoiceType, setInvoiceType] = useState(initialValue?.invoiceType ?? "invoice");
   const [primaryDate, setPrimaryDate] = useState(
     (kind === "invoice" ? initialValue?.issueDate : initialValue?.quotationDate) ?? isoDateFromNow(0),
@@ -100,7 +100,7 @@ export function DocumentBuilder({
     title: kind === "invoice" ? "Invoice" : "Quotation",
     invoiceNumber: numberValue,
     numberLabel: kind === "invoice" ? "Invoice no." : "Quotation no.",
-    statusLabel: formatStatus(statusValue),
+    statusLabel: formatStatus(initialValue?.status ?? "draft"),
     issueDate: primaryDate,
     dueDate: secondaryDate,
     issueDateLabel: kind === "invoice" ? "Issue date" : "Quotation date",
@@ -149,7 +149,10 @@ export function DocumentBuilder({
         <CardHeader className="border-b border-black/8 px-5 py-5 sm:px-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <Badge variant="accent">{kind === "invoice" ? "Invoice builder" : "Quotation builder"}</Badge>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge variant="accent">{kind === "invoice" ? "Invoice builder" : "Quotation builder"}</Badge>
+                <DocumentStatusBadge status={initialValue?.status ?? "draft"} />
+              </div>
               <CardTitle className="mt-3">
                 {kind === "invoice"
                   ? "Build the branded invoice before it ever leaves the workspace."
@@ -174,6 +177,7 @@ export function DocumentBuilder({
           <form onSubmit={handleSubmit} className="grid gap-6">
             {initialValue?.id ? <input type="hidden" name="id" value={initialValue.id} /> : null}
             <input type="hidden" name="lineItemsJson" value={JSON.stringify(lineItems)} />
+            <input type="hidden" name="status" value={initialValue?.status ?? "draft"} />
 
             <section className="grid gap-4">
               <SectionTitle>Document frame</SectionTitle>
@@ -189,34 +193,6 @@ export function DocumentBuilder({
                     {clients.map((client) => (
                       <option key={client.id} value={client.id}>
                         {client.name}{client.company ? ` · ${client.company}` : ""}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
-                <Field label="Status" htmlFor="status">
-                  <select
-                    id="status"
-                    name="status"
-                    value={statusValue}
-                    onChange={(event) => setStatusValue(event.target.value)}
-                    className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
-                  >
-                    {(kind === "invoice"
-                      ? [
-                          ["draft", "Draft"],
-                          ["sent", "Sent"],
-                        ]
-                      : [
-                          ["draft", "Draft"],
-                          ["sent", "Sent"],
-                          ["accepted", "Accepted"],
-                          ["rejected", "Rejected"],
-                          ["expired", "Expired"],
-                        ]
-                    ).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
                       </option>
                     ))}
                   </select>
