@@ -1,7 +1,8 @@
 ---
 phase: 2
 slug: clients-document-engine
-status: draft
+status: approved
+reviewed_at: 2026-04-06
 shadcn_initialized: true
 preset: style:default / baseColor:stone / cssVariables:true / rsc:true / tsx:true
 created: 2026-04-06
