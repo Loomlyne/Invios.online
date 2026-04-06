@@ -62,6 +62,15 @@ CLNT-01, CLNT-02, CLNT-03, CLNT-04
 QUOT-01, QUOT-02, QUOT-03, QUOT-04, QUOT-05, QUOT-06, QUOT-07  
 INV-01, INV-02, INV-03, INV-04, INV-05, INV-06, INV-07, INV-08
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Build ShareModal, DocumentStatusActions, and DocumentSummaryRow components
+- [ ] 02-02-PLAN.md — Builder D-04 status dropdown removal + D-06 conversion redirect fix + PDF maxDuration
+- [ ] 02-03-PLAN.md — Wire invoice and quotation detail pages with new components + D-07 lock
+- [ ] 02-04-PLAN.md — Client detail page DocumentSummaryRow integration (D-08)
+- [ ] 02-05-PLAN.md — Full product loop verification + Vercel production deploy
+
 **Success Criteria**
 1. A user can create a client and immediately generate a quotation or invoice for that client.
 2. Quotation and invoice builders support structured line items, dates, tax, discount, notes, and terms.
