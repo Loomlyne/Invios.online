@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, startTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2, Paintbrush } from "lucide-react";
@@ -66,6 +67,7 @@ export function OnboardingWizard({
   const [drawSignature, setDrawSignature] = useState("");
   const logoInputRef = useRef<HTMLInputElement>(null);
   const signatureInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const businessForm = useForm<BusinessValues>({
     resolver: zodResolver(businessSchema),
@@ -214,8 +216,11 @@ export function OnboardingWizard({
       const result = await completeOnboardingAction();
       if (result?.status === "error") {
         setFeedback(result.message ?? "");
+        setPendingStep("");
+      } else {
+        // D-09: redirect into create-first-invoice rather than generic dashboard
+        router.push("/app/invoices/new");
       }
-      setPendingStep("");
     });
   };
 
