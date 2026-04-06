@@ -14,12 +14,14 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - Requirements defined
 - Roadmap created
 - Phase 1 context captured
+- Phase 1 UI-SPEC approved (all 6 dimensions passed)
 - Ready for `/gsd:plan-phase 1`
 
 ## Session State
 
-- Stopped at: Phase 1 context gathered
-- Resume from: `.planning/phases/01-foundation-onboarding/01-CONTEXT.md`
+- Stopped at: Phase 1 UI-SPEC approved
+- Resume from: `.planning/phases/01-foundation-onboarding/01-UI-SPEC.md`
 - Latest artifacts:
   - `.planning/phases/01-foundation-onboarding/01-CONTEXT.md`
   - `.planning/phases/01-foundation-onboarding/01-DISCUSSION-LOG.md`
+  - `.planning/phases/01-foundation-onboarding/01-UI-SPEC.md`
