@@ -14,6 +14,7 @@ export function SetupChecklist({ context }: { context: AppContext }) {
   const [open, setOpen] = useState(!context.setupProgress.complete);
   const [autoCompleting, setAutoCompleting] = useState(false);
   const [autoTriggered, setAutoTriggered] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     setOpen(!context.setupProgress.complete);
@@ -62,6 +63,8 @@ export function SetupChecklist({ context }: { context: AppContext }) {
 
     return "Setup checklist";
   }, [autoCompleting, context.setupProgress.complete]);
+
+  if (dismissed) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm lg:bottom-6 lg:right-6">
@@ -135,13 +138,23 @@ export function SetupChecklist({ context }: { context: AppContext }) {
               ))}
             </div>
 
-            {!context.setupProgress.complete ? (
+            {context.setupProgress.complete ? (
+              <div className="mt-4">
+                <Button
+                  variant="accent"
+                  className="w-full"
+                  onClick={() => setDismissed(true)}
+                >
+                  Finish
+                </Button>
+              </div>
+            ) : (
               <div className="mt-4">
                 <Button asChild variant="secondary" className="w-full">
                   <Link href="/app/settings?section=profile">Open setup settings</Link>
                 </Button>
               </div>
-            ) : null}
+            )}
           </div>
         ) : null}
       </div>

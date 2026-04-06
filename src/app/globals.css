@@ -109,6 +109,11 @@ img {
   text-wrap: balance;
 }
 
+/* Always-emitted utility — bypasses Tailwind scanner for dark-surface text */
+.text-on-dark {
+  color: var(--on-dark);
+}
+
 .animate-enter {
   animation: enter-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
