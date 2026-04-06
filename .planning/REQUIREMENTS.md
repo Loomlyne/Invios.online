@@ -6,7 +6,7 @@
 
 - [ ] **AUTH-01**: User can create an account with email and password.
 - [ ] **AUTH-02**: User can sign in and remain authenticated across sessions.
-- [ ] **AUTH-03**: User can sign out from the authenticated app.
+- [x] **AUTH-03**: User can sign out from the authenticated app.
 - [ ] **AUTH-04**: Unauthenticated users cannot access private operator routes.
 
 ### Onboarding & Business Setup
