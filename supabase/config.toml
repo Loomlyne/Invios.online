@@ -1,0 +1,16 @@
+project_id = "invios"
+
+[auth]
+enabled = true
+site_url = "https://invios-phase1-koss.vercel.app"
+additional_redirect_urls = [
+  "https://invios-phase1-koss.vercel.app/app",
+  "https://invios-phase1-koss.vercel.app/update-password",
+]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+double_confirm_changes = true
+secure_password_change = false

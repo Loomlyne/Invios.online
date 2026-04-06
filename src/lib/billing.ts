@@ -1,0 +1,150 @@
+import { z } from "zod";
+
+export const clientStatuses = ["lead", "active"] as const;
+export const invoiceStatuses = [
+  "draft",
+  "sent",
+  "partial_paid",
+  "paid",
+  "overdue",
+] as const;
+export const quotationStatuses = [
+  "draft",
+  "sent",
+  "accepted",
+  "rejected",
+  "expired",
+] as const;
+export const documentLanguages = ["en", "ar", "bilingual"] as const;
+export const invoiceTypes = ["invoice", "tax_invoice"] as const;
+export const documentKinds = ["invoice", "quotation"] as const;
+
+export const documentLineItemSchema = z.object({
+  id: z.string().min(1),
+  description: z.string().min(1, "Add a line item description."),
+  notes: z.string().default(""),
+  arabicDescription: z.string().default(""),
+  quantity: z.coerce.number().positive("Quantity must be greater than zero."),
+  unitPrice: z.coerce.number().min(0, "Unit price cannot be negative."),
+  total: z.coerce.number().min(0, "Line item total cannot be negative."),
+});
+
+export const clientFormSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(2, "Client name is required."),
+  company: z.string().default(""),
+  email: z.union([z.literal(""), z.string().email("Enter a valid client email.")]).default(""),
+  phone: z.string().default(""),
+  address: z.string().default(""),
+  status: z.enum(clientStatuses),
+  trn: z.string().default(""),
+  taxCode: z.string().default(""),
+  logoPath: z.string().nullable().optional(),
+});
+
+const documentBaseFormSchema = z.object({
+  id: z.string().uuid().optional(),
+  clientId: z.string().uuid("Choose a client."),
+  currency: z.string().min(3).default("AED"),
+  taxRate: z.coerce.number().min(0).max(100).default(0),
+  discount: z.coerce.number().min(0).max(100).default(0),
+  notes: z.string().default(""),
+  terms: z.string().default(""),
+  language: z.enum(documentLanguages).default("en"),
+  trn: z.string().default(""),
+  lineItems: z.array(documentLineItemSchema).min(1, "Add at least one line item."),
+});
+
+export const invoiceFormSchema = documentBaseFormSchema.extend({
+  issueDate: z.string().min(1, "Issue date is required."),
+  dueDate: z.string().min(1, "Due date is required."),
+  status: z.enum(invoiceStatuses).default("draft"),
+  invoiceType: z.enum(invoiceTypes).default("invoice"),
+});
+
+export const quotationFormSchema = documentBaseFormSchema.extend({
+  quotationDate: z.string().min(1, "Quotation date is required."),
+  expiryDate: z.string().min(1, "Expiry date is required."),
+  status: z.enum(quotationStatuses).default("draft"),
+  validityDays: z.coerce.number().int().positive().default(30),
+});
+
+export type ClientStatus = (typeof clientStatuses)[number];
+export type InvoiceStatus = (typeof invoiceStatuses)[number];
+export type QuotationStatus = (typeof quotationStatuses)[number];
+export type DocumentLanguage = (typeof documentLanguages)[number];
+export type InvoiceType = (typeof invoiceTypes)[number];
+export type DocumentKind = (typeof documentKinds)[number];
+
+export type DocumentLineItem = z.infer<typeof documentLineItemSchema>;
+export type ClientFormInput = z.infer<typeof clientFormSchema>;
+export type InvoiceFormInput = z.infer<typeof invoiceFormSchema>;
+export type QuotationFormInput = z.infer<typeof quotationFormSchema>;
+
+export interface ClientRecord {
+  id: string;
+  userId: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  address: string;
+  status: ClientStatus;
+  slug: string;
+  trn: string;
+  taxCode: string;
+  portalToken: string;
+  logoPath: string | null;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DocumentTotals {
+  subtotal: number;
+  discountAmount: number;
+  taxAmount: number;
+  total: number;
+}
+
+export interface DocumentRecordBase extends DocumentTotals {
+  id: string;
+  userId: string;
+  clientId: string;
+  client: Pick<ClientRecord, "id" | "name" | "company" | "email" | "phone" | "address" | "slug" | "trn">;
+  slug: string;
+  currency: string;
+  taxRate: number;
+  discount: number;
+  notes: string;
+  terms: string;
+  language: DocumentLanguage;
+  lineItems: DocumentLineItem[];
+  shareToken: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InvoiceRecord extends DocumentRecordBase {
+  invoiceNumber: string;
+  status: InvoiceStatus;
+  invoiceType: InvoiceType;
+  issueDate: string;
+  dueDate: string;
+  trn: string;
+  pdfUrl: string | null;
+}
+
+export interface QuotationRecord extends DocumentRecordBase {
+  quotationNumber: string;
+  status: QuotationStatus;
+  quotationDate: string;
+  expiryDate: string;
+  validityDays: number;
+  convertedToInvoiceId: string | null;
+  conversionDate: string | null;
+  sentDate: string | null;
+  acceptedDate: string | null;
+  rejectedDate: string | null;
+  rejectionReason: string;
+}
