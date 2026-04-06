@@ -34,7 +34,7 @@ UX-01
 
 Plans:
 - [ ] 01-01-PLAN.md — Wave 0 unit test infrastructure (middleware route protection, setup progress derivation, auth schema validation)
-- [ ] 01-02-PLAN.md — D-09 post-onboarding redirect to /app/invoices/new + mobile nav UX-01 verification
+- [x] 01-02-PLAN.md — D-09 post-onboarding redirect to /app/invoices/new + mobile nav UX-01 verification
 - [ ] 01-03-PLAN.md — Sign-out E2E test (AUTH-03) + Vercel deploy verification checkpoint
 
 **Success Criteria**
