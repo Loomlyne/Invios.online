@@ -30,6 +30,13 @@ ONB-01, ONB-02, ONB-03, ONB-04, ONB-05
 SET-01, SET-02  
 UX-01
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Wave 0 unit test infrastructure (middleware, setup progress, auth schemas)
+- [ ] 01-02-PLAN.md — D-09 post-onboarding redirect + D-16 mobile bottom-tab nav
+- [ ] 01-03-PLAN.md — Sign-out E2E test + Vercel deploy verification
+
 **Success Criteria**
 1. A new user can sign up, sign in, and get redirected into onboarding without touching broken routes.
 2. The user can complete branding and defaults setup and see a live branded invoice preview before entering the main app.
