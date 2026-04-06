@@ -2,7 +2,7 @@
 phase: 2
 slug: clients-document-engine
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-04-06
 ---
@@ -38,36 +38,32 @@ created: 2026-04-06
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | CLNT-01 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 1 | CLNT-02 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-01-03 | 01 | 1 | CLNT-03 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-01-04 | 01 | 1 | CLNT-04 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-02-01 | 02 | 1 | QUOT-01 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-02-02 | 02 | 1 | QUOT-02 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-02-03 | 02 | 1 | QUOT-03 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-02-04 | 02 | 2 | QUOT-04 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-02-05 | 02 | 2 | QUOT-05 | manual | — | — | ⬜ pending |
-| 02-02-06 | 02 | 2 | QUOT-06 | manual | — | — | ⬜ pending |
-| 02-02-07 | 02 | 2 | QUOT-07 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-03-01 | 03 | 1 | INV-01 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-03-02 | 03 | 1 | INV-02 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-03-03 | 03 | 2 | INV-03 | manual | — | — | ⬜ pending |
-| 02-03-04 | 03 | 2 | INV-04 | manual | — | — | ⬜ pending |
-| 02-03-05 | 03 | 2 | INV-05 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
-| 02-03-06 | 03 | 2 | INV-06 | manual | — | — | ⬜ pending |
-| 02-03-07 | 03 | 3 | INV-07 | manual | — | — | ⬜ pending |
-| 02-03-08 | 03 | 3 | INV-08 | integration | `pnpm test --run` | ❌ W0 | ⬜ pending |
+| 02-00-01 | 00 | 0 | CLNT-01..04 | unit | `pnpm test --run src/actions/clients.test.ts` | W0 creates | ⬜ pending |
+| 02-00-02 | 00 | 0 | QUOT-01..03,07 | unit | `pnpm test --run src/actions/quotations.test.ts` | W0 creates | ⬜ pending |
+| 02-00-03 | 00 | 0 | INV-01..02,05,08 | unit | `pnpm test --run src/actions/invoices.test.ts` | W0 creates | ⬜ pending |
+| 02-01-01 | 01 | 1 | CLNT-03 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-01-02 | 01 | 1 | QUOT-05 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-01-03 | 01 | 1 | INV-05,06 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-02-01 | 02 | 1 | QUOT-01..04 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-02-02 | 02 | 1 | INV-01..04 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-03-01 | 03 | 2 | INV-05..07 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-03-02 | 03 | 2 | QUOT-05..07 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-03-03 | 03 | 2 | INV-08 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-04-01 | 04 | 2 | CLNT-01..04 | integration | `pnpm test --run && pnpm build` | via W0 | ⬜ pending |
+| 02-05-01 | 05 | 3 | all | manual+auto | `pnpm test --run && pnpm build` | — | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
 ---
 
-## Wave 0 Requirements
+## Wave 0 Plan
 
-- [ ] `src/actions/clients.test.ts` — stubs for CLNT-01 through CLNT-04
-- [ ] `src/actions/quotations.test.ts` — stubs for QUOT-01, QUOT-02, QUOT-03, QUOT-07
-- [ ] `src/actions/invoices.test.ts` — stubs for INV-01, INV-02, INV-05, INV-08
-- [ ] Existing vitest infrastructure (vitest.config.ts) — already present from Phase 1
+**Plan 02-00-PLAN.md** creates all three test files:
+
+- [x] `src/actions/clients.test.ts` — clientFormSchema validation, clientStatuses values
+- [x] `src/actions/quotations.test.ts` — quotationFormSchema validation, quotationStatuses, documentLineItemSchema
+- [x] `src/actions/invoices.test.ts` — invoiceFormSchema validation, invoiceStatuses, invoiceType
+- [x] Existing vitest infrastructure (vitest.config.ts) — already present from Phase 1
 
 ---
 
@@ -83,11 +79,11 @@ created: 2026-04-06
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (via 02-00-PLAN.md)
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** pending (Wave 0 plan created, tests not yet executed)
