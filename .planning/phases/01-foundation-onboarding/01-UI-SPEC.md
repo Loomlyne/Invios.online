@@ -93,6 +93,7 @@ Exceptions:
 - App shell bottom padding on mobile: `pb-28` (112px) to clear mobile nav bar.
 - Auth left panel heading: `mt-14` (56px) from brand wordmark to h1.
 - Onboarding overlay: `px-3 py-4` on mobile, `px-6 py-6` on md+.
+- Mobile nav chip horizontal padding: `px-3` (12px) — tight fit for nav label at minimum readable width. 12px is a multiple of 4 but not in the standard set; justified by constrained chip width.
 
 ---
 
@@ -100,17 +101,14 @@ Exceptions:
 
 | Role | Family | Size | Weight | Line Height | Class pattern |
 |------|--------|------|--------|-------------|---------------|
-| Body | DM Sans | 14px | 400 | 1.5 (leading-6) | `text-sm` |
-| Body relaxed | DM Sans | 14px | 400 | 1.75 (leading-7) | `text-sm leading-7` |
-| Label / UI | DM Sans | 12px | 400–500 | 1.25 | `text-xs` |
-| Eyebrow | DM Sans | 12px | 500 | — | `text-xs uppercase tracking-[0.24–0.28em]` |
-| Semibold UI | DM Sans | 14px | 600 | 1.4 | `text-sm font-semibold` |
+| Label / UI / Eyebrow | DM Sans | 12px | 400–500 | 1.25 | `text-xs` / `text-xs uppercase tracking-[0.24–0.28em]` |
+| Body | DM Sans | 14px | 400 / 600 | 1.5 (leading-6) / 1.75 (leading-7) | `text-sm` / `text-sm leading-7` / `text-sm font-semibold` |
 | Card title | DM Sans | 20px | 600 | 1.3 | `text-xl font-semibold tracking-tight` |
-| Page heading | Cormorant Garamond | 30px / 36px | 600 | tight | `display-text text-3xl sm:text-4xl font-semibold tracking-tight` |
-| Auth display | Cormorant Garamond | 36px / 48px | 600 | tight (`leading-tight`) | `display-text text-4xl sm:text-5xl font-semibold` |
-| Auth form title | Cormorant Garamond | 36px | 600 | — | `display-text text-4xl font-semibold` |
+| Page heading | Cormorant Garamond | responsive: 30px → 36px | 600 | tight | `display-text text-3xl sm:text-4xl font-semibold tracking-tight` |
 
-The `.display-text` utility class applies `font-family: var(--font-display)` + `letter-spacing: -0.03em`.
+Notes on the heading scale:
+- The auth display (`text-4xl sm:text-5xl` = 36px → 48px) is a responsive variant of the page heading entry, not a separate scale step. Both live in the 30–48px range and use the same `.display-text` utility + weight 600. The auth form title (`text-4xl` = 36px) is the fixed-width expression of the same entry.
+- The `.display-text` utility class applies `font-family: var(--font-display)` + `letter-spacing: -0.03em`.
 
 Active font weights in use: **400** (regular) and **600** (semibold). Weight 500 is available on Cormorant Garamond (loaded) but not actively used in Phase 1 UI.
 
@@ -174,7 +172,7 @@ max-width: 1600px, mx-auto, px-4 py-4 (sm: px-6, lg: px-8 py-6)
     ├── Header (glass-panel sticky top-4 z-20, rounded-[1.4rem], px-4 py-3)
     │   ├── Business name (text-sm font-semibold, truncate)
     │   ├── "New invoice" CTA (Button variant="accent" size="sm")
-    │   ├── Settings gear (size-10, rounded-full, border, bg-white/80)
+    │   ├── Settings gear (size-10, rounded-full, border, bg-white/80, aria-label="Open settings")
     │   ├── SignOutButton (variant="ghost" size="sm")
     │   └── AppSidebarNav (mobile mode, horizontal scroll chips)
     └── main (PageTransition wraps children)
@@ -241,8 +239,10 @@ Grid: gap-6 xl:grid-cols-[minmax(0,1fr)_480px]
 
 ### Mobile Nav (horizontal scroll chips in header)
 
-- Container: `flex gap-1.5 overflow-x-auto pb-1` (no bottom tab bar — chips sit inside sticky header)
-- Chip: `rounded-full px-3.5 py-2 text-sm transition`
+> **Note — D-16 deviation:** CONTEXT.md decision D-16 specifies "bottom-tab primary nav." The implemented design uses horizontal scroll chips inside the sticky top header instead of a bottom tab bar. This is a deliberate deviation from D-16. The executor must preserve the horizontal chip pattern as implemented — do not introduce a bottom tab bar.
+
+- Container: `flex gap-2 overflow-x-auto pb-1` (no bottom tab bar — chips sit inside sticky header)
+- Chip: `rounded-full px-3 py-2 text-sm transition`
 - Active: `bg-foreground/8 font-medium text-foreground`
 - Inactive: `text-muted-strong hover:bg-foreground/4`
 - Icon: `size-3.5`, active `text-accent-strong`, inactive `text-muted`
@@ -402,7 +402,7 @@ Pending: `border-border bg-[#FFFCF7] hover:border-[#D7C4A7] hover:bg-[#FFF8ED]` 
 | Setup checklist title (in progress) | "Setup checklist" |
 | Setup checklist title (auto-completing) | "Finalizing setup" |
 | Setup checklist title (complete) | "Setup complete" |
-| Setup checklist dismiss CTA | "Finish" |
+| Setup checklist dismiss CTA | "Dismiss checklist" |
 | SetupChecklist secondary CTA | "Open setup settings" |
 | Install prompt (ready) | "Install Invios" |
 | Install prompt (accepted) | "Installed" |
