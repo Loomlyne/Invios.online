@@ -28,6 +28,8 @@ const updatePasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
+export { signInSchema, signUpSchema, emailSchema, updatePasswordSchema };
+
 export async function signInAction(
   _prevState: ActionState,
   formData: FormData,
