@@ -46,7 +46,7 @@ export function AppSidebarNav({ mode = "both" }: { mode?: "desktop" | "mobile" |
                 className={cn(
                   "flex items-center gap-3 rounded-[1.15rem] px-4 py-3 text-sm transition",
                   active
-                    ? "bg-[#17120F] text-[#FFF9F0] shadow-[0_16px_40px_rgba(23,18,15,0.16)]"
+                    ? "bg-[#17120F] text-on-dark shadow-[0_16px_40px_rgba(23,18,15,0.16)]"
                     : "text-muted-strong hover:bg-black/5",
                 )}
               >

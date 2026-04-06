@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Settings2 } from "lucide-react";
 import { AppSidebarNav } from "@/components/app/app-sidebar-nav";
+import { PageTransition } from "@/components/app/page-transition";
 import { SignOutButton } from "@/components/app/sign-out-button";
 import { Button } from "@/components/ui/button";
 import type { AppContext } from "@/lib/types";
@@ -55,7 +56,9 @@ export function AppShell({
             <AppSidebarNav mode="mobile" />
           </header>
 
-          <main className="relative flex-1">{children}</main>
+          <main className="relative flex-1">
+            <PageTransition>{children}</PageTransition>
+          </main>
         </div>
       </div>
     </div>
