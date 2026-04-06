@@ -25,7 +25,7 @@ source: upstream artifacts (CONTEXT.md + REQUIREMENTS.md + ROADMAP.md) + codebas
 | Component library | Radix UI (via shadcn) |
 | Icon library | Lucide React |
 | Font — body | DM Sans (`--font-sans`, weight 400/600) |
-| Font — display | Cormorant Garamond (`--font-display`, weights 500/600/700) |
+| Font — display | Cormorant Garamond (`--font-display`, weight 600) |
 | CSS config | `src/app/globals.css` — custom CSS properties via `@theme inline` for Tailwind v4 |
 
 **Source:** components.json confirmed (stone base, css-variables). Phase 1 UI-SPEC locked all tokens.
@@ -110,14 +110,15 @@ Inherited from Phase 1. No new type scales introduced in Phase 2.
 
 | Role | Family | Size | Weight | Line Height | Class pattern |
 |------|--------|------|--------|-------------|---------------|
-| Label / eyebrow / info card label | DM Sans | 12px | 400 | 1.25 | `text-xs uppercase tracking-[0.18em] text-muted` |
 | Body / description / meta | DM Sans | 14px | 400 | 1.75 (leading-7) | `text-sm leading-7 text-muted` |
 | UI body / card content | DM Sans | 14px | 400/600 | 1.5 | `text-sm` / `text-sm font-semibold` |
 | Card title / section heading | DM Sans | 20px | 600 | 1.3 | `text-xl font-semibold tracking-tight` |
-| Client hero heading | Cormorant Garamond | responsive 36px → 48px | 600 | tight | `display-text text-4xl sm:text-5xl font-semibold` |
 | Metric card value | DM Sans | 30px | 600 | tight | `text-3xl font-semibold` (metric count) |
+| Client hero heading | Cormorant Garamond | responsive 36px → 48px | 600 | tight | `display-text text-4xl sm:text-5xl font-semibold` |
 
-Active font weights: **400** (regular) and **600** (semibold). No new weights introduced.
+Eyebrow / label / info card label: rendered as 14px with `text-sm uppercase tracking-[0.18em] text-muted` — visual distinction achieved via letter-spacing and case, not a separate size.
+
+Active font weights: **400** (DM Sans regular) and **600** (semibold, both fonts). No new weights introduced.
 
 **Source:** Phase 1 UI-SPEC + `clients/[slug]/page.tsx` h1 + MetricCard `text-3xl`.
 
@@ -260,7 +261,7 @@ grid gap-6 xl:grid-cols-[minmax(0,1fr)_480px]
 Dialog
   DialogContent  max-w-md rounded-[1.6rem] p-6
     DialogHeader
-      p text-xs uppercase tracking-[0.18em] text-muted  "Share"
+      p text-sm uppercase tracking-[0.18em] text-muted  "Share"
       DialogTitle display-text text-2xl font-semibold  "Public link"
       DialogDescription text-sm leading-7 text-muted
         "Anyone with this link can view the document without signing in."
@@ -447,7 +448,7 @@ Phase 2 specific:
 | Convert quotation | "Convert to invoice" | ArrowRight |
 | Delete invoice | "Delete invoice" | Trash2 |
 | Delete quotation | "Delete quotation" | Trash2 |
-| Archive client | "Archive" | Trash2 |
+| Archive client | "Archive client" | Trash2 |
 
 ### Share modal
 
@@ -493,7 +494,7 @@ Error pattern: `[What went wrong]. [What to do next].` — consistent with Phase
 |--------|----------|------|
 | Delete invoice | Inline form submit (no modal) — irreversible | Button label: "Delete invoice". No confirmation dialog — the status action grid layout makes accidental tap unlikely. |
 | Delete quotation | Inline form submit (no modal) — irreversible | Button label: "Delete quotation". Same rationale. |
-| Archive client | Inline form submit in edit mode only | Button label: "Archive". Edit mode is an explicit opt-in (`?edit=1`) that gates the archive button — provides natural friction. |
+| Archive client | Inline form submit in edit mode only | Button label: "Archive client". Edit mode is an explicit opt-in (`?edit=1`) that gates the archive button — provides natural friction. |
 
 **Rationale for no confirmation modals:** The `variant="danger"` visual treatment, `size="sm"` physical separation from primary actions, and the explicit edit-mode gate (for archive) provide sufficient friction without a modal confirmation step. This is consistent with the CONTEXT.md principle of fast, intentional flows. If a future phase introduces bulk operations or financial cascades on delete, a confirmation modal should be reconsidered.
 
