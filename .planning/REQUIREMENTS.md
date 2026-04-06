@@ -26,31 +26,31 @@
 
 ### Clients
 
-- [ ] **CLNT-01**: User can create, edit, and archive a client record.
-- [ ] **CLNT-02**: User can store client name, company, email, phone, address, tax info, and status.
-- [ ] **CLNT-03**: User can view all quotations and invoices associated with a client on the client detail page.
-- [ ] **CLNT-04**: User can generate new quotations and invoices directly from a client detail page.
+- [x] **CLNT-01**: User can create, edit, and archive a client record.
+- [x] **CLNT-02**: User can store client name, company, email, phone, address, tax info, and status.
+- [x] **CLNT-03**: User can view all quotations and invoices associated with a client on the client detail page.
+- [x] **CLNT-04**: User can generate new quotations and invoices directly from a client detail page.
 
 ### Quotations
 
-- [ ] **QUOT-01**: User can create, edit, save, and delete quotation drafts.
-- [ ] **QUOT-02**: User can add structured line items with description, quantity, unit price, and total to a quotation.
-- [ ] **QUOT-03**: User can set issue date, expiry date, discount, tax, notes, terms, and language on a quotation.
+- [x] **QUOT-01**: User can create, edit, save, and delete quotation drafts.
+- [x] **QUOT-02**: User can add structured line items with description, quantity, unit price, and total to a quotation.
+- [x] **QUOT-03**: User can set issue date, expiry date, discount, tax, notes, terms, and language on a quotation.
 - [ ] **QUOT-04**: User can preview quotation output live while editing.
 - [ ] **QUOT-05**: User can mark a quotation as sent, accepted, rejected, or expired.
 - [ ] **QUOT-06**: User can share a public quotation link by secure token.
-- [ ] **QUOT-07**: User can export a quotation to PDF.
+- [x] **QUOT-07**: User can export a quotation to PDF.
 
 ### Invoices
 
-- [ ] **INV-01**: User can create, edit, save, and delete invoice drafts.
-- [ ] **INV-02**: User can add structured line items with description, quantity, unit price, and total to an invoice.
+- [x] **INV-01**: User can create, edit, save, and delete invoice drafts.
+- [x] **INV-02**: User can add structured line items with description, quantity, unit price, and total to an invoice.
 - [ ] **INV-03**: User can set invoice type, issue date, due date, discount, tax, notes, terms, and language on an invoice.
 - [ ] **INV-04**: User can preview invoice output live while editing.
-- [ ] **INV-05**: User can mark an invoice as sent.
+- [x] **INV-05**: User can mark an invoice as sent.
 - [ ] **INV-06**: User can share a public invoice link by secure token.
 - [ ] **INV-07**: User can export an invoice to PDF.
-- [ ] **INV-08**: User can convert an accepted quotation into an invoice.
+- [x] **INV-08**: User can convert an accepted quotation into an invoice.
 
 ### Payments & Expenses
 
