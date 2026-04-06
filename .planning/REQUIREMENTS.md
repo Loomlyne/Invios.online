@@ -4,18 +4,18 @@
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can create an account with email and password.
-- [ ] **AUTH-02**: User can sign in and remain authenticated across sessions.
+- [x] **AUTH-01**: User can create an account with email and password.
+- [x] **AUTH-02**: User can sign in and remain authenticated across sessions.
 - [x] **AUTH-03**: User can sign out from the authenticated app.
-- [ ] **AUTH-04**: Unauthenticated users cannot access private operator routes.
+- [x] **AUTH-04**: Unauthenticated users cannot access private operator routes.
 
 ### Onboarding & Business Setup
 
 - [x] **ONB-01**: First-time user is redirected into onboarding after first sign-in until setup is complete.
-- [ ] **ONB-02**: User can enter business name, contact details, address, and default invoice settings.
-- [ ] **ONB-03**: User can upload logo and signature assets for document branding.
-- [ ] **ONB-04**: User can choose primary branding color and see a live branded invoice preview during onboarding.
-- [ ] **ONB-05**: User can set default currency, tax, notes, and terms preferences.
+- [x] **ONB-02**: User can enter business name, contact details, address, and default invoice settings.
+- [x] **ONB-03**: User can upload logo and signature assets for document branding.
+- [x] **ONB-04**: User can choose primary branding color and see a live branded invoice preview during onboarding.
+- [x] **ONB-05**: User can set default currency, tax, notes, and terms preferences.
 
 ### Dashboard
 
