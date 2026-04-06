@@ -413,7 +413,7 @@ export async function convertQuotationToInvoiceAction(quotationId: string) {
   revalidatePath("/app/quotations");
   revalidatePath(`/app/quotations/${quotationId}`);
   revalidatePath("/app/invoices");
-  redirect(`/app/invoices/${invoiceData.id}` as Route);
+  redirect(`/app/invoices/${invoiceData.id}/edit` as Route);
 }
 
 export async function deleteQuotationAction(id: string) {
