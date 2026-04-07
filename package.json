@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.4",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/utilities": "^3.2.2",
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "5.2.2",
     "@radix-ui/react-dialog": "1.1.15",
@@ -26,7 +28,7 @@
     "clsx": "2.1.1",
     "gsap": "^3.14.2",
     "jspdf": "^3.0.3",
-    "lucide-react": "0.542.0",
+    "lucide-react": "0.469.0",
     "next": "15.5.14",
     "playwright-core": "^1.59.1",
     "react": "19.2.0",
