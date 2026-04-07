@@ -416,18 +416,39 @@ export async function convertQuotationToInvoiceAction(quotationId: string) {
   redirect(`/app/invoices/${invoiceData.id}/edit` as Route);
 }
 
-export async function deleteQuotationAction(id: string) {
-  const { supabase, user } = await requireSession();
-  const { error } = await supabase
-    .from("quotations")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id);
+export async function deleteQuotationAction(id: string): Promise<ActionState> {
+  try {
+    const { supabase, user } = await requireSession();
+    const { error, count } = await supabase
+      .from("quotations")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select();
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      return {
+        status: "error",
+        message: `Failed to delete quotation: ${error.message}`,
+      };
+    }
+
+    if (!count || count === 0) {
+      return {
+        status: "error",
+        message: "Quotation not found or you don't have permission to delete it.",
+      };
+    }
+
+    revalidatePath("/app/quotations");
+    return {
+      status: "success",
+      redirectTo: "/app/quotations" as Route,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message: error instanceof Error ? error.message : "Could not delete quotation.",
+    };
   }
-
-  revalidatePath("/app/quotations");
-  redirect("/app/quotations");
 }

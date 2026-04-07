@@ -4,7 +4,7 @@ import {
   signUpSchema,
   emailSchema,
   updatePasswordSchema,
-} from "@/actions/auth";
+} from "@/lib/auth-schemas";
 
 // ---------------------------------------------------------------------------
 // signInSchema

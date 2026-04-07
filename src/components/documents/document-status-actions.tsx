@@ -1,3 +1,7 @@
+"use client";
+
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Send, Trash2 } from "lucide-react";
 import { deleteInvoiceAction, setInvoiceStatusAction } from "@/actions/invoices";
 import {
@@ -20,34 +24,87 @@ export function DocumentStatusActions({
   status,
   convertedToInvoiceId,
 }: DocumentStatusActionsProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleDeleteInvoice = () => {
+    startTransition(async () => {
+      const result = await deleteInvoiceAction(id);
+      if (result.status === "success" && result.redirectTo) {
+        router.push(result.redirectTo);
+      } else if (result.status === "error") {
+        alert(`Error: ${result.message}`);
+      }
+    });
+  };
+
+  const handleDeleteQuotation = () => {
+    startTransition(async () => {
+      const result = await deleteQuotationAction(id);
+      if (result.status === "success" && result.redirectTo) {
+        router.push(result.redirectTo);
+      } else if (result.status === "error") {
+        alert(`Error: ${result.message}`);
+      }
+    });
+  };
+
+  const handleSetInvoiceStatus = (newStatus: string) => {
+    startTransition(async () => {
+      try {
+        await setInvoiceStatusAction(id, newStatus as any);
+        router.refresh();
+      } catch (error) {
+        alert(`Error: ${error instanceof Error ? error.message : "Failed to update status"}`);
+      }
+    });
+  };
+
+  const handleSetQuotationStatus = (newStatus: string) => {
+    startTransition(async () => {
+      try {
+        await setQuotationStatusAction(id, newStatus as any);
+        router.refresh();
+      } catch (error) {
+        alert(`Error: ${error instanceof Error ? error.message : "Failed to update status"}`);
+      }
+    });
+  };
+
+  const handleConvertQuotation = () => {
+    startTransition(async () => {
+      try {
+        await convertQuotationToInvoiceAction(id);
+      } catch (error) {
+        alert(`Error: ${error instanceof Error ? error.message : "Failed to convert quotation"}`);
+      }
+    });
+  };
+
   if (kind === "invoice") {
     return (
       <div className="grid gap-3 sm:grid-cols-2">
         {status === "draft" && (
-          <form
-            action={async () => {
-              "use server";
-              await setInvoiceStatusAction(id, "sent");
-            }}
+          <Button
+            onClick={() => handleSetInvoiceStatus("sent")}
+            disabled={isPending}
+            variant="accent"
+            className="w-full"
           >
-            <Button type="submit" variant="accent" className="w-full">
-              <Send className="size-4" />
-              Mark as sent
-            </Button>
-          </form>
+            <Send className="size-4" />
+            {isPending ? "Sending..." : "Mark as sent"}
+          </Button>
         )}
 
-        <form
-          action={async () => {
-            "use server";
-            await deleteInvoiceAction(id);
-          }}
+        <Button
+          onClick={handleDeleteInvoice}
+          disabled={isPending}
+          variant="danger"
+          className="w-full"
         >
-          <Button type="submit" variant="danger" className="w-full">
-            <Trash2 className="size-4" />
-            Delete invoice
-          </Button>
-        </form>
+          <Trash2 className="size-4" />
+          {isPending ? "Deleting..." : "Delete invoice"}
+        </Button>
       </div>
     );
   }
@@ -55,70 +112,60 @@ export function DocumentStatusActions({
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {status === "draft" && (
-        <form
-          action={async () => {
-            "use server";
-            await setQuotationStatusAction(id, "sent");
-          }}
+        <Button
+          onClick={() => handleSetQuotationStatus("sent")}
+          disabled={isPending}
+          variant="accent"
+          className="w-full"
         >
-          <Button type="submit" variant="accent" className="w-full">
-            <Send className="size-4" />
-            Mark as sent
-          </Button>
-        </form>
+          <Send className="size-4" />
+          {isPending ? "Sending..." : "Mark as sent"}
+        </Button>
       )}
 
       {status === "sent" && (
-        <form
-          action={async () => {
-            "use server";
-            await setQuotationStatusAction(id, "accepted");
-          }}
+        <Button
+          onClick={() => handleSetQuotationStatus("accepted")}
+          disabled={isPending}
+          variant="secondary"
+          className="w-full"
         >
-          <Button type="submit" variant="secondary" className="w-full">
-            Mark as accepted
-          </Button>
-        </form>
+          {isPending ? "Processing..." : "Mark as accepted"}
+        </Button>
       )}
 
       {status === "sent" && (
-        <form
-          action={async () => {
-            "use server";
-            await setQuotationStatusAction(id, "rejected");
-          }}
+        <Button
+          onClick={() => handleSetQuotationStatus("rejected")}
+          disabled={isPending}
+          variant="secondary"
+          className="w-full"
         >
-          <Button type="submit" variant="secondary" className="w-full">
-            Mark as rejected
-          </Button>
-        </form>
+          {isPending ? "Processing..." : "Mark as rejected"}
+        </Button>
       )}
 
       {status === "accepted" && convertedToInvoiceId === null && (
-        <form
-          action={async () => {
-            "use server";
-            await convertQuotationToInvoiceAction(id);
-          }}
+        <Button
+          onClick={handleConvertQuotation}
+          disabled={isPending}
+          variant="accent"
+          className="w-full"
         >
-          <Button type="submit" variant="accent" className="w-full">
-            <ArrowRight className="size-4" />
-            Convert to invoice
-          </Button>
-        </form>
+          <ArrowRight className="size-4" />
+          {isPending ? "Converting..." : "Convert to invoice"}
+        </Button>
       )}
 
-      <form
-        action={async () => {
-          "use server";
-          await deleteQuotationAction(id);
-        }}
+      <Button
+        onClick={handleDeleteQuotation}
+        disabled={isPending}
+        variant="danger"
+        className="w-full"
       >
-        <Button type="submit" variant="danger" className="w-full">
-          <Trash2 className="size-4" />
-          Delete quotation
-        </Button>
-      </form>
+        <Trash2 className="size-4" />
+        {isPending ? "Deleting..." : "Delete quotation"}
+      </Button>
     </div>
   );
 }

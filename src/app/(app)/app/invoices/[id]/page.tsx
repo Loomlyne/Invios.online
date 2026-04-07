@@ -12,7 +12,7 @@ import { getInvoiceById } from "@/lib/billing-data";
 import { getAppContext } from "@/lib/data";
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
-import { ShareButton } from "./share-button";
+import { ExportButton } from "./export-button";
 
 export default async function InvoiceDetailPage({
   params,
@@ -59,12 +59,7 @@ export default async function InvoiceDetailPage({
                   Edit
                 </Link>
               </Button>
-              <Button asChild variant="secondary" size="sm">
-                <a href={`/api/invoices/${invoice.id}/pdf`} download={`${invoice.invoiceNumber}.pdf`}>
-                  PDF
-                </a>
-              </Button>
-              <ShareButton publicPath={`/invoices/public/${invoice.shareToken}`} />
+              <ExportButton invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">

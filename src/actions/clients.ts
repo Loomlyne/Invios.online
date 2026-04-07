@@ -154,6 +154,71 @@ export async function updateClientAction(
   }
 }
 
+export async function quickCreateClientAction(
+  formData: FormData,
+): Promise<
+  | { status: "success"; client: { id: string; name: string; company: string; email: string; phone: string; address: string; status: string; slug: string; trn: string; taxCode: string } }
+  | { status: "error"; message: string }
+> {
+  try {
+    const parsed = parseClientForm(formData);
+
+    if (!parsed.success) {
+      return { status: "error", message: parsed.error.issues[0]?.message ?? "Invalid input." };
+    }
+
+    const { supabase, user } = await requireSession();
+    const slugBase = parsed.data.company || parsed.data.name;
+    const existingSlugs = await getExistingClientSlugs(user.id);
+    const slug = buildUniqueSlug(slugBase, existingSlugs);
+
+    const { data, error } = await supabase
+      .from("clients")
+      .insert({
+        user_id: user.id,
+        name: parsed.data.name,
+        company: parsed.data.company || null,
+        email: parsed.data.email || null,
+        phone: parsed.data.phone || null,
+        address: parsed.data.address || null,
+        status: parsed.data.status,
+        slug,
+        trn: parsed.data.trn || null,
+        tax_code: parsed.data.taxCode || null,
+      })
+      .select("*")
+      .single();
+
+    if (error) {
+      return { status: "error", message: error.message };
+    }
+
+    revalidatePath("/app/clients");
+    revalidatePath("/app/invoices/new");
+
+    return {
+      status: "success",
+      client: {
+        id: data.id,
+        name: data.name,
+        company: data.company ?? "",
+        email: data.email ?? "",
+        phone: data.phone ?? "",
+        address: data.address ?? "",
+        status: data.status,
+        slug: data.slug,
+        trn: data.trn ?? "",
+        taxCode: data.tax_code ?? "",
+      },
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message: error instanceof Error ? error.message : "Could not create client.",
+    };
+  }
+}
+
 export async function archiveClientAction(id: string) {
   const { supabase, user } = await requireSession();
   const { error } = await supabase

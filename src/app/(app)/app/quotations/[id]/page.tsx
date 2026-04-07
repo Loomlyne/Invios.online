@@ -12,7 +12,7 @@ import { getQuotationById } from "@/lib/billing-data";
 import { getAppContext } from "@/lib/data";
 import { buildQuotationPreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
-import { ShareButton } from "./share-button";
+import { ExportButton } from "./export-button";
 
 export default async function QuotationDetailPage({
   params,
@@ -74,12 +74,7 @@ export default async function QuotationDetailPage({
                   </Link>
                 </Button>
               )}
-              <Button asChild variant="secondary" size="sm">
-                <a href={`/api/quotations/${quotation.id}/pdf`} download={`${quotation.quotationNumber}.pdf`}>
-                  PDF
-                </a>
-              </Button>
-              <ShareButton publicPath={`/quotations/public/${quotation.shareToken}`} />
+              <ExportButton quotationId={quotation.id} quotationNumber={quotation.quotationNumber} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
