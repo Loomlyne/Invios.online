@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { notFound } from "next/navigation";
-import { MoveLeft, Send, Share2, SquarePen, Trash2 } from "lucide-react";
-import { deleteInvoiceAction, setInvoiceStatusAction } from "@/actions/invoices";
+import { MoveLeft, SquarePen } from "lucide-react";
+import { DocumentStatusActions } from "@/components/documents/document-status-actions";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { getInvoiceById } from "@/lib/billing-data";
 import { getAppContext } from "@/lib/data";
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
+import { ShareButton } from "./share-button";
 
 export default async function InvoiceDetailPage({
   params,
@@ -59,16 +60,11 @@ export default async function InvoiceDetailPage({
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="sm">
-                <Link href={`/api/invoices/${invoice.id}/pdf` as Route} target="_blank">
+                <a href={`/api/invoices/${invoice.id}/pdf`} download={`${invoice.invoiceNumber}.pdf`}>
                   PDF
-                </Link>
+                </a>
               </Button>
-              <Button asChild variant="secondary" size="sm">
-                <Link href={`/invoices/public/${invoice.shareToken}` as Route} target="_blank">
-                  <Share2 className="size-4" />
-                  Share
-                </Link>
-              </Button>
+              <ShareButton publicPath={`/invoices/public/${invoice.shareToken}`} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -81,31 +77,7 @@ export default async function InvoiceDetailPage({
               <InfoCard label="Total" value={formatCurrency(invoice.total, invoice.currency)} />
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <form
-                action={async () => {
-                  "use server";
-                  await setInvoiceStatusAction(invoice.id, "sent");
-                }}
-              >
-                <Button type="submit" variant="accent" className="w-full">
-                  <Send className="size-4" />
-                  Mark as sent
-                </Button>
-              </form>
-
-              <form
-                action={async () => {
-                  "use server";
-                  await deleteInvoiceAction(invoice.id);
-                }}
-              >
-                <Button type="submit" variant="danger" className="w-full">
-                  <Trash2 className="size-4" />
-                  Delete invoice
-                </Button>
-              </form>
-            </div>
+            <DocumentStatusActions kind="invoice" id={invoice.id} status={invoice.status} />
           </CardContent>
         </Card>
 
