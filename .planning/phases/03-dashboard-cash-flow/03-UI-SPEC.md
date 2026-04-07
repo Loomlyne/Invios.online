@@ -80,7 +80,7 @@ Standard 8-point scale using Tailwind's default spacing (4px base unit).
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| xs | 4px (`gap-1`, `p-1`) | Icon gaps, ledger row cell padding |
+| xs | 4px (`gap-1`, `p-1`) | Icon gaps, ledger row cell padding, delete icon button padding |
 | sm | 8px (`gap-2`, `p-2`) | Inline table row gaps, badge gap |
 | md | 16px (`gap-4`, `p-4`) | Card internal padding, form field gaps, ledger row horizontal padding |
 | lg | 24px (`gap-6`, `p-6`) | Section gaps, card padding default |
@@ -91,7 +91,7 @@ Standard 8-point scale using Tailwind's default spacing (4px base unit).
 Exceptions for Phase 3:
 - Inline ledger table rows: `px-4 py-3` (16px/12px) — tighter than standard card padding; matches existing setup checklist item pattern
 - Metric strip / stat cards: `p-4 sm:p-5` — compact to fit 4 metrics in a row on desktop
-- Touch targets for delete row action (icon button): minimum `size-8` (32px) with `p-1.5` — smaller than standard `size-10` because it sits inside a dense table row; acceptable within inline data context
+- Touch targets for delete row action (icon button): minimum `size-8` (32px) with `p-1` (4px) — smaller than standard `size-10` because it sits inside a dense table row; acceptable within inline data context
 - Mobile: `pb-28` main column bottom padding carries over from Phase 1 app shell
 
 Source: Phase 1 UI-SPEC (locked)
@@ -104,13 +104,14 @@ Source: Phase 1 UI-SPEC (locked)
 |------|--------|------|--------|-------------|---------------|
 | Label / UI / Eyebrow | DM Sans | 12px | 400–500 | 1.25 | `text-xs` / `text-xs uppercase tracking-[0.24–0.28em]` |
 | Body | DM Sans | 14px | 400 / 600 | 1.5 (`leading-6`) | `text-sm` / `text-sm font-semibold` |
-| Card title | DM Sans | 20px | 600 | 1.3 | `text-xl font-semibold tracking-tight` |
+| Metric value / Card section title | DM Sans | 24px | 600 | tight | `text-2xl font-semibold tracking-tight` |
 | Page heading | Cormorant Garamond | 30px→36px | 600 | tight | `display-text text-3xl sm:text-4xl font-semibold tracking-tight` |
 
-Phase 3 additions:
-- **Metric value** (billed / collected / outstanding / collection rate): 24px, weight 600, `text-2xl font-semibold tracking-tight`, DM Sans — sits inside metric cards
-- **Metric label**: 12px, weight 400, `text-xs text-muted uppercase tracking-[0.18em]` — above each metric value
-- **Ledger cell value**: 14px, weight 400 regular / 600 semibold for totals, `text-sm` — aligns with standard body
+Notes on the 24px row:
+- **Metric value** (billed / collected / outstanding / collection rate): `text-2xl font-semibold tracking-tight` — sits inside metric cards
+- **Card section title**: same class `text-2xl font-semibold tracking-tight` — card headings that previously used `text-xl` are promoted to this size; 20px (`text-xl`) is not declared and must not appear
+- **Metric label**: 12px, weight 400, `text-xs text-muted uppercase tracking-[0.18em]` — maps to the Label / UI row above
+- **Ledger cell value**: 14px, weight 400 regular / 600 semibold for totals, `text-sm` — maps to the Body row above
 
 Active font weights in use: **400** (regular) and **600** (semibold). No new weights introduced.
 
@@ -167,6 +168,8 @@ Dashboard page (grid gap-6)
 ├── 5. Overdue invoices — full-width list (only rendered when overdue items exist)
 └── 6. SetupChecklist — floating panel (already exists, keep as-is)
 ```
+
+Primary focal point: metric strip (four MetricCard tiles), first element the eye reaches after the page heading.
 
 ### Metric Strip (Section 2)
 
@@ -252,12 +255,12 @@ Design intent: lightweight ledger rows, not a heavy form. Spreadsheet add-row-at
 - Amount: `text-sm font-semibold text-foreground`
 - Method (payments) / Vendor (expenses): `text-sm text-muted flex-1`
 - Description (expenses only): `text-sm text-foreground flex-1`
-- Delete action: icon button `size-8 rounded-full text-muted hover:text-danger hover:bg-danger/8`, `<Trash2 className="size-4" />`
+- Delete action: icon button `size-8 p-1 rounded-full text-muted hover:text-danger hover:bg-danger/8`, `<Trash2 className="size-4" />`
 
 **Add row (always visible at bottom):**
 - `px-4 py-3 bg-[#FFFCF7] border-t border-dashed border-border/60`
 - Inline input fields (date, amount, method/vendor+description) with `<Input>` component at reduced height `h-9`
-- Save button: `Button variant="ghost" size="sm"` — "Add"
+- Save button: `Button variant="ghost" size="sm"` — label per table (see Copywriting below)
 - Placeholder: `text-xs text-muted/60` — field-specific (see Copywriting below)
 
 **Column widths — Payments table:**
@@ -378,7 +381,7 @@ Source: Phase 1 UI-SPEC animation/loading pattern (locked)
 | Add row — date placeholder | "YYYY-MM-DD" |
 | Add row — amount placeholder | "0.00" |
 | Add row — method placeholder | "Cash, transfer, cheque…" |
-| Add row CTA | "Add" |
+| Add row CTA | "Add payment" |
 | Empty payments state | "No payments recorded yet." |
 | Delete payment aria-label | "Delete payment" |
 | Delete confirmation | Inline — no modal. Row delete is immediate. No confirmation step. |
@@ -396,7 +399,7 @@ Source: Phase 1 UI-SPEC animation/loading pattern (locked)
 | Add row — amount placeholder | "0.00" |
 | Add row — description placeholder | "What was this for?" |
 | Add row — vendor placeholder | "Supplier name" |
-| Add row CTA | "Add" |
+| Add row CTA | "Add expense" |
 | Empty expenses state | "No expenses recorded yet." |
 | Delete expense aria-label | "Delete expense" |
 | Delete confirmation | Inline — no modal. Row delete is immediate. No confirmation step. |
