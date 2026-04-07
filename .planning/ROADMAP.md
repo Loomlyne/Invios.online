@@ -66,10 +66,10 @@ INV-01, INV-02, INV-03, INV-04, INV-05, INV-06, INV-07, INV-08
 
 Plans:
 - [x] 02-00-PLAN.md — Wave 0 behavioral test scaffolds (client/quotation/invoice schema validation)
-- [ ] 02-01-PLAN.md — Build ShareModal, DocumentStatusActions, and DocumentSummaryRow components
-- [ ] 02-02-PLAN.md — Builder D-04 status dropdown removal + D-06 conversion redirect fix + PDF maxDuration
-- [ ] 02-03-PLAN.md — Wire invoice and quotation detail pages with new components + D-07 lock
-- [ ] 02-04-PLAN.md — Client detail page DocumentSummaryRow integration (D-08)
+- [x] 02-01-PLAN.md — Build ShareModal, DocumentStatusActions, and DocumentSummaryRow components
+- [x] 02-02-PLAN.md — Builder D-04 status dropdown removal + D-06 conversion redirect fix + PDF maxDuration
+- [x] 02-03-PLAN.md — Wire invoice and quotation detail pages with new components + D-07 lock
+- [x] 02-04-PLAN.md — Client detail page DocumentSummaryRow integration (D-08)
 - [ ] 02-05-PLAN.md — Full product loop verification + Vercel production deploy
 
 **Success Criteria**

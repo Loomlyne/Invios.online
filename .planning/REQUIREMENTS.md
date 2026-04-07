@@ -36,7 +36,7 @@
 - [x] **QUOT-01**: User can create, edit, save, and delete quotation drafts.
 - [x] **QUOT-02**: User can add structured line items with description, quantity, unit price, and total to a quotation.
 - [x] **QUOT-03**: User can set issue date, expiry date, discount, tax, notes, terms, and language on a quotation.
-- [ ] **QUOT-04**: User can preview quotation output live while editing.
+- [x] **QUOT-04**: User can preview quotation output live while editing.
 - [ ] **QUOT-05**: User can mark a quotation as sent, accepted, rejected, or expired.
 - [ ] **QUOT-06**: User can share a public quotation link by secure token.
 - [x] **QUOT-07**: User can export a quotation to PDF.
@@ -45,8 +45,8 @@
 
 - [x] **INV-01**: User can create, edit, save, and delete invoice drafts.
 - [x] **INV-02**: User can add structured line items with description, quantity, unit price, and total to an invoice.
-- [ ] **INV-03**: User can set invoice type, issue date, due date, discount, tax, notes, terms, and language on an invoice.
-- [ ] **INV-04**: User can preview invoice output live while editing.
+- [x] **INV-03**: User can set invoice type, issue date, due date, discount, tax, notes, terms, and language on an invoice.
+- [x] **INV-04**: User can preview invoice output live while editing.
 - [x] **INV-05**: User can mark an invoice as sent.
 - [ ] **INV-06**: User can share a public invoice link by secure token.
 - [ ] **INV-07**: User can export an invoice to PDF.

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 02
-last_updated: "2026-04-06T17:04:54.104Z"
+last_updated: "2026-04-06T23:32:41.161Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 9
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # STATE
@@ -42,13 +42,16 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 01-foundation-onboarding]: Sign-out E2E uses createConfirmedUser+signIn to avoid onboarding wizard obscuring the sign-out button
 - [Phase 02-clients-document-engine]: documentLineItemSchema requires id field (z.string().min(1)) — test fixtures must include id
 - [Phase 02-clients-document-engine]: Wave 0 schema tests use pure Zod validation without server action mocking — import from @/lib/billing directly
+- [Phase 02-clients-document-engine]: D-04: builder status is read-only via hidden input, no dropdown exposed
+- [Phase 02-clients-document-engine]: D-06: conversion redirect goes to /edit for review, not detail page
 
 ## Session State
 
-- Stopped at: Completed 02-00-PLAN.md — Wave 0 test scaffolds done, 49 tests passing
-- Resume from: Plan 02-01 (clients CRUD actions)
+- Stopped at: Completed 02-02-PLAN.md — D-04 builder status dropdown removed, D-06 conversion redirect fixed, PDF route maxDuration = 60 added
+- Resume from: Plan 02-03 (clients CRUD, quotations/invoices list and detail pages)
 - Latest artifacts:
-  - `.planning/phases/02-clients-document-engine/02-00-SUMMARY.md`
-  - `src/actions/clients.test.ts`
-  - `src/actions/quotations.test.ts`
-  - `src/actions/invoices.test.ts`
+  - `.planning/phases/02-clients-document-engine/02-02-SUMMARY.md`
+  - `src/components/documents/document-builder.tsx`
+  - `src/actions/quotations.ts`
+  - `src/app/api/invoices/[id]/pdf/route.ts`
+  - `src/app/api/quotations/[id]/pdf/route.ts`
