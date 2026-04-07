@@ -97,6 +97,15 @@ DASH-01, DASH-02, DASH-03, DASH-04
 OPS-01, OPS-02, OPS-03, OPS-04, OPS-05  
 UX-02
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — DB migration (payments + expenses tables), Zod schemas, pure computation functions + tests
+- [ ] 03-02-PLAN.md — Server actions (payment/expense CRUD), data loaders, status computation, dashboard metrics
+- [ ] 03-03-PLAN.md — Invoice detail page extensions (ProfitSummary, PaymentsTable, ExpensesTable)
+- [ ] 03-04-PLAN.md — Dashboard rebuild (MetricCard, quick actions, recent docs, overdue section)
+- [ ] 03-05-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
+
 **Success Criteria**
 1. The dashboard clearly shows billed, collected, due, collection rate, and overdue work.
 2. Users can record multiple payments and expenses against a single invoice.
