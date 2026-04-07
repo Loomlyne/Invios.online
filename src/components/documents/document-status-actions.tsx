@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import type { Route } from "next";
 import { ArrowRight, Send, Trash2 } from "lucide-react";
 import { deleteInvoiceAction, setInvoiceStatusAction } from "@/actions/invoices";
 import {
@@ -31,7 +32,7 @@ export function DocumentStatusActions({
     startTransition(async () => {
       const result = await deleteInvoiceAction(id);
       if (result.status === "success" && result.redirectTo) {
-        router.push(result.redirectTo);
+        router.push(result.redirectTo as Route);
       } else if (result.status === "error") {
         alert(`Error: ${result.message}`);
       }
@@ -42,7 +43,7 @@ export function DocumentStatusActions({
     startTransition(async () => {
       const result = await deleteQuotationAction(id);
       if (result.status === "success" && result.redirectTo) {
-        router.push(result.redirectTo);
+        router.push(result.redirectTo as Route);
       } else if (result.status === "error") {
         alert(`Error: ${result.message}`);
       }
