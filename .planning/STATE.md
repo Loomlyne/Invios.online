@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Make it dead simple for a service business to send a polished branded quote or invoice and reliably know what has been paid, what is still due, and what profit remains.
-**Current focus:** Phase 03 — dashboard-cash-flow
+**Current focus:** Phase 04 — public-trust-surfaces
 
 ## Current Status
 
@@ -52,14 +52,15 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 03-dashboard-cash-flow]: computeAndWriteInvoiceStatus receives supabase client from caller — avoids double session
 - [Phase 03-dashboard-cash-flow]: Dashboard rebuilt as financial operator console: MetricCard grid replaces StatStrip, live billing metrics wired via getDashboardMetrics, DocumentSummaryRow extended with optional amount prop
 - [Phase 03-dashboard-cash-flow]: DocumentSummaryRow amount prop already added by parallel agent — no redundant edit needed in plan 03-03
+- [Phase 04-public-trust-surfaces]: PUB-05 (Accept/Reject from public page) folded in from v2 — natural fit with public quotation page build
+- [Phase 04-public-trust-surfaces]: Bilingual layout = side-by-side columns (EN left, AR right), full RTL flip for Arabic-only docs
+- [Phase 04-public-trust-surfaces]: Document routes switch from ID-based to slug-based with 301 redirect aliases
+- [Phase 04-public-trust-surfaces]: UX-03 visual pass covers ALL views (public + private), not just client-facing surfaces
 
 ## Session State
 
-- Stopped at: Completed 03-04-PLAN.md — dashboard financial operator view, MetricCard component, loading skeleton rebuilt, 83 tests passing
-- Resume from: Plan 03-05 (final phase 3 verification/deployment)
+- Stopped at: Phase 4 context gathered — 15 decisions captured across 4 areas (public pages, client portal, UAE compliance, canonical URLs)
+- Resume from: `/gsd:plan-phase 4` — research and plan Phase 4
 - Latest artifacts:
-  - `.planning/phases/03-dashboard-cash-flow/03-04-SUMMARY.md`
-  - `src/components/app/metric-card.tsx`
-  - `src/app/(app)/app/page.tsx`
-  - `src/app/(app)/app/loading.tsx`
-  - `src/components/documents/document-summary-row.tsx`
+  - `.planning/phases/04-public-trust-surfaces/04-CONTEXT.md`
+  - `.planning/phases/04-public-trust-surfaces/04-DISCUSSION-LOG.md`
