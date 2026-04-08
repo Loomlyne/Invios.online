@@ -1,128 +1,204 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import type { Route } from "next";
-import { ArrowRight, CircleAlert } from "lucide-react";
+import { Plus, UserPlus } from "lucide-react";
+import { MetricCard } from "@/components/app/metric-card";
 import { PageHeader } from "@/components/app/page-header";
 import { SetupChecklist } from "@/components/app/setup-checklist";
-import { StatStrip } from "@/components/app/stat-strip";
+import { EmptyState } from "@/components/app/empty-state";
+import { DocumentSummaryRow } from "@/components/documents/document-summary-row";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAppContext } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import {
+  getDashboardMetrics,
+  listRecentInvoices,
+  listRecentQuotations,
+  listOverdueInvoices,
+} from "@/lib/billing-data";
+import { formatCurrency } from "@/lib/utils";
 
-function countBusinessFields(context: Awaited<ReturnType<typeof getAppContext>>) {
-  const fields = [
-    context.userState.profile.fullName,
-    context.userState.profile.businessName,
-    context.userState.profile.businessEmail,
-    context.userState.profile.phone,
-    context.userState.profile.address,
-  ];
-
-  return fields.filter((field) => field.trim().length > 0).length;
-}
-
-function countBrandAssets(context: Awaited<ReturnType<typeof getAppContext>>) {
-  return [
-    context.userState.branding.logoPath,
-    context.userState.branding.signaturePath,
-    context.userState.branding.signatureMode !== "none" ? "signature" : "",
-    context.userState.branding.primaryColor,
-  ].filter(Boolean).length;
-}
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 export default async function AppHomePage() {
   const context = await getAppContext();
-  const businessFieldCount = countBusinessFields(context);
-  const brandAssetCount = countBrandAssets(context);
+  const userId = context.userId ?? "";
+  const [metrics, recentInvoices, recentQuotations, overdueInvoices] = await Promise.all([
+    getDashboardMetrics(userId),
+    listRecentInvoices(userId, 5),
+    listRecentQuotations(userId, 5),
+    listOverdueInvoices(userId),
+  ]);
+
+  const currency = context.userState.settings.defaultCurrency;
+  const hasData = recentInvoices.length > 0 || recentQuotations.length > 0;
   const setupItems = context.setupProgress.items;
   const nextItem = setupItems.find((item) => !item.complete) ?? setupItems[setupItems.length - 1];
 
+  const pageDescription = !context.setupProgress.complete
+    ? `Finish ${nextItem.label.toLowerCase()} to complete setup.`
+    : hasData
+      ? "Here's where the money stands."
+      : "Workspace is ready. Create your first invoice to start tracking.";
+
   return (
     <div className="grid gap-6">
+      {/* 1. PageHeader */}
       <PageHeader
         title="Dashboard"
-        description={
-          context.setupProgress.complete
-            ? "Workspace is ready. Create invoices, manage clients, and export documents."
-            : `Finish ${nextItem.label.toLowerCase()} to complete setup.`
-        }
+        description={pageDescription}
         actions={
           <Button asChild variant="accent">
-            <Link href={context.setupProgress.complete ? ("/app/invoices" as Route) : nextItem.href}>
-              {context.setupProgress.complete ? "Open invoices" : `Finish ${nextItem.label.toLowerCase()}`}
-              <ArrowRight className="size-4" />
+            <Link href={"/app/invoices/new" as Route}>
+              <Plus className="size-4" />
+              New invoice
             </Link>
           </Button>
         }
-      >
-        <StatStrip
-          items={[
-            { label: "Setup", value: `${context.setupProgress.percentage}%` },
-            { label: "Identity", value: `${businessFieldCount}/5` },
-            { label: "Brand", value: `${brandAssetCount}/4` },
-            { label: "Currency", value: context.userState.settings.defaultCurrency },
-          ]}
-        />
-      </PageHeader>
+      />
 
-      {!context.setupProgress.complete ? (
+      {/* 2. Metric strip — 4 cards (all-time totals, no time filter per D-06) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MetricCard
+          label="Total billed"
+          value={metrics.totalBilled > 0 ? formatCurrency(metrics.totalBilled, currency) : "\u2014"}
+        />
+        <MetricCard
+          label="Collected"
+          value={metrics.totalCollected > 0 ? formatCurrency(metrics.totalCollected, currency) : "\u2014"}
+        />
+        <MetricCard
+          label="Outstanding"
+          value={metrics.outstanding > 0 ? formatCurrency(metrics.outstanding, currency) : "\u2014"}
+        />
+        <MetricCard
+          label="Collection rate"
+          value={metrics.collectionRate !== null ? `${metrics.collectionRate}%` : "\u2014"}
+          accent={metrics.collectionRate === 100}
+        />
+      </div>
+
+      {/* 3. Quick actions strip (per D-07) */}
+      <div className="flex flex-wrap gap-3">
+        <Button asChild variant="secondary">
+          <Link href={"/app/invoices/new" as Route}>
+            <Plus className="size-4" />
+            New invoice
+          </Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link href={"/app/quotations/new" as Route}>
+            <Plus className="size-4" />
+            New quotation
+          </Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link href={"/app/clients/new" as Route}>
+            <UserPlus className="size-4" />
+            New client
+          </Link>
+        </Button>
+      </div>
+
+      {/* 4. Recent documents — side-by-side columns */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Recent invoices */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle>Workspace readiness</CardTitle>
-              <span className="text-sm font-medium text-muted">
-                {context.setupProgress.completedCount}/{context.setupProgress.totalCount}
-              </span>
-            </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#F3EBDD]">
-              <div
-                className="h-full rounded-full bg-accent transition-[width] duration-300"
-                style={{ width: `${context.setupProgress.percentage}%` }}
+            <CardTitle>Recent invoices</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-2">
+            {recentInvoices.length === 0 ? (
+              <EmptyState
+                title="No invoices yet"
+                description="Create your first invoice to start tracking."
               />
+            ) : (
+              <>
+                {recentInvoices.map((inv) => (
+                  <DocumentSummaryRow
+                    key={inv.id}
+                    href={`/app/invoices/${inv.id}`}
+                    documentNumber={inv.invoiceNumber}
+                    subtitle={inv.client.name}
+                    status={inv.status}
+                    amount={formatCurrency(inv.total, inv.currency)}
+                  />
+                ))}
+                <Link
+                  href={"/app/invoices" as Route}
+                  className="mt-2 text-xs text-muted hover:text-foreground transition"
+                >
+                  View all invoices
+                </Link>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent quotations */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent quotations</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-2">
+            {recentQuotations.length === 0 ? (
+              <EmptyState
+                title="No quotations yet"
+                description="Create your first quotation to start tracking."
+              />
+            ) : (
+              <>
+                {recentQuotations.map((quot) => (
+                  <DocumentSummaryRow
+                    key={quot.id}
+                    href={`/app/quotations/${quot.id}`}
+                    documentNumber={quot.quotationNumber}
+                    subtitle={quot.client.name}
+                    status={quot.status}
+                    amount={formatCurrency(quot.total, quot.currency)}
+                  />
+                ))}
+                <Link
+                  href={"/app/quotations" as Route}
+                  className="mt-2 text-xs text-muted hover:text-foreground transition"
+                >
+                  View all quotations
+                </Link>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 5. Overdue invoices — only rendered when overdue items exist (per D-07) */}
+      {overdueInvoices.length > 0 && (
+        <Card className="border-amber-700/20 bg-amber-50/60">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Badge variant="warning">Overdue</Badge>
+              <span className="text-sm font-medium text-muted">({overdueInvoices.length})</span>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-2 sm:grid-cols-2">
-            {setupItems.map((item) => (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={cn(
-                  "rounded-[1rem] border px-4 py-3 transition",
-                  item.complete
-                    ? "border-[#DCEBDD] bg-[#F6FBF6]"
-                    : "border-border bg-[#FFFCF7] hover:border-[#D7C4A7] hover:bg-[#FFF8ED]",
-                )}
-              >
-                <p className="text-sm font-medium text-foreground">{item.label}</p>
-                <p className="mt-1 text-xs leading-5 text-muted">
-                  {item.complete ? "Complete" : "Pending"}
-                </p>
-              </Link>
+          <CardContent className="grid gap-2">
+            {overdueInvoices.map((inv) => (
+              <DocumentSummaryRow
+                key={inv.id}
+                href={`/app/invoices/${inv.id}`}
+                documentNumber={inv.invoiceNumber}
+                subtitle={inv.client.name}
+                status={inv.status}
+                amount={formatCurrency(inv.total, inv.currency)}
+              />
             ))}
           </CardContent>
         </Card>
-      ) : null}
+      )}
 
-      {context.warnings.length > 0 ? (
-        <Card className="border-black/10 bg-[#FCF7EE]">
-          <CardHeader>
-            <Badge variant="warning">Watchouts</Badge>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {context.warnings.map((warning) => (
-              <div
-                key={warning}
-                className="flex items-start gap-3 rounded-[1rem] border border-[#E4D6BF] bg-white px-4 py-3 text-sm text-muted-strong"
-              >
-                <CircleAlert className="mt-0.5 size-4 shrink-0 text-accent-strong" />
-                <span>{warning}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ) : null}
-
+      {/* 6. SetupChecklist — floating panel (keep as-is) */}
       <SetupChecklist context={context} />
     </div>
   );

@@ -7,6 +7,7 @@ interface DocumentSummaryRowProps {
   documentNumber: string;
   subtitle: string;
   status: string;
+  amount?: string;
 }
 
 export function DocumentSummaryRow({
@@ -14,6 +15,7 @@ export function DocumentSummaryRow({
   documentNumber,
   subtitle,
   status,
+  amount,
 }: DocumentSummaryRowProps) {
   return (
     <Link
@@ -21,11 +23,16 @@ export function DocumentSummaryRow({
       className="rounded-[1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
     >
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-foreground">{documentNumber}</p>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-foreground">{documentNumber}</p>
           <p className="mt-1 text-sm text-muted-strong">{subtitle}</p>
         </div>
-        <DocumentStatusBadge status={status} />
+        <div className="flex shrink-0 items-center gap-2">
+          {amount ? (
+            <span className="text-sm font-semibold text-foreground">{amount}</span>
+          ) : null}
+          <DocumentStatusBadge status={status} />
+        </div>
       </div>
     </Link>
   );
