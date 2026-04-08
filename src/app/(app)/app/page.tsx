@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Route } from "next";
-import { Plus, UserPlus } from "lucide-react";
+import { Palette, Plus, UserPlus } from "lucide-react";
 import { MetricCard } from "@/components/app/metric-card";
 import { PageHeader } from "@/components/app/page-header";
 import { SetupChecklist } from "@/components/app/setup-checklist";
@@ -99,6 +99,12 @@ export default async function AppHomePage() {
           <Link href={"/app/clients/new" as Route}>
             <UserPlus className="size-4" />
             New client
+          </Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link href={"/app/settings" as Route}>
+            <Palette className="size-4" />
+            Branding
           </Link>
         </Button>
       </div>
