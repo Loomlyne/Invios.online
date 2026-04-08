@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 03
-last_updated: "2026-04-08T01:07:58.940Z"
+last_updated: "2026-04-08T01:13:43.716Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 14
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # STATE
@@ -48,6 +48,8 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 03-dashboard-cash-flow]: No UPDATE RLS on payments/expenses — rows are add/delete only
 - [Phase 03-dashboard-cash-flow]: computePaymentStatus injects today string — deterministic testing without mocking Date
 - [Phase 03-dashboard-cash-flow]: computeCollectionRate returns null (not 0) at totalBilled=0 — callers display '—' vs '0%'
+- [Phase 03-dashboard-cash-flow]: Expense actions do not call computeAndWriteInvoiceStatus — expenses affect profit only, not payment status
+- [Phase 03-dashboard-cash-flow]: computeAndWriteInvoiceStatus receives supabase client from caller — avoids double session
 
 ## Session State
 

@@ -13,7 +13,7 @@ Coverage: 100%
 |---|-------|------|--------------|
 | 1 | Foundation & Onboarding | Get a new user signed in, branded, and ready to work from an installable app shell | AUTH-01..04, ONB-01..05, SET-01..02, UX-01 |
 | 2 | 1/6 | In Progress|  |
-| 3 | Dashboard & Cash Flow | Make the operator clearly see what was billed, collected, due, and profitable | DASH-01..04, OPS-01..05, UX-02 |
+| 3 | 2/5 | In Progress|  |
 | 4 | Public Trust Surfaces | Make public document experiences and compliance/localization feel professional and reliable | PUB-01..04, SET-03..04, UX-03, UX-04 |
 | 5 | Automation & Recovery | Add version safety, recurring workflows, and reminder automation without breaking financial truth | AUTO-01..05 |
 
@@ -97,11 +97,11 @@ DASH-01, DASH-02, DASH-03, DASH-04
 OPS-01, OPS-02, OPS-03, OPS-04, OPS-05  
 UX-02
 
-**Plans:** 5 plans
+**Plans:** 2/5 plans executed
 
 Plans:
 - [x] 03-01-PLAN.md — DB migration (payments + expenses tables), Zod schemas, pure computation functions + tests
-- [ ] 03-02-PLAN.md — Server actions (payment/expense CRUD), data loaders, status computation, dashboard metrics
+- [x] 03-02-PLAN.md — Server actions (payment/expense CRUD), data loaders, status computation, dashboard metrics
 - [ ] 03-03-PLAN.md — Invoice detail page extensions (ProfitSummary, PaymentsTable, ExpensesTable)
 - [ ] 03-04-PLAN.md — Dashboard rebuild (MetricCard, quick actions, recent docs, overdue section)
 - [ ] 03-05-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
