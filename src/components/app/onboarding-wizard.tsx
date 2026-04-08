@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2, Paintbrush } from "lucide-react";
 import { z } from "zod";
 import { completeOnboardingAction, saveBrandingStepAction, saveBusinessProfileAction, saveDefaultsAction } from "@/actions/app";
-import { onboardingSteps } from "@/lib/constants";
+import { onboardingSteps, SIGNATURE_FONTS } from "@/lib/constants";
 import { DocumentTemplatePicker } from "@/components/documents/document-template-picker";
 import { buildInvoicePreviewData } from "@/lib/preview";
 import type { AppUserState, InvoicePreviewData, SignatureMode } from "@/lib/types";
@@ -434,11 +434,7 @@ export function OnboardingWizard({
                         name="signatureFont"
                         value={brandingForm.watch("signatureFont")}
                         onChange={(v) => brandingForm.setValue("signatureFont", v)}
-                        options={[
-                          { value: "Signature", label: "Signature" },
-                          { value: "Cormorant Garamond", label: "Cormorant Garamond" },
-                          { value: "DM Sans", label: "DM Sans" },
-                        ]}
+                        options={SIGNATURE_FONTS.map((f) => ({ value: f, label: f }))}
                       />
                     </Field>
                   </div>

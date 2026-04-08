@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   ActionState,
   BrandingSettings,
+  CustomFont,
   OnboardingStep,
   SignatureMode,
 } from "@/lib/types";
@@ -713,5 +714,90 @@ export async function dismissSetupChecklistAction(): Promise<ActionState> {
       status: "error",
       message: error instanceof Error ? error.message : "Could not dismiss checklist.",
     };
+  }
+}
+
+export async function uploadCustomFontAction(formData: FormData): Promise<ActionState & { font?: CustomFont }> {
+  try {
+    const { supabase, user } = await requireSupabase();
+    const fontFile = formData.get("fontFile") as File | null;
+    const fontName = String(formData.get("fontName") || "").trim();
+
+    if (!fontFile || fontFile.size === 0) {
+      return { status: "error", message: "No font file selected." };
+    }
+
+    if (!fontName) {
+      return { status: "error", message: "Enter a name for the font." };
+    }
+
+    const ext = fontFile.name.split(".").pop()?.toLowerCase() ?? "";
+    if (!["ttf", "otf", "woff", "woff2"].includes(ext)) {
+      return { status: "error", message: "Supported formats: .ttf, .otf, .woff, .woff2" };
+    }
+
+    if (fontFile.size > 5 * 1024 * 1024) {
+      return { status: "error", message: "Font file must be under 5MB." };
+    }
+
+    const path = await uploadFileToStorage(user.id, fontFile, "font");
+    if (!path) {
+      return { status: "error", message: "Upload failed." };
+    }
+
+    // Get current custom fonts
+    const { data: row } = await supabase
+      .from("branding")
+      .select("custom_fonts")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const existing: CustomFont[] = (row?.custom_fonts as CustomFont[]) ?? [];
+    const newFont: CustomFont = { name: fontName, path };
+    const updated = [...existing, newFont];
+
+    const { error } = await supabase
+      .from("branding")
+      .upsert({ user_id: user.id, custom_fonts: updated }, { onConflict: "user_id" });
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/app", "layout");
+    revalidatePath("/app/branding");
+    return { status: "success", message: `Font "${fontName}" uploaded.`, font: newFont };
+  } catch (error) {
+    return { status: "error", message: error instanceof Error ? error.message : "Could not upload font." };
+  }
+}
+
+export async function deleteCustomFontAction(fontPath: string): Promise<ActionState> {
+  try {
+    const { supabase, user } = await requireSupabase();
+
+    // Remove from storage
+    await supabase.storage.from("branding-assets").remove([fontPath]);
+
+    // Remove from custom_fonts array
+    const { data: row } = await supabase
+      .from("branding")
+      .select("custom_fonts")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const existing: CustomFont[] = (row?.custom_fonts as CustomFont[]) ?? [];
+    const updated = existing.filter((f) => f.path !== fontPath);
+
+    const { error } = await supabase
+      .from("branding")
+      .update({ custom_fonts: updated })
+      .eq("user_id", user.id);
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/app", "layout");
+    revalidatePath("/app/branding");
+    return { status: "success", message: "Font removed." };
+  } catch (error) {
+    return { status: "error", message: error instanceof Error ? error.message : "Could not remove font." };
   }
 }

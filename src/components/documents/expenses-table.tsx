@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { addExpenseAction, deleteExpenseAction } from "@/actions/expenses";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import type { ExpenseRecord } from "@/lib/billing";
 import type { ActionState } from "@/lib/types";
@@ -21,10 +22,12 @@ export function ExpensesTable({ invoiceId, currency, expenses }: ExpensesTablePr
     { status: "idle" },
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const [expenseDate, setExpenseDate] = useState("");
 
   useEffect(() => {
     if (state.status === "success") {
       formRef.current?.reset();
+      setExpenseDate("");
     }
   }, [state]);
 
@@ -95,13 +98,13 @@ export function ExpensesTable({ invoiceId, currency, expenses }: ExpensesTablePr
           className="px-4 py-3 bg-[#FFFCF7] border-t border-dashed border-border/60 flex flex-wrap items-end gap-3"
         >
           <input type="hidden" name="invoiceId" value={invoiceId} />
-          <Input
-            name="date"
-            type="date"
-            placeholder="YYYY-MM-DD"
-            className="h-9 w-24 shrink-0"
-            required
-          />
+          <div className="w-32 shrink-0">
+            <DatePicker
+              value={expenseDate}
+              onChange={setExpenseDate}
+              name="date"
+            />
+          </div>
           <Input
             name="amount"
             type="number"

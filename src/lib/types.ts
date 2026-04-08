@@ -64,6 +64,12 @@ export interface BusinessProfile {
   footerText: string;
 }
 
+export interface CustomFont {
+  name: string;
+  path: string;
+  url?: string;
+}
+
 export interface BrandingSettings {
   primaryColor: string;
   secondaryColor: string;
@@ -81,6 +87,7 @@ export interface BrandingSettings {
   signaturePath?: string | null;
   signatureText?: string | null;
   signatureFont?: string | null;
+  customFonts?: CustomFont[];
 }
 
 export interface UserSettings {

@@ -3,7 +3,7 @@ import { createDefaultUserState, buildInvoicePreviewData, getBrandingWarnings } 
 import { deriveSetupProgress } from "@/lib/setup";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
-import type { AppContext, AppUserState, BrandingSettings, BusinessProfile, UserSettings } from "@/lib/types";
+import type { AppContext, AppUserState, BrandingSettings, BusinessProfile, CustomFont, UserSettings } from "@/lib/types";
 
 type ProfileRow = {
   id: string;
@@ -41,6 +41,7 @@ type BrandingRow = {
   signature_font: string | null;
   invoice_prefix: string | null;
   quotation_prefix: string | null;
+  custom_fonts: CustomFont[] | null;
 };
 
 type SettingsRow = {
@@ -139,7 +140,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     supabase
       .from("branding")
       .select(
-        "business_name,business_email,phone,website,address,trn,bank_details,footer_text,primary_color,secondary_color,logo_path,favicon_path,base_font,arabic_business_name,arabic_address,heading_font,body_font,spacing,header_layout,line_items_style,signature_mode,signature_path,signature_text,signature_font,invoice_prefix,quotation_prefix",
+        "business_name,business_email,phone,website,address,trn,bank_details,footer_text,primary_color,secondary_color,logo_path,favicon_path,base_font,arabic_business_name,arabic_address,heading_font,body_font,spacing,header_layout,line_items_style,signature_mode,signature_path,signature_text,signature_font,invoice_prefix,quotation_prefix,custom_fonts",
       )
       .eq("user_id", user.id)
       .maybeSingle<BrandingRow>(),
@@ -214,6 +215,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     userState.branding.signaturePath = brandingResult.data.signature_path;
     userState.branding.signatureText = brandingResult.data.signature_text;
     userState.branding.signatureFont = brandingResult.data.signature_font;
+    userState.branding.customFonts = brandingResult.data.custom_fonts ?? [];
     userState.settings.invoicePrefix =
       brandingResult.data.invoice_prefix ?? userState.settings.invoicePrefix;
     userState.settings.quotationPrefix =

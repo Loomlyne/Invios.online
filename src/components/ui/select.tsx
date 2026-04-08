@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,24 +34,63 @@ export function Select({
   const [open, setOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState(defaultValue ?? "");
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [position, setPosition] = React.useState<{ top: number; left: number; width: number }>({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
   const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
 
   const isControlled = value !== undefined;
   const currentValue = isControlled ? value : internalValue;
   const selectedOption = options.find((o) => o.value === currentValue);
 
-  // Close on click outside
+  // Close on click outside (portal-aware)
   React.useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
+      const target = e.target as Node;
+      if (
+        triggerRef.current?.contains(target) ||
+        panelRef.current?.contains(target)
+      ) {
+        return;
       }
+      setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
+
+  // Close on scroll/resize since fixed position won't track
+  React.useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
+
+  const openDropdown = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const panelEstimatedHeight = Math.min(options.length * 44 + 12, 320);
+      const openAbove = spaceBelow < panelEstimatedHeight && rect.top > panelEstimatedHeight;
+
+      setPosition({
+        top: openAbove ? rect.top - panelEstimatedHeight - 8 : rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+    setOpen(true);
+    setFocusedIndex(options.findIndex((o) => o.value === currentValue));
+  };
 
   const select = (val: string) => {
     if (!isControlled) setInternalValue(val);
@@ -63,8 +103,7 @@ export function Select({
     if (!open) {
       if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        setOpen(true);
-        setFocusedIndex(options.findIndex((o) => o.value === currentValue));
+        openDropdown();
       }
       return;
     }
@@ -93,8 +132,42 @@ export function Select({
     }
   };
 
+  const panel = open ? (
+    <div
+      ref={panelRef}
+      role="listbox"
+      style={{
+        position: "fixed",
+        top: position.top,
+        left: position.left,
+        width: position.width,
+      }}
+      className="z-[9999] max-h-[320px] overflow-y-auto rounded-[1rem] border border-border bg-white p-1.5 shadow-[var(--shadow-md)]"
+    >
+      {options.map((option, i) => (
+        <button
+          key={option.value}
+          type="button"
+          role="option"
+          aria-selected={option.value === currentValue}
+          onClick={() => select(option.value)}
+          className={cn(
+            "flex w-full items-center justify-between rounded-[0.7rem] px-3.5 py-2.5 text-sm transition-colors",
+            option.value === currentValue
+              ? "bg-foreground font-medium text-on-dark"
+              : "text-foreground hover:bg-surface-strong",
+            i === focusedIndex && option.value !== currentValue && "bg-surface-strong",
+          )}
+        >
+          <span>{option.label}</span>
+          {option.value === currentValue ? <Check className="size-3.5" /> : null}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
   return (
-    <div ref={containerRef} className="relative" onKeyDown={handleKeyDown}>
+    <div onKeyDown={handleKeyDown}>
       {name ? <input type="hidden" name={name} value={currentValue} /> : null}
       <button
         ref={triggerRef}
@@ -103,10 +176,7 @@ export function Select({
         role="combobox"
         aria-expanded={open}
         aria-haspopup="listbox"
-        onClick={() => {
-          setOpen(!open);
-          if (!open) setFocusedIndex(options.findIndex((o) => o.value === currentValue));
-        }}
+        onClick={() => (open ? setOpen(false) : openDropdown())}
         className={cn(
           "flex h-12 w-full items-center justify-between rounded-[1rem] border border-border bg-white/85 px-4 text-sm text-foreground shadow-[0_1px_0_rgba(255,255,255,0.6)_inset] transition-colors focus-visible:border-accent focus-visible:outline-none",
           !selectedOption && "text-muted",
@@ -121,32 +191,7 @@ export function Select({
           )}
         />
       </button>
-      {open ? (
-        <div
-          role="listbox"
-          className="absolute z-50 mt-2 w-full animate-in fade-in slide-in-from-top-1 rounded-[1rem] border border-border bg-white p-1.5 shadow-[var(--shadow-md)]"
-        >
-          {options.map((option, i) => (
-            <button
-              key={option.value}
-              type="button"
-              role="option"
-              aria-selected={option.value === currentValue}
-              onClick={() => select(option.value)}
-              className={cn(
-                "flex w-full items-center justify-between rounded-[0.7rem] px-3.5 py-2.5 text-sm transition-colors",
-                option.value === currentValue
-                  ? "bg-foreground font-medium text-on-dark"
-                  : "text-foreground hover:bg-surface-strong",
-                i === focusedIndex && option.value !== currentValue && "bg-surface-strong",
-              )}
-            >
-              <span>{option.label}</span>
-              {option.value === currentValue ? <Check className="size-3.5" /> : null}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      {typeof document !== "undefined" ? createPortal(panel, document.body) : panel}
     </div>
   );
 }

@@ -2,12 +2,14 @@
 
 import { startTransition, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import {
   saveBusinessInfoAction,
   saveDocumentsAction,
   saveIdentityAction,
   saveTemplateAction,
+  uploadCustomFontAction,
+  deleteCustomFontAction,
 } from "@/actions/app";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { SignaturePad } from "@/components/app/signature-pad";
@@ -21,11 +23,9 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { HEADING_FONTS, BODY_FONTS, SIGNATURE_FONTS } from "@/lib/constants";
 import { buildInvoicePreviewData } from "@/lib/preview";
-import type { AppContext, BrandingSection, SignatureMode } from "@/lib/types";
-
-const HEADING_FONTS = ["Playfair Display", "Cormorant Garamond", "Libre Baskerville", "DM Sans"];
-const BODY_FONTS = ["Lato", "DM Sans", "Inter", "Source Sans 3"];
+import type { AppContext, BrandingSection, CustomFont, SignatureMode } from "@/lib/types";
 
 export function BrandingWorkspace({
   context,
@@ -60,12 +60,18 @@ export function BrandingWorkspace({
     context.userState.branding.lineItemsStyle ?? "table",
   );
 
+  const [customFonts, setCustomFonts] = useState<CustomFont[]>(
+    context.userState.branding.customFonts ?? [],
+  );
+  const [fontUploading, setFontUploading] = useState(false);
+
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState("");
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const signatureInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const fontInputRef = useRef<HTMLInputElement>(null);
 
   const preview = buildInvoicePreviewData(
     {
@@ -341,9 +347,8 @@ export function BrandingWorkspace({
                             name="signatureFont"
                             defaultValue={branding.signatureFont ?? "Signature"}
                             options={[
-                              { value: "Signature", label: "Signature" },
-                              { value: "Cormorant Garamond", label: "Cormorant Garamond" },
-                              { value: "DM Sans", label: "DM Sans" },
+                              ...SIGNATURE_FONTS.map((f) => ({ value: f, label: f })),
+                              ...customFonts.map((f) => ({ value: f.name, label: `${f.name} ✦` })),
                             ]}
                           />
                         </Field>
@@ -387,9 +392,78 @@ export function BrandingWorkspace({
                       <Select
                         name="baseFont"
                         defaultValue={branding.baseFont ?? "DM Sans"}
-                        options={BODY_FONTS.map((f) => ({ value: f, label: f }))}
+                        options={[
+                          ...BODY_FONTS.map((f) => ({ value: f, label: f })),
+                          ...customFonts.map((f) => ({ value: f.name, label: `${f.name} ✦` })),
+                        ]}
                       />
                     </Field>
+                  </div>
+
+                  {/* Custom Fonts */}
+                  <div className="border-t border-border pt-4">
+                    <div className="mb-3">
+                      <p className="text-sm font-medium">Custom Fonts</p>
+                      <p className="text-sm text-muted">Upload your brand fonts (.ttf, .otf, .woff2). They&apos;ll appear in all font pickers.</p>
+                    </div>
+
+                    {customFonts.length > 0 ? (
+                      <div className="mb-3 space-y-2">
+                        {customFonts.map((font) => (
+                          <div
+                            key={font.path}
+                            className="flex items-center justify-between rounded-[0.8rem] border border-border bg-surface px-4 py-2.5"
+                          >
+                            <span className="text-sm font-medium text-foreground">{font.name}</span>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const result = await deleteCustomFontAction(font.path);
+                                if (result.status === "success") {
+                                  setCustomFonts((prev) => prev.filter((f) => f.path !== font.path));
+                                }
+                              }}
+                              className="rounded-full p-1 text-muted transition-colors hover:bg-surface-strong hover:text-foreground"
+                            >
+                              <X className="size-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <input
+                      ref={fontInputRef}
+                      type="file"
+                      accept=".ttf,.otf,.woff,.woff2"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const name = file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
+                        const formData = new FormData();
+                        formData.set("fontFile", file);
+                        formData.set("fontName", name);
+                        setFontUploading(true);
+                        const result = await uploadCustomFontAction(formData);
+                        setFontUploading(false);
+                        if (result.status === "success" && result.font) {
+                          setCustomFonts((prev) => [...prev, result.font!]);
+                        }
+                        setMessage(result.message ?? "");
+                        e.target.value = "";
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={fontUploading}
+                      onClick={() => fontInputRef.current?.click()}
+                    >
+                      {fontUploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                      Upload font
+                    </Button>
                   </div>
                 </div>
 
@@ -476,14 +550,20 @@ export function BrandingWorkspace({
                       <Select
                         name="headingFont"
                         defaultValue={branding.headingFont ?? "Playfair Display"}
-                        options={HEADING_FONTS.map((f) => ({ value: f, label: f }))}
+                        options={[
+                          ...HEADING_FONTS.map((f) => ({ value: f, label: f })),
+                          ...customFonts.map((f) => ({ value: f.name, label: `${f.name} ✦` })),
+                        ]}
                       />
                     </Field>
                     <Field label="Body Font">
                       <Select
                         name="bodyFont"
                         defaultValue={branding.bodyFont ?? "Lato"}
-                        options={BODY_FONTS.map((f) => ({ value: f, label: f }))}
+                        options={[
+                          ...BODY_FONTS.map((f) => ({ value: f, label: f })),
+                          ...customFonts.map((f) => ({ value: f.name, label: `${f.name} ✦` })),
+                        ]}
                       />
                     </Field>
                   </div>

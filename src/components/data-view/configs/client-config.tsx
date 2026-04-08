@@ -23,8 +23,8 @@ export const clientConfig: DataViewConfig<ClientRecord, ClientStatus> = {
   kanbanColumns: [
     { status: "lead", label: "Lead", color: "#ca8a04" },
     { status: "in_review", label: "In Review", color: "#2563eb" },
-    { status: "approved", label: "Approved", color: "#D7C4A7" },
     { status: "active", label: "Active", color: "#059669" },
+    { status: "approved", label: "Approved", color: "#059669" },
     { status: "rejected", label: "Rejected", color: "#dc2626" },
     { status: "canceled", label: "Canceled", color: "#9ca3af" },
   ],

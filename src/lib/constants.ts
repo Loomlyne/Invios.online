@@ -103,6 +103,38 @@ export const sampleLineItems: InvoicePreviewLineItem[] = [
   },
 ];
 
+export const SIGNATURE_FONTS = ["Signature", "Cormorant Garamond", "DM Sans", "Lora", "EB Garamond"];
+
+export const HEADING_FONTS = [
+  "Playfair Display",
+  "Cormorant Garamond",
+  "Libre Baskerville",
+  "DM Sans",
+  "Lora",
+  "Merriweather",
+  "EB Garamond",
+  "Crimson Text",
+  "Poppins",
+  "Montserrat",
+  "Outfit",
+  "Raleway",
+];
+
+export const BODY_FONTS = [
+  "Lato",
+  "DM Sans",
+  "Inter",
+  "Source Sans 3",
+  "Roboto",
+  "Open Sans",
+  "Nunito",
+  "Work Sans",
+  "Rubik",
+  "Manrope",
+  "Plus Jakarta Sans",
+  "IBM Plex Sans",
+];
+
 export const defaultSettings: UserSettings = {
   defaultCurrency: "AED",
   defaultLanguage: "en",
