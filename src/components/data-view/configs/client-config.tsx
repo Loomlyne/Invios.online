@@ -11,15 +11,25 @@ export const clientConfig: DataViewConfig<ClientRecord, ClientStatus> = {
   statusOptions: [
     { value: "all", label: "All statuses" },
     { value: "lead", label: "Lead" },
+    { value: "in_review", label: "In Review" },
+    { value: "approved", label: "Approved" },
     { value: "active", label: "Active" },
+    { value: "rejected", label: "Rejected" },
+    { value: "canceled", label: "Canceled" },
   ],
 
   searchPlaceholder: "Search name or company",
 
   kanbanColumns: [
-    { status: "lead", label: "Leads", color: "#ca8a04" },
+    { status: "lead", label: "Lead", color: "#ca8a04" },
+    { status: "in_review", label: "In Review", color: "#2563eb" },
+    { status: "approved", label: "Approved", color: "#D7C4A7" },
     { status: "active", label: "Active", color: "#059669" },
+    { status: "rejected", label: "Rejected", color: "#dc2626" },
+    { status: "canceled", label: "Canceled", color: "#9ca3af" },
   ],
+
+  getAddUrl: (status) => `?create=1&status=${status}&view=kanban`,
 
   tableColumns: [
     {

@@ -13,7 +13,7 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { Badge } from "@/components/ui/badge";
+import { Plus } from "lucide-react";
 import { DraggableCard } from "./draggable-card";
 import { DroppableColumn } from "./droppable-column";
 import type { DataViewConfig } from "./types";
@@ -114,9 +114,19 @@ export function KanbanView<TItem, TStatus extends string>({
                         {col.label}
                       </span>
                     </div>
-                    <span className="text-xs font-medium text-muted tabular-nums">
-                      {colItems.length}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium text-muted tabular-nums">
+                        {colItems.length}
+                      </span>
+                      {config.getAddUrl ? (
+                        <Link
+                          href={config.getAddUrl(col.status) as Route}
+                          className="flex size-5 items-center justify-center rounded-md text-muted/60 transition-colors hover:bg-black/5 hover:text-foreground"
+                        >
+                          <Plus className="size-3.5" />
+                        </Link>
+                      ) : null}
+                    </div>
                   </div>
 
                   {/* Cards container */}

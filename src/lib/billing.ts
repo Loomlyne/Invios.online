@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const clientStatuses = ["lead", "active"] as const;
+export const clientStatuses = ["lead", "in_review", "approved", "active", "rejected", "canceled"] as const;
 export const invoiceStatuses = [
   "draft",
   "sent",

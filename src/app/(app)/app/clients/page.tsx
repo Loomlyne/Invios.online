@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DataViewToolbar, DataViewRenderer, clientConfig } from "@/components/data-view";
 import { listClients } from "@/lib/billing-data";
+import { clientStatuses } from "@/lib/billing";
+import type { ClientStatus } from "@/lib/billing";
 import type { ViewMode } from "@/components/data-view";
 
 export default async function ClientsPage({
@@ -19,19 +21,26 @@ export default async function ClientsPage({
 }) {
   const params = (await searchParams) ?? {};
   const search = typeof params.search === "string" ? params.search : "";
-  const status = typeof params.status === "string" ? params.status : "all";
+  const rawStatus = typeof params.status === "string" ? params.status : "all";
+  const status = rawStatus === "all" || (clientStatuses as readonly string[]).includes(rawStatus)
+    ? rawStatus
+    : "all";
   const showCreate = params.create === "1";
-  const rawView = typeof params.view === "string" ? params.view : "list";
+  const createStatus = (typeof params.status === "string" && (clientStatuses as readonly string[]).includes(params.status))
+    ? (params.status as ClientStatus)
+    : "lead";
+  const rawView = typeof params.view === "string" ? params.view : "kanban";
   const view: ViewMode = ["list", "kanban", "table"].includes(rawView)
     ? (rawView as ViewMode)
-    : "list";
+    : "kanban";
   const hasFilters = search.trim().length > 0 || status !== "all";
 
   const clients = await listClients({
     search,
-    status: status === "all" ? "all" : (status as "lead" | "active"),
+    status: status === "all" ? "all" : (status as ClientStatus),
   });
-  const activeClients = clients.filter((client) => client.status === "active").length;
+  const activeClients = clients.filter((c) => c.status === "active").length;
+  const leadClients = clients.filter((c) => c.status === "lead").length;
 
   return (
     <div className="grid gap-6">
@@ -50,8 +59,8 @@ export default async function ClientsPage({
         <StatStrip
           items={[
             { label: "Total", value: String(clients.length) },
+            { label: "Leads", value: String(leadClients) },
             { label: "Active", value: String(activeClients) },
-            { label: "Leads", value: String(clients.length - activeClients) },
           ]}
         />
       </PageHeader>
@@ -65,7 +74,7 @@ export default async function ClientsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ClientForm action={createClientAction} submitLabel="Save client" initialValue={{ status: "lead" }} />
+            <ClientForm action={createClientAction} submitLabel="Save client" initialValue={{ status: createStatus }} />
           </CardContent>
         </Card>
       ) : null}

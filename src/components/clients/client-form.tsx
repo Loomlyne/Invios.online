@@ -49,7 +49,11 @@ export function ClientForm({
             defaultValue={initialValue?.status ?? "lead"}
             options={[
               { value: "lead", label: "Lead" },
+              { value: "in_review", label: "In Review" },
+              { value: "approved", label: "Approved" },
               { value: "active", label: "Active" },
+              { value: "rejected", label: "Rejected" },
+              { value: "canceled", label: "Canceled" },
             ]}
           />
         </Field>

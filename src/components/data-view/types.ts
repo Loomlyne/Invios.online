@@ -32,4 +32,5 @@ export interface DataViewConfig<TItem, TStatus extends string> {
   searchPlaceholder: string;
   renderListCard: (item: TItem) => ReactNode;
   renderKanbanCard: (item: TItem) => ReactNode;
+  getAddUrl?: (status: TStatus) => string;
 }
