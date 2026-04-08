@@ -21,12 +21,14 @@ export const quotationConfig: DataViewConfig<QuotationRecord, QuotationStatus> =
   searchPlaceholder: "Search quotation or client",
 
   kanbanColumns: [
-    { status: "draft", label: "Draft" },
-    { status: "sent", label: "Sent" },
+    { status: "draft", label: "Draft", color: "#9ca3af" },
+    { status: "sent", label: "Sent", color: "#2563eb" },
     { status: "accepted", label: "Accepted", color: "#059669" },
-    { status: "rejected", label: "Rejected", color: "#b45309" },
-    { status: "expired", label: "Expired" },
+    { status: "rejected", label: "Rejected", color: "#dc2626" },
+    { status: "expired", label: "Expired", color: "#6b7280" },
   ],
+
+  getAddUrl: () => `/app/quotations/new`,
 
   tableColumns: [
     {

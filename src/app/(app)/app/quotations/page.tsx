@@ -18,10 +18,10 @@ export default async function QuotationsPage({
   const params = (await searchParams) ?? {};
   const search = typeof params.search === "string" ? params.search : "";
   const status = typeof params.status === "string" ? params.status : "all";
-  const rawView = typeof params.view === "string" ? params.view : "list";
+  const rawView = typeof params.view === "string" ? params.view : "kanban";
   const view: ViewMode = ["list", "kanban", "table"].includes(rawView)
     ? (rawView as ViewMode)
-    : "list";
+    : "kanban";
   const hasFilters = search.trim().length > 0 || status !== "all";
 
   const quotations = await listQuotations({

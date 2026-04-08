@@ -21,12 +21,14 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
   searchPlaceholder: "Search invoice or client",
 
   kanbanColumns: [
-    { status: "draft", label: "Draft" },
-    { status: "sent", label: "Sent" },
-    { status: "partial_paid", label: "Partial Paid" },
+    { status: "draft", label: "Draft", color: "#9ca3af" },
+    { status: "sent", label: "Sent", color: "#2563eb" },
+    { status: "partial_paid", label: "Partial Paid", color: "#d97706" },
     { status: "paid", label: "Paid", color: "#059669" },
-    { status: "overdue", label: "Overdue", color: "#b45309" },
+    { status: "overdue", label: "Overdue", color: "#dc2626" },
   ],
+
+  getAddUrl: () => `/app/invoices/new`,
 
   tableColumns: [
     {
