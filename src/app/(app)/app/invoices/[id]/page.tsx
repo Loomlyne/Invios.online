@@ -8,8 +8,11 @@ import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getInvoiceById } from "@/lib/billing-data";
+import { getInvoiceById, listExpensesForInvoice, listPaymentsForInvoice } from "@/lib/billing-data";
 import { getAppContext } from "@/lib/data";
+import { ExpensesTable } from "@/components/documents/expenses-table";
+import { PaymentsTable } from "@/components/documents/payments-table";
+import { ProfitSummary } from "@/components/documents/profit-summary";
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
 import { ExportButton } from "./export-button";
@@ -25,6 +28,12 @@ export default async function InvoiceDetailPage({
   if (!invoice) {
     notFound();
   }
+
+  const [payments, expenses] = await Promise.all([
+    listPaymentsForInvoice(invoice.id),
+    listExpensesForInvoice(invoice.id),
+  ]);
+  const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   const preview = buildInvoicePreviewFromRecord(context, invoice);
 
@@ -77,6 +86,28 @@ export default async function InvoiceDetailPage({
         </Card>
 
         <InvoicePreview preview={preview} mode="page" />
+      </section>
+
+      {/* Financial details — per D-01, D-04 from CONTEXT.md */}
+      <section className="grid gap-6">
+        <ProfitSummary
+          total={invoice.total}
+          expensesTotal={expensesTotal}
+          currency={invoice.currency}
+        />
+
+        <PaymentsTable
+          invoiceId={invoice.id}
+          invoiceTotal={invoice.total}
+          currency={invoice.currency}
+          payments={payments}
+        />
+
+        <ExpensesTable
+          invoiceId={invoice.id}
+          currency={invoice.currency}
+          expenses={expenses}
+        />
       </section>
     </div>
   );
