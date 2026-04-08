@@ -35,11 +35,18 @@ export const appNavItems: AppNavItemConfig[] = [
     description: "Manage the client records tied to every document.",
   },
   {
+    key: "branding",
+    label: "Branding",
+    href: "/app/branding" as unknown as import("next").Route,
+    icon: "palette",
+    description: "Logo, colors, fonts, and document identity.",
+  },
+  {
     key: "settings",
     label: "Settings",
     href: "/app/settings",
     icon: "settings-2",
-    description: "Branding, defaults, and the global document template.",
+    description: "Preferences, invoice defaults, and notifications.",
   },
 ];
 
@@ -109,4 +116,9 @@ export const defaultSettings: UserSettings = {
   invoicePrefix: "INV",
   quotationPrefix: "QUO",
   documentTemplate: "classic",
+  reminderEnabled: false,
+  reminderDaysBefore: 3,
+  reminderDaysAfter: 7,
+  remindOnDueDate: true,
+  secondReminderDays: 14,
 };

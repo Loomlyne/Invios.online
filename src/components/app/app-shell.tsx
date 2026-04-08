@@ -5,7 +5,6 @@ import { Settings2 } from "lucide-react";
 import { AppSidebarNav } from "@/components/app/app-sidebar-nav";
 import { PageTransition } from "@/components/app/page-transition";
 import { SignOutButton } from "@/components/app/sign-out-button";
-import { Button } from "@/components/ui/button";
 import type { AppContext } from "@/lib/types";
 
 export function AppShell({
@@ -39,9 +38,6 @@ export function AppShell({
               </p>
 
               <div className="flex items-center gap-2">
-                <Button asChild variant="accent" size="sm">
-                  <Link href={"/app/invoices/new" as Route}>New invoice</Link>
-                </Button>
                 <Link
                   href={"/app/settings" as Route}
                   className="inline-flex size-10 items-center justify-center rounded-full border border-border bg-white/80 text-muted-strong transition hover:bg-[#FFF8ED]"

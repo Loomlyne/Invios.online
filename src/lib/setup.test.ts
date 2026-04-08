@@ -35,6 +35,11 @@ const baseSettings: UserSettings = {
   invoicePrefix: "INV",
   quotationPrefix: "QUO",
   documentTemplate: "classic",
+  reminderEnabled: false,
+  reminderDaysBefore: 3,
+  reminderDaysAfter: 7,
+  remindOnDueDate: true,
+  secondReminderDays: 14,
 };
 
 function createUserState(overrides: Partial<AppUserState>): AppUserState {

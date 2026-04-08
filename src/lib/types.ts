@@ -5,13 +5,15 @@ export type OnboardingStep = "business-profile" | "branding" | "defaults" | "pre
 export type SignatureMode = "none" | "upload" | "draw" | "typed";
 export type DocumentTemplateId = "classic" | "executive" | "minimal";
 
-export type SettingsSection = "profile" | "branding" | "defaults";
+export type SettingsSection = "general" | "invoices" | "notifications" | "account";
+export type BrandingSection = "identity" | "business" | "template" | "documents";
 
 export type AppNavKey =
   | "dashboard"
   | "invoices"
   | "quotations"
   | "clients"
+  | "branding"
   | "settings";
 
 export type SetupItemKey = "business-profile" | "branding" | "defaults" | "final-review";
@@ -21,6 +23,7 @@ export type AppNavIcon =
   | "receipt-text"
   | "file-text"
   | "users-round"
+  | "palette"
   | "settings-2";
 
 export interface AppNavItemConfig {
@@ -36,7 +39,7 @@ export interface SetupItemStatus {
   label: string;
   description: string;
   href: Route;
-  section?: SettingsSection;
+  section?: SettingsSection | BrandingSection;
   complete: boolean;
 }
 
@@ -65,6 +68,15 @@ export interface BrandingSettings {
   primaryColor: string;
   secondaryColor: string;
   logoPath?: string | null;
+  faviconPath?: string | null;
+  baseFont?: string | null;
+  arabicBusinessName?: string | null;
+  arabicAddress?: string | null;
+  headingFont?: string | null;
+  bodyFont?: string | null;
+  spacing?: string | null;
+  headerLayout?: string | null;
+  lineItemsStyle?: string | null;
   signatureMode: SignatureMode;
   signaturePath?: string | null;
   signatureText?: string | null;
@@ -82,6 +94,11 @@ export interface UserSettings {
   invoicePrefix: string;
   quotationPrefix: string;
   documentTemplate: DocumentTemplateId;
+  reminderEnabled: boolean;
+  reminderDaysBefore: number;
+  reminderDaysAfter: number;
+  remindOnDueDate: boolean;
+  secondReminderDays: number;
 }
 
 export interface InvoicePreviewLineItem {
@@ -152,6 +169,7 @@ export interface AppContext {
   onboardingComplete: boolean;
   onboardingRequired: boolean;
   setupProgress: SetupProgress;
+  setupChecklistDismissed: boolean;
   warnings: string[];
 }
 

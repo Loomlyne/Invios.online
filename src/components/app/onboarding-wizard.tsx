@@ -16,6 +16,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { SignaturePad } from "@/components/app/signature-pad";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
@@ -203,7 +204,7 @@ export function OnboardingWizard({
       setPendingStep("");
       setFeedback(result.message ?? "");
       if (result.status === "success") {
-        setSettings(values);
+        setSettings((current) => ({ ...current, ...values }));
         setCurrentStep("preview");
       }
     });
@@ -429,14 +430,16 @@ export function OnboardingWizard({
                       <Input {...brandingForm.register("signatureText")} placeholder="e.g. Koussay Aloui" />
                     </Field>
                     <Field label="Signature font">
-                      <select
-                        className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
-                        {...brandingForm.register("signatureFont")}
-                      >
-                        <option value="Signature">Signature</option>
-                        <option value="Cormorant Garamond">Cormorant Garamond</option>
-                        <option value="DM Sans">DM Sans</option>
-                      </select>
+                      <Select
+                        name="signatureFont"
+                        value={brandingForm.watch("signatureFont")}
+                        onChange={(v) => brandingForm.setValue("signatureFont", v)}
+                        options={[
+                          { value: "Signature", label: "Signature" },
+                          { value: "Cormorant Garamond", label: "Cormorant Garamond" },
+                          { value: "DM Sans", label: "DM Sans" },
+                        ]}
+                      />
                     </Field>
                   </div>
                 ) : null}
@@ -477,11 +480,16 @@ export function OnboardingWizard({
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Default language">
-                    <select className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm" {...defaultsForm.register("defaultLanguage")}>
-                      <option value="en">English</option>
-                      <option value="ar">Arabic</option>
-                      <option value="bilingual">Bilingual</option>
-                    </select>
+                    <Select
+                      name="defaultLanguage"
+                      value={defaultsForm.watch("defaultLanguage")}
+                      onChange={(v) => defaultsForm.setValue("defaultLanguage", v as "en" | "ar" | "bilingual")}
+                      options={[
+                        { value: "en", label: "English" },
+                        { value: "ar", label: "Arabic" },
+                        { value: "bilingual", label: "Bilingual" },
+                      ]}
+                    />
                   </Field>
                   <Field label="Tax rate">
                     <Input type="number" step="0.1" {...defaultsForm.register("defaultTaxRate", { valueAsNumber: true })} />

@@ -104,43 +104,6 @@ export default async function AppHomePage() {
         </Card>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-2">
-        {[
-          {
-            title: "Invoices",
-            body: "Create, edit, share, and export invoices.",
-            href: "/app/invoices" as Route,
-          },
-          {
-            title: "Quotations",
-            body: "Scope work and convert accepted quotations into invoices.",
-            href: "/app/quotations" as Route,
-          },
-          {
-            title: "Clients",
-            body: "Manage client records that anchor every document.",
-            href: "/app/clients" as Route,
-          },
-          {
-            title: "Settings",
-            body: "Branding, defaults, and document template.",
-            href: "/app/settings?section=defaults" as Route,
-          },
-        ].map((item) => (
-          <Link
-            key={item.title}
-            href={item.href}
-            className="rounded-[1.1rem] border border-black/7 bg-surface px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF7EA]"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-foreground">{item.title}</p>
-              <ArrowRight className="size-4 text-muted" />
-            </div>
-            <p className="mt-1 text-sm leading-6 text-muted">{item.body}</p>
-          </Link>
-        ))}
-      </section>
-
       {context.warnings.length > 0 ? (
         <Card className="border-black/10 bg-[#FCF7EE]">
           <CardHeader>

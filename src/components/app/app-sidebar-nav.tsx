@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   FileText,
   LayoutDashboard,
+  Palette,
   ReceiptText,
   Settings2,
   UsersRound,
@@ -17,6 +18,7 @@ const iconMap = {
   "receipt-text": ReceiptText,
   "file-text": FileText,
   "users-round": UsersRound,
+  "palette": Palette,
   "settings-2": Settings2,
 } as const;
 

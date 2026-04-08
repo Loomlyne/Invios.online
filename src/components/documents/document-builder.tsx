@@ -23,6 +23,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   ClientRecord,
@@ -376,17 +377,17 @@ export function DocumentBuilder({
                   <Input id="trn" name="trn" value={trn} onChange={(event) => setTrn(event.target.value)} />
                 </Field>
                 <Field label="Language" htmlFor="language">
-                  <select
+                  <Select
                     id="language"
                     name="language"
                     value={language}
-                    onChange={(event) => setLanguage(event.target.value as InvoiceFormInput["language"])}
-                    className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
-                  >
-                    <option value="en">English</option>
-                    <option value="ar">Arabic</option>
-                    <option value="bilingual">Bilingual</option>
-                  </select>
+                    onChange={(v) => setLanguage(v as InvoiceFormInput["language"])}
+                    options={[
+                      { value: "en", label: "English" },
+                      { value: "ar", label: "Arabic" },
+                      { value: "bilingual", label: "Bilingual" },
+                    ]}
+                  />
                 </Field>
               </div>
             </section>

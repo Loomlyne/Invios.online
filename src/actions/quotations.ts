@@ -419,12 +419,12 @@ export async function convertQuotationToInvoiceAction(quotationId: string) {
 export async function deleteQuotationAction(id: string): Promise<ActionState> {
   try {
     const { supabase, user } = await requireSession();
-    const { error, count } = await supabase
+    const { data, error } = await supabase
       .from("quotations")
       .delete()
       .eq("id", id)
       .eq("user_id", user.id)
-      .select();
+      .select("id");
 
     if (error) {
       return {
@@ -433,7 +433,7 @@ export async function deleteQuotationAction(id: string): Promise<ActionState> {
       };
     }
 
-    if (!count || count === 0) {
+    if (!data || data.length === 0) {
       return {
         status: "error",
         message: "Quotation not found or you don't have permission to delete it.",

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, ChevronDown, ChevronUp, Loader2, Sparkles } from "lucide-react";
-import { completeOnboardingAction } from "@/actions/app";
+import { completeOnboardingAction, dismissSetupChecklistAction } from "@/actions/app";
 import { Button } from "@/components/ui/button";
 import type { AppContext } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -64,7 +64,7 @@ export function SetupChecklist({ context }: { context: AppContext }) {
     return "Setup checklist";
   }, [autoCompleting, context.setupProgress.complete]);
 
-  if (dismissed) return null;
+  if (dismissed || context.setupChecklistDismissed) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm lg:bottom-6 lg:right-6">
@@ -143,7 +143,10 @@ export function SetupChecklist({ context }: { context: AppContext }) {
                 <Button
                   variant="accent"
                   className="w-full"
-                  onClick={() => setDismissed(true)}
+                  onClick={() => {
+                    setDismissed(true);
+                    startTransition(async () => { await dismissSetupChecklistAction(); });
+                  }}
                 >
                   Finish
                 </Button>

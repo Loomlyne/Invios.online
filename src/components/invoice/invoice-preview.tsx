@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { getDocumentTemplate } from "@/lib/document-templates";
 import { getInvoiceTotals } from "@/lib/preview";
 import type { InvoicePreviewData } from "@/lib/types";
@@ -15,7 +14,6 @@ export function InvoicePreview({
   const documentTitle = preview.title || (preview.kind === "quotation" ? "Quotation" : "Invoice");
   const recipientName = preview.recipientCompany || preview.recipientName || "Client";
   const template = getDocumentTemplate(preview.templateId);
-  const showBadges = mode !== "print" && mode !== "public";
   const bankFields = parseBankDetails(preview.bankDetails);
 
   return (
@@ -27,15 +25,6 @@ export function InvoicePreview({
     >
       {/* Header */}
       <div className="px-6 pb-5 pt-5">
-        {showBadges ? (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Badge variant="accent">
-              Live {documentTitle.toLowerCase()} preview
-            </Badge>
-            {preview.statusLabel ? <Badge variant="default">{preview.statusLabel}</Badge> : null}
-          </div>
-        ) : null}
-
         <div className="flex items-start justify-between gap-6">
           <div className="space-y-1">
             <p className="text-xl font-semibold text-foreground">{preview.businessName}</p>
@@ -158,43 +147,9 @@ export function InvoicePreview({
         </div>
       </div>
 
-      {/* Notes */}
-      {preview.notes ? (
-        <div className="border-t border-black/5 px-6 py-5">
-          <p className="text-sm font-medium text-foreground">{preview.notes}</p>
-        </div>
-      ) : null}
-
-      {/* Payment info */}
-      {bankFields.length > 0 ? (
-        <div className="border-t border-black/5 px-6 py-5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">Payment info</p>
-          <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
-            {bankFields.map((f, i) => (
-              <div key={i}>
-                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#A8A29E]">{f.label}</p>
-                <p className="mt-1 text-sm font-medium text-foreground">{f.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {/* Terms + Signature */}
-      <div className="grid gap-6 border-t border-black/5 px-6 py-5 sm:grid-cols-[1fr_auto]">
-        <div>
-          {preview.terms ? (
-            <>
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">Terms</p>
-              <p className="mt-2 text-sm leading-7 text-[#78716C]">{preview.terms}</p>
-            </>
-          ) : null}
-          {preview.trn ? (
-            <p className="mt-3 text-xs text-[#A8A29E]">TRN: {preview.trn}</p>
-          ) : null}
-        </div>
-
-        <div className="sm:text-right">
+      {/* Signature */}
+      {(preview.signatureMode === "typed" && preview.signatureText) || preview.signatureUrl ? (
+        <div className="border-t border-black/5 px-6 py-5 sm:text-right">
           {preview.signatureMode === "typed" && preview.signatureText ? (
             <div>
               <p
@@ -206,26 +161,62 @@ export function InvoicePreview({
               <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">Date signed</p>
               <p className="mt-1 text-sm tabular-nums text-foreground">{formatDateDisplay(preview.issueDate)}</p>
             </div>
-          ) : preview.signatureUrl ? (
+          ) : (
             <div>
               <img
                 alt="Signature"
-                src={preview.signatureUrl}
+                src={preview.signatureUrl!}
                 className="ml-auto h-14 object-contain"
               />
               <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">Date signed</p>
               <p className="mt-1 text-sm tabular-nums text-foreground">{formatDateDisplay(preview.issueDate)}</p>
             </div>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Footer */}
-      {preview.footerText ? (
-        <div className="border-t border-black/5 px-6 py-4">
-          <p className="text-xs text-[#A8A29E]">{preview.footerText}</p>
+          )}
         </div>
       ) : null}
+
+      {/* Payment info */}
+      {bankFields.length > 0 ? (
+        <div className="border-t border-black/5 px-6 py-5">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">Payment info</p>
+          <div className="mt-3 flex gap-x-6 gap-y-4">
+            {bankFields.map((f, i) => (
+              <div key={i}>
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#A8A29E]">{f.label}</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{f.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Terms + Notes side by side */}
+      {(preview.terms || preview.notes) ? (
+        <div className="border-t border-black/5 px-6 py-5">
+          <div className="grid gap-6 sm:grid-cols-2">
+            {preview.terms ? (
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">Terms</p>
+                <p className="mt-2 text-sm leading-7 text-[#78716C]">{preview.terms}</p>
+              </div>
+            ) : null}
+            {preview.notes ? (
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">Notes</p>
+                <p className="mt-2 text-sm leading-7 text-[#78716C]">{preview.notes}</p>
+              </div>
+            ) : null}
+          </div>
+          {preview.trn ? (
+            <p className="mt-4 text-xs text-[#A8A29E]">TRN: {preview.trn}</p>
+          ) : null}
+        </div>
+      ) : preview.trn ? (
+        <div className="border-t border-black/5 px-6 py-5">
+          <p className="text-xs text-[#A8A29E]">TRN: {preview.trn}</p>
+        </div>
+      ) : null}
+
     </div>
   );
 }

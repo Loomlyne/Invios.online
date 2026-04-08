@@ -260,12 +260,12 @@ export async function setInvoiceStatusAction(id: string, status: InvoiceStatus) 
 export async function deleteInvoiceAction(id: string): Promise<ActionState> {
   try {
     const { supabase, user } = await requireSession();
-    const { error, count } = await supabase
+    const { data, error } = await supabase
       .from("invoices")
       .delete()
       .eq("id", id)
       .eq("user_id", user.id)
-      .select();
+      .select("id");
 
     if (error) {
       return {
@@ -274,7 +274,7 @@ export async function deleteInvoiceAction(id: string): Promise<ActionState> {
       };
     }
 
-    if (!count || count === 0) {
+    if (!data || data.length === 0) {
       return {
         status: "error",
         message: "Invoice not found or you don't have permission to delete it.",
