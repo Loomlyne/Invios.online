@@ -104,7 +104,7 @@ Plans:
 - [x] 03-02-PLAN.md — Server actions (payment/expense CRUD), data loaders, status computation, dashboard metrics
 - [x] 03-03-PLAN.md — Invoice detail page extensions (ProfitSummary, PaymentsTable, ExpensesTable)
 - [x] 03-04-PLAN.md — Dashboard rebuild (MetricCard, quick actions, recent docs, overdue section)
-- [ ] 03-05-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
+- [x] 03-05-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
 
 **Success Criteria**
 1. The dashboard clearly shows billed, collected, due, collection rate, and overdue work.
