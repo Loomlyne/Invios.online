@@ -20,9 +20,9 @@
 ### Dashboard
 
 - [x] **DASH-01**: User can view total billed, total collected, outstanding amount, and collection rate on the dashboard.
-- [ ] **DASH-02**: User can view recent invoices, recent quotations, and overdue items on the dashboard.
-- [ ] **DASH-03**: User can access quick actions for new invoice, new quotation, new client, and branding from the dashboard.
-- [ ] **DASH-04**: New users with no data see useful empty states and a setup checklist.
+- [x] **DASH-02**: User can view recent invoices, recent quotations, and overdue items on the dashboard.
+- [x] **DASH-03**: User can access quick actions for new invoice, new quotation, new client, and branding from the dashboard.
+- [x] **DASH-04**: New users with no data see useful empty states and a setup checklist.
 
 ### Clients
 
@@ -85,7 +85,7 @@
 ### UX & Reliability
 
 - [x] **UX-01**: Core app screens remain usable on small mobile widths.
-- [ ] **UX-02**: Product exposes clear loading, empty, success, validation, and error states throughout core flows.
+- [x] **UX-02**: Product exposes clear loading, empty, success, validation, and error states throughout core flows.
 - [ ] **UX-03**: Public and private document views maintain a premium, trustworthy visual quality rather than generic admin styling.
 - [ ] **UX-04**: Canonical slug-based URLs are supported for clients and documents, with alias support for redirects when slugs change.
 
