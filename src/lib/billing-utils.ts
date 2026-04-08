@@ -3,6 +3,7 @@ import type {
   DocumentLineItem,
   DocumentTotals,
   InvoiceFormInput,
+  InvoiceStatus,
   QuotationFormInput,
 } from "@/lib/billing";
 import { toSlug } from "@/lib/utils";
@@ -103,4 +104,76 @@ export function getDocumentLabel(kind: DocumentKind) {
 
 export function roundCurrency(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3: Payment status, profit, and collection rate computation
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute the payment status for a single invoice.
+ * Called after every payment mutation AND on data load.
+ *
+ * Rules:
+ * - paid: collected >= total (and total > 0)
+ * - partial_paid: 0 < collected < total, not past due
+ * - overdue: (unpaid or partial_paid) AND due_date < today
+ * - Drafts never become overdue
+ * - Paid invoices are never overdue
+ */
+export function computePaymentStatus(params: {
+  currentStatus: InvoiceStatus;
+  total: number;
+  collected: number;
+  dueDate: string; // "YYYY-MM-DD"
+  today: string;   // "YYYY-MM-DD" — injected for testability
+}): InvoiceStatus {
+  const { currentStatus, total, collected, dueDate, today } = params;
+
+  // Paid invoices are never overdue
+  if (collected >= total && total > 0) {
+    return "paid";
+  }
+
+  // Drafts never transition automatically
+  if (currentStatus === "draft") {
+    return "draft";
+  }
+
+  const isPastDue = dueDate < today;
+
+  if (collected > 0) {
+    return isPastDue ? "overdue" : "partial_paid";
+  }
+
+  // No payments yet
+  return isPastDue ? "overdue" : currentStatus;
+}
+
+/**
+ * Compute profit and margin for a single invoice.
+ * Profit = invoice total - sum of direct expenses (NOT payments).
+ * Margin = (profit / total) * 100, rounded to nearest integer.
+ */
+export function computeProfit(params: {
+  total: number;
+  expensesTotal: number;
+}): { profit: number; margin: number } {
+  const { total, expensesTotal } = params;
+  const profit = total - expensesTotal;
+  const margin = total > 0 ? Math.round((profit / total) * 100) : 0;
+  return { profit, margin };
+}
+
+/**
+ * Compute collection rate across all invoices.
+ * Returns integer percentage or null when totalBilled is 0 (display as "—").
+ */
+export function computeCollectionRate(params: {
+  totalBilled: number;
+  totalCollected: number;
+}): number | null {
+  const { totalBilled, totalCollected } = params;
+  if (totalBilled === 0) return null;
+  return Math.round((totalCollected / totalBilled) * 100);
 }
