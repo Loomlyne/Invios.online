@@ -33,12 +33,14 @@ export function DatePicker({
   id,
   name,
   align = "left",
+  compact = false,
 }: {
   value: string;
   onChange: (iso: string) => void;
   id?: string;
   name?: string;
   align?: "left" | "right";
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -128,10 +130,10 @@ export function DatePicker({
         type="button"
         id={id}
         onClick={() => setOpen(!open)}
-        className="flex h-12 w-full items-center justify-between rounded-[1rem] border border-border bg-white/85 px-4 text-left text-sm text-foreground shadow-[0_1px_0_rgba(255,255,255,0.6)_inset] transition hover:border-[#CAB9A2]"
+        className={`flex w-full items-center justify-between border border-border bg-white/85 text-left text-sm text-foreground shadow-[0_1px_0_rgba(255,255,255,0.6)_inset] transition hover:border-[#CAB9A2] ${compact ? "h-9 rounded-[0.75rem] px-3 gap-2" : "h-12 rounded-[1rem] px-4"}`}
       >
-        <span>{formatDisplay(value) || "Select date"}</span>
-        <Calendar className="size-4 text-muted" />
+        <span className={compact ? "text-xs" : ""}>{formatDisplay(value) || "Select date"}</span>
+        <Calendar className={compact ? "size-3.5 text-muted" : "size-4 text-muted"} />
       </button>
 
       {open ? (

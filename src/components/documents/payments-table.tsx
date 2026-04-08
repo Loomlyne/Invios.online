@@ -102,11 +102,12 @@ export function PaymentsTable({
           className="px-4 py-3 bg-[#FFFCF7] border-t border-dashed border-border/60 flex flex-wrap items-end gap-3"
         >
           <input type="hidden" name="invoiceId" value={invoiceId} />
-          <div className="w-32 shrink-0">
+          <div className="w-[120px] shrink-0">
             <DatePicker
               value={datePaid}
               onChange={setDatePaid}
               name="datePaid"
+              compact
             />
           </div>
           <Input
