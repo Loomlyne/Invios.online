@@ -148,3 +148,47 @@ export interface QuotationRecord extends DocumentRecordBase {
   rejectedDate: string | null;
   rejectionReason: string;
 }
+
+// --- Phase 3: Payments & Expenses ---
+
+export const paymentMethods = ["cash", "bank_transfer", "cheque", "other"] as const;
+export type PaymentMethod = (typeof paymentMethods)[number];
+
+export const paymentFormSchema = z.object({
+  invoiceId: z.string().uuid(),
+  datePaid: z.string().min(1, "Enter a date."),
+  amount: z.coerce.number().positive("Enter a valid amount."),
+  method: z.enum(paymentMethods).default("other"),
+});
+
+export const expenseFormSchema = z.object({
+  invoiceId: z.string().uuid(),
+  date: z.string().min(1, "Enter a date."),
+  amount: z.coerce.number().positive("Enter a valid amount."),
+  description: z.string().min(1, "Enter a description."),
+  vendor: z.string().default(""),
+});
+
+export type PaymentFormInput = z.infer<typeof paymentFormSchema>;
+export type ExpenseFormInput = z.infer<typeof expenseFormSchema>;
+
+export interface PaymentRecord {
+  id: string;
+  invoiceId: string;
+  userId: string;
+  amount: number;
+  datePaid: string;
+  method: PaymentMethod;
+  createdAt: string;
+}
+
+export interface ExpenseRecord {
+  id: string;
+  invoiceId: string;
+  userId: string;
+  amount: number;
+  date: string;
+  description: string;
+  vendor: string;
+  createdAt: string;
+}
