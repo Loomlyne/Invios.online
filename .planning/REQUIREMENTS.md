@@ -19,7 +19,7 @@
 
 ### Dashboard
 
-- [ ] **DASH-01**: User can view total billed, total collected, outstanding amount, and collection rate on the dashboard.
+- [x] **DASH-01**: User can view total billed, total collected, outstanding amount, and collection rate on the dashboard.
 - [ ] **DASH-02**: User can view recent invoices, recent quotations, and overdue items on the dashboard.
 - [ ] **DASH-03**: User can access quick actions for new invoice, new quotation, new client, and branding from the dashboard.
 - [ ] **DASH-04**: New users with no data see useful empty states and a setup checklist.
@@ -54,11 +54,11 @@
 
 ### Payments & Expenses
 
-- [ ] **OPS-01**: User can record one or more payment entries against an invoice.
-- [ ] **OPS-02**: User can record one or more expense entries against an invoice.
-- [ ] **OPS-03**: Invoice collected amount and outstanding amount are computed from invoice total and payment records.
-- [ ] **OPS-04**: Invoice payment status updates automatically to `partial_paid`, `paid`, or `overdue` based on financial state and due date.
-- [ ] **OPS-05**: User can view profit amount and margin per invoice based on invoice total and direct expenses.
+- [x] **OPS-01**: User can record one or more payment entries against an invoice.
+- [x] **OPS-02**: User can record one or more expense entries against an invoice.
+- [x] **OPS-03**: Invoice collected amount and outstanding amount are computed from invoice total and payment records.
+- [x] **OPS-04**: Invoice payment status updates automatically to `partial_paid`, `paid`, or `overdue` based on financial state and due date.
+- [x] **OPS-05**: User can view profit amount and margin per invoice based on invoice total and direct expenses.
 
 ### Public Experiences
 

@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-last_updated: "2026-04-07T09:31:22.898Z"
+status: Executing Phase 03
+last_updated: "2026-04-08T01:07:58.940Z"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 14
+  completed_plans: 10
 ---
 
 # STATE
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Make it dead simple for a service business to send a polished branded quote or invoice and reliably know what has been paid, what is still due, and what profit remains.
-**Current focus:** Phase 02 — clients-document-engine
+**Current focus:** Phase 03 — dashboard-cash-flow
 
 ## Current Status
 
@@ -44,14 +44,19 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 02-clients-document-engine]: Wave 0 schema tests use pure Zod validation without server action mocking — import from @/lib/billing directly
 - [Phase 02-clients-document-engine]: D-04: builder status is read-only via hidden input, no dropdown exposed
 - [Phase 02-clients-document-engine]: D-06: conversion redirect goes to /edit for review, not detail page
+- [Phase 03-dashboard-cash-flow]: payments and expenses use CHECK constraint (not ENUM) — avoids ALTER TYPE migrations
+- [Phase 03-dashboard-cash-flow]: No UPDATE RLS on payments/expenses — rows are add/delete only
+- [Phase 03-dashboard-cash-flow]: computePaymentStatus injects today string — deterministic testing without mocking Date
+- [Phase 03-dashboard-cash-flow]: computeCollectionRate returns null (not 0) at totalBilled=0 — callers display '—' vs '0%'
 
 ## Session State
 
-- Stopped at: Completed 02-02-PLAN.md — D-04 builder status dropdown removed, D-06 conversion redirect fixed, PDF route maxDuration = 60 added
-- Resume from: Plan 02-03 (clients CRUD, quotations/invoices list and detail pages)
+- Stopped at: Completed 03-01-PLAN.md — payments+expenses migration, Zod schemas, pure computation functions, 38 tests passing
+- Resume from: Plan 03-02 (payment and expense server actions)
 - Latest artifacts:
-  - `.planning/phases/02-clients-document-engine/02-02-SUMMARY.md`
-  - `src/components/documents/document-builder.tsx`
-  - `src/actions/quotations.ts`
-  - `src/app/api/invoices/[id]/pdf/route.ts`
-  - `src/app/api/quotations/[id]/pdf/route.ts`
+  - `.planning/phases/03-dashboard-cash-flow/03-01-SUMMARY.md`
+  - `supabase/migrations/20260407120000_phase3_payments_expenses.sql`
+  - `src/lib/billing.ts`
+  - `src/lib/billing-utils.ts`
+  - `src/actions/payments.test.ts`
+  - `src/actions/expenses.test.ts`
