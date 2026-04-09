@@ -63,31 +63,56 @@ export function ExpensesTable({ invoiceId, currency, expenses }: ExpensesTablePr
 
         {/* Data rows */}
         {expenses.map((e) => (
-          <div
-            key={e.id}
-            className="px-4 py-3 border-b border-border last:border-b-0 flex items-center gap-3"
-          >
-            <span className="text-sm text-muted w-24 shrink-0 hidden md:block">
-              {e.date}
-            </span>
-            <span className="text-sm font-semibold text-foreground w-[100px] text-right">
-              {formatCurrency(e.amount, currency)}
-            </span>
-            <span className="text-sm text-foreground flex-1">{e.description}</span>
-            <span className="text-sm text-muted w-[120px]">{e.vendor}</span>
-            <form
-              action={async () => {
-                await deleteExpenseAction(e.id, invoiceId);
-              }}
-            >
-              <button
-                type="submit"
-                className="size-8 p-1 rounded-full text-muted hover:text-danger hover:bg-danger/8 inline-flex items-center justify-center"
-                aria-label="Delete expense"
+          <div key={e.id} className="border-b border-border last:border-b-0">
+            {/* Mobile card */}
+            <div className="flex items-center gap-3 px-4 py-3 md:hidden">
+              <div className="flex-1 min-w-0">
+                <p className="truncate text-sm font-medium text-foreground">{e.description}</p>
+                <p className="mt-0.5 text-xs text-muted">
+                  {e.date}
+                  {e.vendor ? ` · ${e.vendor}` : ""}
+                </p>
+              </div>
+              <span className="shrink-0 text-sm font-semibold text-foreground">
+                {formatCurrency(e.amount, currency)}
+              </span>
+              <form
+                action={async () => {
+                  await deleteExpenseAction(e.id, invoiceId);
+                }}
               >
-                <Trash2 className="size-4" />
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted hover:bg-danger/8 hover:text-danger"
+                  aria-label="Delete expense"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </form>
+            </div>
+
+            {/* Desktop table row */}
+            <div className="hidden items-center gap-3 px-4 py-3 md:flex">
+              <span className="w-24 shrink-0 text-sm text-muted">{e.date}</span>
+              <span className="w-[100px] text-right text-sm font-semibold text-foreground">
+                {formatCurrency(e.amount, currency)}
+              </span>
+              <span className="flex-1 text-sm text-foreground">{e.description}</span>
+              <span className="w-[120px] text-sm text-muted">{e.vendor}</span>
+              <form
+                action={async () => {
+                  await deleteExpenseAction(e.id, invoiceId);
+                }}
+              >
+                <button
+                  type="submit"
+                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-muted hover:bg-danger/8 hover:text-danger"
+                  aria-label="Delete expense"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </form>
+            </div>
           </div>
         ))}
 

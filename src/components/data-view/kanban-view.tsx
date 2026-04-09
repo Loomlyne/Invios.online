@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
@@ -14,6 +14,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { DraggableCard } from "./draggable-card";
 import { DroppableColumn } from "./droppable-column";
 import type { DataViewConfig } from "./types";
@@ -31,10 +32,37 @@ export function KanbanView<TItem, TStatus extends string>({
 }) {
   const [items, setItems] = useState(initialItems);
   const [activeItem, setActiveItem] = useState<TItem | null>(null);
+  const [activeColIndex, setActiveColIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const columnRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
+
+  // Track active column via IntersectionObserver for dot indicators
+  useEffect(() => {
+    const cols = columnRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (cols.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const idx = cols.indexOf(entry.target as HTMLDivElement);
+            if (idx !== -1) setActiveColIndex(idx);
+          }
+        }
+      },
+      {
+        root: scrollRef.current,
+        threshold: 0.6,
+      },
+    );
+
+    for (const col of cols) observer.observe(col);
+    return () => observer.disconnect();
+  }, [items.length, config.kanbanColumns.length]);
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -55,11 +83,9 @@ export function KanbanView<TItem, TStatus extends string>({
       const item = items.find((i) => config.getId(i) === itemId);
       if (!item || config.getStatus(item) === newStatus) return;
 
-      // Optimistic update
       setItems((prev) =>
         prev.map((i) => {
           if (config.getId(i) !== itemId) return i;
-          // Shallow clone with new status
           return { ...i, status: newStatus };
         }),
       );
@@ -68,7 +94,6 @@ export function KanbanView<TItem, TStatus extends string>({
         try {
           await onStatusChange(itemId, newStatus);
         } catch {
-          // Revert on failure
           setItems(initialItems);
         }
       }
@@ -96,13 +121,19 @@ export function KanbanView<TItem, TStatus extends string>({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="overflow-x-auto pb-2">
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto pb-2 overscroll-x-contain"
+      >
         <div className="inline-flex gap-3 snap-x snap-mandatory">
-          {config.kanbanColumns.map((col) => {
+          {config.kanbanColumns.map((col, colIdx) => {
             const colItems = grouped.get(col.status) ?? [];
             return (
               <DroppableColumn key={col.status} id={col.status}>
-                <div className="w-[280px] shrink-0 snap-start flex flex-col gap-2">
+                <div
+                  ref={(el) => { columnRefs.current[colIdx] = el; }}
+                  className="w-[min(280px,85vw)] shrink-0 snap-start flex flex-col gap-2"
+                >
                   {/* Column header */}
                   <div className="flex items-center justify-between px-1 py-1.5">
                     <div className="flex items-center gap-2">
@@ -142,7 +173,6 @@ export function KanbanView<TItem, TStatus extends string>({
                             href={config.getHref(item) as Route}
                             className="block cursor-pointer rounded-[1rem] border border-black/7 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:border-[#D7C4A7] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                             onClick={(e) => {
-                              // Prevent navigation when dragging
                               if (activeItem) e.preventDefault();
                             }}
                           >
@@ -158,6 +188,37 @@ export function KanbanView<TItem, TStatus extends string>({
           })}
         </div>
       </div>
+
+      {/* Dot indicators — mobile only */}
+      {config.kanbanColumns.length > 1 && (
+        <div
+          role="tablist"
+          aria-label="Kanban columns"
+          className="mt-3 flex justify-center gap-1.5 lg:hidden"
+        >
+          {config.kanbanColumns.map((col, idx) => (
+            <button
+              key={col.status}
+              role="tab"
+              aria-selected={idx === activeColIndex}
+              aria-label={col.label}
+              onClick={() => {
+                columnRefs.current[idx]?.scrollIntoView({
+                  behavior: "smooth",
+                  inline: "start",
+                  block: "nearest",
+                });
+              }}
+              className={cn(
+                "h-1.5 rounded-full transition-all duration-200",
+                idx === activeColIndex
+                  ? "w-4 bg-accent"
+                  : "w-1.5 bg-foreground/15 hover:bg-foreground/30",
+              )}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Drag overlay */}
       <DragOverlay dropAnimation={null}>
