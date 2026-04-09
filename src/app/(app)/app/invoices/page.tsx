@@ -18,7 +18,7 @@ export default async function InvoicesPage({
   const params = (await searchParams) ?? {};
   const search = typeof params.search === "string" ? params.search : "";
   const rawStatus = typeof params.status === "string" ? params.status : "all";
-  const status = ["all", "open", "draft", "sent", "partial_paid", "paid", "overdue"].includes(rawStatus)
+  const status = ["all", "open", "draft", "sent", "partial_paid", "paid", "overpaid", "overdue"].includes(rawStatus)
     ? rawStatus
     : "all";
   const rawView = typeof params.view === "string" ? params.view : "kanban";
@@ -32,7 +32,7 @@ export default async function InvoicesPage({
     status:
       status === "all"
         ? "all"
-        : (status as "open" | "draft" | "sent" | "partial_paid" | "paid" | "overdue"),
+        : (status as "open" | "draft" | "sent" | "partial_paid" | "paid" | "overpaid" | "overdue"),
   });
   const draftCount = invoices.filter((inv) => inv.status === "draft").length;
   const sentCount = invoices.filter((inv) => inv.status === "sent").length;

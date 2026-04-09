@@ -4,43 +4,38 @@ import { env, isSupabaseConfigured } from "@/lib/env";
 
 export async function updateSession(request: NextRequest) {
   if (!isSupabaseConfigured()) {
-    return NextResponse.next({
-      request,
-    });
+    return NextResponse.next({ request });
   }
 
-  let response = NextResponse.next({
-    request,
-  });
+  // Strip any client-supplied spoofed auth headers before trusting them downstream.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete("x-middleware-user-id");
+  requestHeaders.delete("x-middleware-user-email");
 
-  const supabase = createServerClient(
-    env.supabaseUrl,
-    env.supabasePublishableKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value),
-          );
+  // Track cookies that need to be set on the response.
+  let pendingCookies: { name: string; value: string; options: Record<string, unknown> }[] = [];
 
-          response = NextResponse.next({
-            request,
-          });
-
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
-          );
-        },
+  const supabase = createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        pendingCookies = cookiesToSet;
+        cookiesToSet.forEach(({ name, value }) => requestHeaders.set(`cookie`, `${name}=${value}`));
       },
     },
-  );
+  });
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Forward verified auth info to Server Components so they can skip a second getUser() call.
+  if (user) {
+    requestHeaders.set("x-middleware-user-id", user.id);
+    requestHeaders.set("x-middleware-user-email", user.email ?? "");
+  }
 
   const isAuthRoute =
     request.nextUrl.pathname.startsWith("/sign-in") ||
@@ -61,6 +56,13 @@ export async function updateSession(request: NextRequest) {
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+
+  // Apply any refreshed auth cookies to the response.
+  pendingCookies.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
+  });
 
   return response;
 }

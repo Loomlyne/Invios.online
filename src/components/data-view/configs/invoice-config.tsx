@@ -16,6 +16,7 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
     { value: "sent", label: "Sent" },
     { value: "partial_paid", label: "Partial paid" },
     { value: "paid", label: "Paid" },
+    { value: "overpaid", label: "Overpaid" },
     { value: "overdue", label: "Overdue" },
   ],
 
@@ -26,6 +27,7 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
     { status: "sent", label: "Sent", color: "#2563eb" },
     { status: "partial_paid", label: "Partial Paid", color: "#d97706" },
     { status: "paid", label: "Paid", color: "#d7c4a7" },
+    { status: "overpaid", label: "Overpaid", color: "#2563eb" },
     { status: "overdue", label: "Overdue", color: "#dc2626" },
   ],
 

@@ -187,3 +187,5 @@
 # Project Memory
 
 - 2026-04-08: Kept Kanban status badges on one line for clients, invoices, and quotations by adding status-badge `className` passthroughs, applying `whitespace-nowrap shrink-0` in Kanban cards, allowing title blocks to shrink with `min-w-0`, and widening shared Kanban columns from `260px` to `280px`.
+- 2026-04-09: Fixed the live client-creation foreign-key failure caused by orphaned `auth.users` rows with no matching `public.profiles` row. Applied hosted migration `20260409123000_backfill_profiles_bootstrap.sql` to backfill missing profiles and recreate the `on_auth_user_created` trigger/function, and added app-side `ensureUserProfile` self-healing in `signUpAction`, `requireSession`, and `getAppContext`.
+- 2026-04-09: Verified production recovery on `https://invios-phase1-koss.vercel.app` by creating a fresh account and successfully saving a first client. Local repo verification remains partially blocked by filesystem read instability: `vitest` hit `ECANCELED: operation canceled, read`, and broader `eslint` / `tsc` runs stalled.

@@ -109,7 +109,7 @@ describe("computePaymentStatus", () => {
     expect(result).toBe("paid");
   });
 
-  it("returns 'paid' when collected exceeds total", () => {
+  it("returns 'overpaid' when collected exceeds total", () => {
     const result = computePaymentStatus({
       currentStatus: "sent",
       total: 5000,
@@ -117,7 +117,18 @@ describe("computePaymentStatus", () => {
       dueDate: "2026-03-01",
       today: "2026-04-08",
     });
-    expect(result).toBe("paid");
+    expect(result).toBe("overpaid");
+  });
+
+  it("returns 'overpaid' even when past due (overpaid is never overdue)", () => {
+    const result = computePaymentStatus({
+      currentStatus: "overpaid",
+      total: 5000,
+      collected: 5500,
+      dueDate: "2026-01-01",
+      today: "2026-04-08",
+    });
+    expect(result).toBe("overpaid");
   });
 
   it("returns 'partial_paid' when 0 < collected < total and not past due", () => {

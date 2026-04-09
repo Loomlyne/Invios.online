@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { headers } from "next/headers";
 import { createDefaultUserState, buildInvoicePreviewData, getBrandingWarnings } from "@/lib/preview";
 import { ensureUserProfile } from "@/lib/profile-bootstrap";
 import { deriveSetupProgress } from "@/lib/setup";
@@ -61,24 +62,17 @@ type SettingsRow = {
   second_reminder_days: number | null;
 };
 
-async function createSignedAssetUrl(path?: string | null) {
-  if (!path) {
-    return null;
-  }
-
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    return null;
-  }
+async function createSignedAssetUrl(
+  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>,
+  path?: string | null,
+) {
+  if (!path) return null;
 
   const { data, error } = await supabase.storage
     .from("branding-assets")
     .createSignedUrl(path, 60 * 10);
 
-  if (error) {
-    return null;
-  }
+  if (error) return null;
 
   return data.signedUrl;
 }
@@ -115,22 +109,39 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     };
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Middleware already called getUser() and verified the session. Read the
+  // result from the request header it stamped, skipping a redundant network call.
+  const requestHeaders = await headers();
+  const middlewareUserId = requestHeaders.get("x-middleware-user-id");
+  const middlewareUserEmail = requestHeaders.get("x-middleware-user-email") ?? "";
 
-  if (!user) {
-    return {
-      configured: true,
-      userState: defaultState,
-      previewData: buildInvoicePreviewData(defaultState),
-      onboardingComplete: defaultSetupProgress.complete,
-      onboardingRequired: !defaultSetupProgress.complete,
-      setupProgress: defaultSetupProgress,
-      setupChecklistDismissed: false,
-      warnings: [],
-    };
+  let userId: string;
+  let userEmail: string;
+
+  if (middlewareUserId) {
+    userId = middlewareUserId;
+    userEmail = middlewareUserEmail;
+  } else {
+    // Fallback for requests that bypassed middleware (e.g., direct server calls).
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return {
+        configured: true,
+        userState: defaultState,
+        previewData: buildInvoicePreviewData(defaultState),
+        onboardingComplete: defaultSetupProgress.complete,
+        onboardingRequired: !defaultSetupProgress.complete,
+        setupProgress: defaultSetupProgress,
+        setupChecklistDismissed: false,
+        warnings: [],
+      };
+    }
+    userId = user.id;
+    userEmail = user.email ?? "";
   }
+
+  // Minimal user shape needed downstream — only id and email are used.
+  const user = { id: userId, email: userEmail };
 
   const bootstrappedProfile = await ensureUserProfile(supabase, user);
   const [profileResult, brandingResult, settingsResult] = await Promise.all([
@@ -253,8 +264,8 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
   }
 
   const [logoUrl, signatureUrl] = await Promise.all([
-    createSignedAssetUrl(userState.branding.logoPath),
-    createSignedAssetUrl(userState.branding.signaturePath),
+    createSignedAssetUrl(supabase, userState.branding.logoPath),
+    createSignedAssetUrl(supabase, userState.branding.signaturePath),
   ]);
 
   const previewData = buildInvoicePreviewData(userState, {

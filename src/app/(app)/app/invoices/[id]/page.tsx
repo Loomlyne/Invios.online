@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Route } from "next";
 import { notFound } from "next/navigation";
 import { MoveLeft, SquarePen } from "lucide-react";
-import { DocumentStatusActions } from "@/components/documents/document-status-actions";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +17,7 @@ import { InvoiceDeleteButton } from "@/components/documents/invoice-delete-butto
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
 import { ExportButton } from "./export-button";
+import { StatusButton } from "./status-button";
 
 export default async function InvoiceDetailPage({
   params,
@@ -25,16 +25,16 @@ export default async function InvoiceDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [context, invoice] = await Promise.all([getAppContext(), getInvoiceById(id)]);
+  const [context, invoice, payments, expenses] = await Promise.all([
+    getAppContext(),
+    getInvoiceById(id),
+    listPaymentsForInvoice(id),
+    listExpensesForInvoice(id),
+  ]);
 
   if (!invoice) {
     notFound();
   }
-
-  const [payments, expenses] = await Promise.all([
-    listPaymentsForInvoice(invoice.id),
-    listExpensesForInvoice(invoice.id),
-  ]);
   const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   const preview = buildInvoicePreviewFromRecord(context, invoice);
@@ -79,6 +79,7 @@ export default async function InvoiceDetailPage({
                   Edit
                 </Link>
               </Button>
+              <StatusButton invoiceId={invoice.id} currentStatus={invoice.status} />
               <ExportButton invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
             </div>
           </CardHeader>
@@ -107,7 +108,6 @@ export default async function InvoiceDetailPage({
               </div>
             </div>
 
-            <DocumentStatusActions kind="invoice" id={invoice.id} status={invoice.status} hideDelete />
           </CardContent>
         </Card>
 

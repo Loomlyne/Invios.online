@@ -6,6 +6,7 @@ export const invoiceStatuses = [
   "sent",
   "partial_paid",
   "paid",
+  "overpaid",
   "overdue",
 ] as const;
 export const quotationStatuses = [

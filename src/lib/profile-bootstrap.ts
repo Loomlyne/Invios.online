@@ -9,7 +9,13 @@ type ProfileRow = {
 const PROFILE_BOOTSTRAP_ERROR =
   "Workspace setup could not be completed. Please try again.";
 
-function normalizeFullName(user: User) {
+type ProfileBootstrapUser = Pick<User, "id" | "email"> & {
+  user_metadata?: {
+    full_name?: unknown;
+  };
+};
+
+function normalizeFullName(user: ProfileBootstrapUser) {
   const fullName = user.user_metadata?.full_name;
   if (typeof fullName !== "string") {
     return null;
@@ -35,7 +41,7 @@ async function selectProfile(supabase: SupabaseClient, userId: string) {
 
 export async function ensureUserProfile(
   supabase: SupabaseClient,
-  user: User,
+  user: ProfileBootstrapUser,
 ) {
   const existingProfile = await selectProfile(supabase, user.id);
 

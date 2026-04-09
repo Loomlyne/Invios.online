@@ -692,7 +692,9 @@ const getDashboardDataset = cache(async (userId: string, range: DashboardRangeKe
     };
   }
 
-  await syncOverdueStatuses(userId);
+  // Run overdue sync in the background — don't block the data queries.
+  // Statuses will be at most one render stale, which is acceptable.
+  syncOverdueStatuses(userId).catch(() => {});
 
   const [invoiceResult, paymentResult, expenseResult, quotationResult] = await Promise.all([
     supabase

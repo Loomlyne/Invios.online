@@ -11,9 +11,11 @@ export function DocumentStatusBadge({
   const variant =
     status === "paid" || status === "accepted"
       ? "success"
-      : status === "rejected" || status === "overdue"
-        ? "warning"
-        : "default";
+      : status === "overpaid"
+        ? "info"
+        : status === "rejected" || status === "overdue"
+          ? "warning"
+          : "default";
 
   return (
     <Badge variant={variant} className={cn(className)}>

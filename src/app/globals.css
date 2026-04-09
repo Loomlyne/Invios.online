@@ -133,6 +133,16 @@ img {
   }
 }
 
+.animate-page-enter {
+  animation: enter-up 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter {
+    animation: none;
+  }
+}
+
 @keyframes glow-shift {
   0%,
   100% {

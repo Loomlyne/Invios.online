@@ -130,8 +130,11 @@ export function computePaymentStatus(params: {
 }): InvoiceStatus {
   const { currentStatus, total, collected, dueDate, today } = params;
 
-  // Paid invoices are never overdue
-  if (collected >= total && total > 0) {
+  // Fully or over-paid invoices are never overdue
+  if (collected > total && total > 0) {
+    return "overpaid";
+  }
+  if (collected === total && total > 0) {
     return "paid";
   }
 
