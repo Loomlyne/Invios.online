@@ -1,17 +1,23 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { notFound } from "next/navigation";
-import { MoveLeft, Send, Share2, SquarePen, Trash2 } from "lucide-react";
-import { deleteInvoiceAction, setInvoiceStatusAction } from "@/actions/invoices";
+import { MoveLeft, SquarePen } from "lucide-react";
+import { DocumentStatusActions } from "@/components/documents/document-status-actions";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getInvoiceById } from "@/lib/billing-data";
+import { getInvoiceById, listExpensesForInvoice, listPaymentsForInvoice } from "@/lib/billing-data";
 import { getAppContext } from "@/lib/data";
+import { ExpensesTable } from "@/components/documents/expenses-table";
+import { PaymentsTable } from "@/components/documents/payments-table";
+import { ProfitSummary } from "@/components/documents/profit-summary";
+import { FinancialQuickActions } from "@/components/documents/financial-quick-actions";
+import { InvoiceDeleteButton } from "@/components/documents/invoice-delete-button";
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
+import { ExportButton } from "./export-button";
 
 export default async function InvoiceDetailPage({
   params,
@@ -25,107 +31,125 @@ export default async function InvoiceDetailPage({
     notFound();
   }
 
+  const [payments, expenses] = await Promise.all([
+    listPaymentsForInvoice(invoice.id),
+    listExpensesForInvoice(invoice.id),
+  ]);
+  const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+
   const preview = buildInvoicePreviewFromRecord(context, invoice);
 
   return (
     <div className="grid gap-6">
-      <Button asChild variant="ghost" className="w-fit">
-        <Link href={"/app/invoices" as Route}>
-          <MoveLeft className="size-4" />
-          Back to invoices
-        </Link>
-      </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button asChild variant="ghost" className="w-fit">
+          <Link href={"/app/invoices" as Route}>
+            <MoveLeft className="size-4" />
+            Back to invoices
+          </Link>
+        </Button>
+        <FinancialQuickActions invoiceId={invoice.id} />
+      </div>
 
-      <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
+      <section className="flex flex-col gap-5">
         <Card>
           <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="flex gap-[21px]">
+              <div className="flex flex-col items-start gap-0">
+                <CardTitle className="mt-3 text-center" style={{ height: 26 }}>
+                  {invoice.invoiceNumber}
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  {invoice.client.name}
+                  {invoice.client.company ? ` • ${invoice.client.company}` : ""}
+                </CardDescription>
+              </div>
+
+              <div className="flex flex-nowrap items-center justify-start gap-3 text-center">
                 <Badge variant="accent">Invoice detail</Badge>
                 <DocumentStatusBadge status={invoice.status} />
               </div>
-              <CardTitle className="mt-3">{invoice.invoiceNumber}</CardTitle>
-              <CardDescription className="mt-2">
-                {invoice.client.name}
-                {invoice.client.company ? ` • ${invoice.client.company}` : ""}
-              </CardDescription>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-nowrap gap-2">
+              <InvoiceDeleteButton invoiceId={invoice.id} />
               <Button asChild variant="secondary" size="sm">
                 <Link href={`/app/invoices/${invoice.id}/edit` as Route}>
                   <SquarePen className="size-4" />
                   Edit
                 </Link>
               </Button>
-              <Button asChild variant="secondary" size="sm">
-                <Link href={`/api/invoices/${invoice.id}/pdf` as Route} target="_blank">
-                  PDF
-                </Link>
-              </Button>
-              <Button asChild variant="secondary" size="sm">
-                <Link href={`/invoices/public/${invoice.shareToken}` as Route} target="_blank">
-                  <Share2 className="size-4" />
-                  Share
-                </Link>
-              </Button>
+              <ExportButton invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <InfoCard label="Issue date" value={invoice.issueDate} />
-              <InfoCard label="Due date" value={invoice.dueDate} />
-              <InfoCard label="Type" value={invoice.invoiceType === "tax_invoice" ? "Tax invoice" : "Invoice"} />
-              <InfoCard label="Currency" value={invoice.currency} />
-              <InfoCard label="Client" value={invoice.client.name} />
-              <InfoCard label="Total" value={formatCurrency(invoice.total, invoice.currency)} />
+            <ProfitSummary
+              total={invoice.total}
+              expensesTotal={expensesTotal}
+              currency={invoice.currency}
+            />
+
+            <div className="flex border-t border-black/7 pt-4">
+              <div className="flex w-full flex-row gap-0">
+                <InvoiceMeta label="Issue date" value={invoice.issueDate} />
+                <InvoiceMeta label="Due date" value={invoice.dueDate} />
+                <InvoiceMeta
+                  label="Type"
+                  value={invoice.invoiceType === "tax_invoice" ? "Tax invoice" : "Invoice"}
+                />
+                <InvoiceMeta label="Currency" value={invoice.currency} />
+                <InvoiceMeta label="Client" value={invoice.client.name} />
+                <InvoiceMeta
+                  label="Total"
+                  value={formatCurrency(invoice.total, invoice.currency)}
+                  emphasize
+                />
+              </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <form
-                action={async () => {
-                  "use server";
-                  await setInvoiceStatusAction(invoice.id, "sent");
-                }}
-              >
-                <Button type="submit" variant="accent" className="w-full">
-                  <Send className="size-4" />
-                  Mark as sent
-                </Button>
-              </form>
-
-              <form
-                action={async () => {
-                  "use server";
-                  await deleteInvoiceAction(invoice.id);
-                }}
-              >
-                <Button type="submit" variant="danger" className="w-full">
-                  <Trash2 className="size-4" />
-                  Delete invoice
-                </Button>
-              </form>
-            </div>
+            <DocumentStatusActions kind="invoice" id={invoice.id} status={invoice.status} hideDelete />
           </CardContent>
         </Card>
 
         <InvoicePreview preview={preview} mode="page" />
       </section>
+
+      {/* Financial details — per D-01, D-04 from CONTEXT.md */}
+      <section className="grid gap-6">
+        <PaymentsTable
+          invoiceId={invoice.id}
+          invoiceTotal={invoice.total}
+          currency={invoice.currency}
+          payments={payments}
+        />
+
+        <ExpensesTable
+          invoiceId={invoice.id}
+          currency={invoice.currency}
+          expenses={expenses}
+        />
+      </section>
     </div>
   );
 }
 
-function InfoCard({
+function InvoiceMeta({
   label,
   value,
+  emphasize = false,
 }: {
   label: string;
   value: string;
+  emphasize?: boolean;
 }) {
   return (
-    <div className="rounded-[1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-muted">{label}</p>
-      <p className="mt-2 text-sm font-medium text-foreground">{value}</p>
+    <div className="w-full border-b border-dashed border-black/8 pb-3 sm:pb-4">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-muted">{label}</p>
+      <p
+        className={`mt-2 text-sm ${emphasize ? "font-semibold text-[#92700C]" : "font-medium text-foreground"}`}
+      >
+        {value}
+      </p>
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import { cache } from "react";
 import { createDefaultUserState, buildInvoicePreviewData, getBrandingWarnings } from "@/lib/preview";
+import { ensureUserProfile } from "@/lib/profile-bootstrap";
 import { deriveSetupProgress } from "@/lib/setup";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
-import type { AppContext, AppUserState, BrandingSettings, BusinessProfile, UserSettings } from "@/lib/types";
+import type { AppContext, AppUserState, BrandingSettings, BusinessProfile, CustomFont, UserSettings } from "@/lib/types";
 
 type ProfileRow = {
   id: string;
@@ -11,6 +12,7 @@ type ProfileRow = {
   full_name: string | null;
   onboarding_step: AppUserState["onboardingStep"] | null;
   onboarding_completed_at: string | null;
+  setup_checklist_dismissed_at: string | null;
 };
 
 type BrandingRow = {
@@ -25,12 +27,22 @@ type BrandingRow = {
   primary_color: string | null;
   secondary_color: string | null;
   logo_path: string | null;
+  favicon_path: string | null;
+  base_font: string | null;
+  arabic_business_name: string | null;
+  arabic_address: string | null;
+  heading_font: string | null;
+  body_font: string | null;
+  spacing: string | null;
+  header_layout: string | null;
+  line_items_style: string | null;
   signature_mode: BrandingSettings["signatureMode"] | null;
   signature_path: string | null;
   signature_text: string | null;
   signature_font: string | null;
   invoice_prefix: string | null;
   quotation_prefix: string | null;
+  custom_fonts: CustomFont[] | null;
 };
 
 type SettingsRow = {
@@ -42,6 +54,11 @@ type SettingsRow = {
   default_notes: string | null;
   timezone: string | null;
   document_template: UserSettings["documentTemplate"] | null;
+  reminder_enabled: boolean | null;
+  reminder_days_before: number | null;
+  reminder_days_after: number | null;
+  remind_on_due_date: boolean | null;
+  second_reminder_days: number | null;
 };
 
 async function createSignedAssetUrl(path?: string | null) {
@@ -78,6 +95,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       onboardingComplete: defaultSetupProgress.complete,
       onboardingRequired: !defaultSetupProgress.complete,
       setupProgress: defaultSetupProgress,
+      setupChecklistDismissed: false,
       warnings: ["Supabase environment variables are missing."],
     };
   }
@@ -92,6 +110,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       onboardingComplete: defaultSetupProgress.complete,
       onboardingRequired: !defaultSetupProgress.complete,
       setupProgress: defaultSetupProgress,
+      setupChecklistDismissed: false,
       warnings: ["Supabase client could not be created."],
     };
   }
@@ -108,27 +127,29 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       onboardingComplete: defaultSetupProgress.complete,
       onboardingRequired: !defaultSetupProgress.complete,
       setupProgress: defaultSetupProgress,
+      setupChecklistDismissed: false,
       warnings: [],
     };
   }
 
+  const bootstrappedProfile = await ensureUserProfile(supabase, user);
   const [profileResult, brandingResult, settingsResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id,email,full_name,onboarding_step,onboarding_completed_at")
+      .select("id,email,full_name,onboarding_step,onboarding_completed_at,setup_checklist_dismissed_at")
       .eq("id", user.id)
-      .single<ProfileRow>(),
+      .maybeSingle<ProfileRow>(),
     supabase
       .from("branding")
       .select(
-        "business_name,business_email,phone,website,address,trn,bank_details,footer_text,primary_color,secondary_color,logo_path,signature_mode,signature_path,signature_text,signature_font,invoice_prefix,quotation_prefix",
+        "business_name,business_email,phone,website,address,trn,bank_details,footer_text,primary_color,secondary_color,logo_path,favicon_path,base_font,arabic_business_name,arabic_address,heading_font,body_font,spacing,header_layout,line_items_style,signature_mode,signature_path,signature_text,signature_font,invoice_prefix,quotation_prefix,custom_fonts",
       )
       .eq("user_id", user.id)
       .maybeSingle<BrandingRow>(),
     supabase
       .from("user_settings")
       .select(
-        "default_currency,default_language,default_tax_rate,tax_enabled,default_terms,default_notes,timezone,document_template",
+        "default_currency,default_language,default_tax_rate,tax_enabled,default_terms,default_notes,timezone,document_template,reminder_enabled,reminder_days_before,reminder_days_after,remind_on_due_date,second_reminder_days",
       )
       .eq("user_id", user.id)
       .maybeSingle<SettingsRow>(),
@@ -156,9 +177,8 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       profileResult.data.onboarding_step ?? "business-profile";
     userState.onboardingCompletedAt = profileResult.data.onboarding_completed_at;
   } else {
-    userState.profile.fullName =
-      (user.user_metadata.full_name as string | undefined) ?? "";
-    userState.email = user.email ?? "";
+    userState.profile.fullName = bootstrappedProfile.full_name ?? "";
+    userState.email = bootstrappedProfile.email ?? user.email ?? "";
   }
 
   if (brandingResult.data) {
@@ -182,11 +202,21 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     userState.branding.secondaryColor =
       brandingResult.data.secondary_color ?? userState.branding.secondaryColor;
     userState.branding.logoPath = brandingResult.data.logo_path;
+    userState.branding.faviconPath = brandingResult.data.favicon_path;
+    userState.branding.baseFont = brandingResult.data.base_font ?? userState.branding.baseFont;
+    userState.branding.arabicBusinessName = brandingResult.data.arabic_business_name ?? "";
+    userState.branding.arabicAddress = brandingResult.data.arabic_address ?? "";
+    userState.branding.headingFont = brandingResult.data.heading_font ?? userState.branding.headingFont;
+    userState.branding.bodyFont = brandingResult.data.body_font ?? userState.branding.bodyFont;
+    userState.branding.spacing = brandingResult.data.spacing ?? userState.branding.spacing;
+    userState.branding.headerLayout = brandingResult.data.header_layout ?? userState.branding.headerLayout;
+    userState.branding.lineItemsStyle = brandingResult.data.line_items_style ?? userState.branding.lineItemsStyle;
     userState.branding.signatureMode =
       brandingResult.data.signature_mode ?? userState.branding.signatureMode;
     userState.branding.signaturePath = brandingResult.data.signature_path;
     userState.branding.signatureText = brandingResult.data.signature_text;
     userState.branding.signatureFont = brandingResult.data.signature_font;
+    userState.branding.customFonts = brandingResult.data.custom_fonts ?? [];
     userState.settings.invoicePrefix =
       brandingResult.data.invoice_prefix ?? userState.settings.invoicePrefix;
     userState.settings.quotationPrefix =
@@ -210,6 +240,16 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       settingsResult.data.timezone ?? userState.settings.timezone;
     userState.settings.documentTemplate =
       settingsResult.data.document_template ?? userState.settings.documentTemplate;
+    userState.settings.reminderEnabled =
+      settingsResult.data.reminder_enabled ?? userState.settings.reminderEnabled;
+    userState.settings.reminderDaysBefore =
+      settingsResult.data.reminder_days_before ?? userState.settings.reminderDaysBefore;
+    userState.settings.reminderDaysAfter =
+      settingsResult.data.reminder_days_after ?? userState.settings.reminderDaysAfter;
+    userState.settings.remindOnDueDate =
+      settingsResult.data.remind_on_due_date ?? userState.settings.remindOnDueDate;
+    userState.settings.secondReminderDays =
+      settingsResult.data.second_reminder_days ?? userState.settings.secondReminderDays;
   }
 
   const [logoUrl, signatureUrl] = await Promise.all([
@@ -232,6 +272,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     onboardingComplete: setupProgress.complete,
     onboardingRequired: !setupProgress.complete,
     setupProgress,
+    setupChecklistDismissed: Boolean(profileResult.data?.setup_checklist_dismissed_at),
     warnings: [...new Set([...warnings, ...getBrandingWarnings(userState)])],
   };
 });

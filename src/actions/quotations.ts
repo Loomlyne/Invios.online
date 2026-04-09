@@ -413,21 +413,42 @@ export async function convertQuotationToInvoiceAction(quotationId: string) {
   revalidatePath("/app/quotations");
   revalidatePath(`/app/quotations/${quotationId}`);
   revalidatePath("/app/invoices");
-  redirect(`/app/invoices/${invoiceData.id}` as Route);
+  redirect(`/app/invoices/${invoiceData.id}/edit` as Route);
 }
 
-export async function deleteQuotationAction(id: string) {
-  const { supabase, user } = await requireSession();
-  const { error } = await supabase
-    .from("quotations")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id);
+export async function deleteQuotationAction(id: string): Promise<ActionState> {
+  try {
+    const { supabase, user } = await requireSession();
+    const { data, error } = await supabase
+      .from("quotations")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select("id");
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      return {
+        status: "error",
+        message: `Failed to delete quotation: ${error.message}`,
+      };
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        status: "error",
+        message: "Quotation not found or you don't have permission to delete it.",
+      };
+    }
+
+    revalidatePath("/app/quotations");
+    return {
+      status: "success",
+      redirectTo: "/app/quotations" as Route,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message: error instanceof Error ? error.message : "Could not delete quotation.",
+    };
   }
-
-  revalidatePath("/app/quotations");
-  redirect("/app/quotations");
 }

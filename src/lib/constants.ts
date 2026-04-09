@@ -5,6 +5,44 @@ import type {
   UserSettings,
 } from "@/lib/types";
 
+export const bottomNavItems: AppNavItemConfig[] = [
+  {
+    key: "dashboard",
+    label: "Home",
+    href: "/app",
+    icon: "layout-dashboard",
+    description: "Workspace summary and setup readiness.",
+  },
+  {
+    key: "invoices",
+    label: "Invoices",
+    href: "/app/invoices",
+    icon: "receipt-text",
+    description: "Draft, share, and export live invoices.",
+  },
+  {
+    key: "quotations",
+    label: "Quotes",
+    href: "/app/quotations",
+    icon: "file-text",
+    description: "Scope work, share quotations, and convert accepted deals.",
+  },
+  {
+    key: "clients",
+    label: "Clients",
+    href: "/app/clients",
+    icon: "users-round",
+    description: "Manage the client records tied to every document.",
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    href: "/app/settings",
+    icon: "settings-2",
+    description: "Preferences, invoice defaults, and notifications.",
+  },
+];
+
 export const appNavItems: AppNavItemConfig[] = [
   {
     key: "dashboard",
@@ -35,11 +73,18 @@ export const appNavItems: AppNavItemConfig[] = [
     description: "Manage the client records tied to every document.",
   },
   {
+    key: "branding",
+    label: "Branding",
+    href: "/app/branding" as unknown as import("next").Route,
+    icon: "palette",
+    description: "Logo, colors, fonts, and document identity.",
+  },
+  {
     key: "settings",
     label: "Settings",
     href: "/app/settings",
     icon: "settings-2",
-    description: "Branding, defaults, and the global document template.",
+    description: "Preferences, invoice defaults, and notifications.",
   },
 ];
 
@@ -96,6 +141,38 @@ export const sampleLineItems: InvoicePreviewLineItem[] = [
   },
 ];
 
+export const SIGNATURE_FONTS = ["Signature", "Cormorant Garamond", "DM Sans", "Lora", "EB Garamond"];
+
+export const HEADING_FONTS = [
+  "Playfair Display",
+  "Cormorant Garamond",
+  "Libre Baskerville",
+  "DM Sans",
+  "Lora",
+  "Merriweather",
+  "EB Garamond",
+  "Crimson Text",
+  "Poppins",
+  "Montserrat",
+  "Outfit",
+  "Raleway",
+];
+
+export const BODY_FONTS = [
+  "Lato",
+  "DM Sans",
+  "Inter",
+  "Source Sans 3",
+  "Roboto",
+  "Open Sans",
+  "Nunito",
+  "Work Sans",
+  "Rubik",
+  "Manrope",
+  "Plus Jakarta Sans",
+  "IBM Plex Sans",
+];
+
 export const defaultSettings: UserSettings = {
   defaultCurrency: "AED",
   defaultLanguage: "en",
@@ -109,4 +186,9 @@ export const defaultSettings: UserSettings = {
   invoicePrefix: "INV",
   quotationPrefix: "QUO",
   documentTemplate: "classic",
+  reminderEnabled: false,
+  reminderDaysBefore: 3,
+  reminderDaysAfter: 7,
+  remindOnDueDate: true,
+  secondReminderDays: 14,
 };

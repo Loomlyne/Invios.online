@@ -13,7 +13,7 @@ describe("ui contrast variants", () => {
   it("provides an inverse button variant for dark surfaces", () => {
     const classes = buttonVariants({ variant: "inverse" });
 
-    expect(classes).toContain("text-[#FFF9F0]");
+    expect(classes).toContain("text-on-dark");
     expect(classes).toContain("bg-white/10");
   });
 

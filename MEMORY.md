@@ -26,6 +26,8 @@
 - User explicitly chose the ambitious direction: full HoneyBook-style clone
 - Practical recommendation is still phased delivery, not giant-scope implementation in one pass
 - Side-project mindset, not immediate business validation
+- User requires web work to be pushed to Vercel by default after changes, not left as local-only fixes
+- Default deployment behavior: every completed web change should end with a Vercel deploy and reported URL unless explicitly skipped
 
 ## Design Artifacts
 - Primary design doc: `/Users/koss/.gstack/projects/INV/koss-unknown-design-20260405-144707.md`
@@ -93,9 +95,20 @@
   - public quotation/invoice rendering
   - PDF route response
   - template consistency checks across private/public/print outputs
+- Fixed shared date picker overlay clipping by portaling the calendar panel to `document.body`, so expense/payment date inputs and builder date fields stay visible inside `overflow-hidden` cards
+- Changed the expenses and payments table shells to `overflow-visible` so inline document entry controls can extend beyond the card boundary when open
+- Matched the browser-preview polish for the expenses table by rounding the header top edge and the add-expense row bottom edge to preserve the card silhouette after enabling visible overflow
+- Fixed the payment-method validation bug by replacing the free-text payment method field with an enum-backed select and normalizing stale free-text submissions server-side so old pages do not throw enum errors
+- Updated the invoice detail metadata cards from a 2-column tablet layout to a 3-column by 2-row grid to match the browser-reviewed visual layout
+- Moved the profitability summary into the top invoice detail card and expanded it into an explicit breakdown of income, expenses, net profit, and margin
+- Updated the kanban status-dot color for completed/accepted states from green to the approved beige token `#d7c4a7` across invoices, quotations, and clients
+- Added top-level invoice quick actions beside the back button: `Add income` and `Add expense`, each opening a modal form tied to the existing payment and expense flows
+- Moved `Delete invoice` from the lower invoice status-actions block into the header action row beside `Edit` and `Export`, using the compact small-button sizing from the reviewed layout
 
 ## Live Deployment
 - Production URL: `https://invios-phase1-koss.vercel.app`
+- Latest preview URL: `https://invios-phase1-koss-e59wz2lyo-koussays.vercel.app`
+- Latest production deployment URL: `https://invios-phase1-koss-kdfak2izf-koussays.vercel.app`
 - Current runtime state on the live deployment: Phase 2 clients + document engine is live on hosted Supabase and Vercel
 
 ## Hosted Supabase
@@ -133,9 +146,44 @@
 - No production code change was made for this QA-tool limitation after the redirect bug fix because the actual server actions and navigations completed successfully
 - Local `pnpm build` is currently not authoritative because the workspace's installed `lucide-react@0.542.0` package is missing internal files under `dist/esm/shared/src/`
 - Vercel production builds remain green with the same source tree, so deployment verification is currently the reliable build signal
+- Local review tooling note: gstack's external review step was patched to use `codex exec` instead of `codex review` because the installed `codex-cli 0.46.0` does not expose a `review` subcommand
+- Local review tooling note: ChatGPT-linked Codex login is healthy, but external review can still fail upstream with `insufficient funds`; when that happens, local/manual review is the fallback path
+
+## Recent Invoice UI Updates
+- Invoice detail header now includes top-level quick actions for `Add income` and `Add expense`, opening the existing overlay flows from the top of the page
+- Invoice delete action moved out of the lower status-actions area into the header action row beside edit controls
+- Profit summary moved into the top invoice detail card and expanded to show income, expenses, net profit, and margin
+- Invoice metadata (`Issue date`, `Due date`, `Type`, `Currency`, `Client`, `Total`) was redesigned from boxed cards into a cleaner text-led three-column detail block
+- Invoice detail now stacks the preview beneath the summary card, tightens the header into a title-plus-badges row, and rounds the payments table header/footer to match the reviewed browser polish
+- Invoice detail browser-preview replay is now persisted exactly in source: stacked card/preview layout, 21px title-to-badge gap, nowrap badge row, 26px title height treatment, and full-width flex-wrapped metadata rows
+- Follow-up browser-preview persistence is now deployed on Vercel preview: invoice quick-action/header rows use nowrap, invoice metadata stacks in a full-width vertical flex column, and quotation detail now mirrors the stacked card/preview layout
+- Final invoice metadata follow-up is now live on production: the top invoice detail metadata container uses a row flex layout with zero gap, matching the latest browser preview
+- Production deploy was briefly blocked by parser-sensitive additions in `src/lib/billing.ts`; this was resolved by simplifying the payment helper typing and moving payment-description trimming into `src/actions/payments.ts`
+- Kanban status dots using the prior green accent were updated to the beige accent `#d7c4a7`
+- Client kanban `Active` column now uses a green column marker again, while the in-card `Active` status badge uses the beige accent to avoid duplicating green treatments
+- Payments now support an optional `description` / note field for bank names, references, and payment context in both the top `Add income` dialog and the inline payments form
+- Linked Supabase migration history is currently drifted versus local, so the new `payments.description` column was applied safely via `supabase db query --linked` instead of `supabase db push`
 
 ## Next Step
 - Expand Phase 2 depth:
   - invoice status transitions beyond draft/sent
   - stronger onboarding defaults/branding completion
   - broader browser QA around builder and detail actions on mobile widths
+
+## Latest Dashboard Upgrade
+- Dashboard upgraded into a query-driven operator cockpit:
+  - `/app` now supports `metric` and `range` query state
+  - top metric cards are clickable drilldown controls
+  - inline invoice drilldown table renders billed, collected, outstanding, and profit per invoice
+  - lower dashboard now includes follow-up queue, pending quotations, top clients, analytics strip, and recent activity
+- Added pure dashboard selectors/loaders to derive metrics, drilldowns, and insights from existing invoices, quotations, payments, and expenses without a schema change
+- Invoices list now supports a real status filter UI and a synthetic `open` filter for sent + partial-paid + overdue receivables, so dashboard deep-links can land on a meaningful filtered table
+
+## Latest Verification Notes
+- Local verification on 2026-04-08 for the dashboard cockpit pass was blocked by environment instability:
+  - direct file reads on several repo paths intermittently returned macOS `dataless` / `ETIMEDOUT`
+  - direct `tsc` and `eslint` invocations failed with filesystem read timeouts before type/lint evaluation
+  - direct `vitest` startup failed with `Error: The service was stopped` from esbuild before reaching the new dashboard test file
+# Project Memory
+
+- 2026-04-08: Kept Kanban status badges on one line for clients, invoices, and quotations by adding status-badge `className` passthroughs, applying `whitespace-nowrap shrink-0` in Kanban cards, allowing title blocks to shrink with `min-w-0`, and widening shared Kanban columns from `260px` to `280px`.

@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useRef, useState, startTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2, Paintbrush } from "lucide-react";
 import { z } from "zod";
 import { completeOnboardingAction, saveBrandingStepAction, saveBusinessProfileAction, saveDefaultsAction } from "@/actions/app";
-import { onboardingSteps } from "@/lib/constants";
+import { onboardingSteps, SIGNATURE_FONTS } from "@/lib/constants";
 import { DocumentTemplatePicker } from "@/components/documents/document-template-picker";
 import { buildInvoicePreviewData } from "@/lib/preview";
 import type { AppUserState, InvoicePreviewData, SignatureMode } from "@/lib/types";
@@ -15,6 +16,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { SignaturePad } from "@/components/app/signature-pad";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
@@ -66,6 +68,7 @@ export function OnboardingWizard({
   const [drawSignature, setDrawSignature] = useState("");
   const logoInputRef = useRef<HTMLInputElement>(null);
   const signatureInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const businessForm = useForm<BusinessValues>({
     resolver: zodResolver(businessSchema),
@@ -201,7 +204,7 @@ export function OnboardingWizard({
       setPendingStep("");
       setFeedback(result.message ?? "");
       if (result.status === "success") {
-        setSettings(values);
+        setSettings((current) => ({ ...current, ...values }));
         setCurrentStep("preview");
       }
     });
@@ -214,8 +217,11 @@ export function OnboardingWizard({
       const result = await completeOnboardingAction();
       if (result?.status === "error") {
         setFeedback(result.message ?? "");
+        setPendingStep("");
+      } else {
+        // D-09: redirect into create-first-invoice rather than generic dashboard
+        router.push("/app/invoices/new");
       }
-      setPendingStep("");
     });
   };
 
@@ -424,14 +430,12 @@ export function OnboardingWizard({
                       <Input {...brandingForm.register("signatureText")} placeholder="e.g. Koussay Aloui" />
                     </Field>
                     <Field label="Signature font">
-                      <select
-                        className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
-                        {...brandingForm.register("signatureFont")}
-                      >
-                        <option value="Signature">Signature</option>
-                        <option value="Cormorant Garamond">Cormorant Garamond</option>
-                        <option value="DM Sans">DM Sans</option>
-                      </select>
+                      <Select
+                        name="signatureFont"
+                        value={brandingForm.watch("signatureFont")}
+                        onChange={(v) => brandingForm.setValue("signatureFont", v)}
+                        options={SIGNATURE_FONTS.map((f) => ({ value: f, label: f }))}
+                      />
                     </Field>
                   </div>
                 ) : null}
@@ -472,11 +476,16 @@ export function OnboardingWizard({
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Default language">
-                    <select className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm" {...defaultsForm.register("defaultLanguage")}>
-                      <option value="en">English</option>
-                      <option value="ar">Arabic</option>
-                      <option value="bilingual">Bilingual</option>
-                    </select>
+                    <Select
+                      name="defaultLanguage"
+                      value={defaultsForm.watch("defaultLanguage")}
+                      onChange={(v) => defaultsForm.setValue("defaultLanguage", v as "en" | "ar" | "bilingual")}
+                      options={[
+                        { value: "en", label: "English" },
+                        { value: "ar", label: "Arabic" },
+                        { value: "bilingual", label: "Bilingual" },
+                      ]}
+                    />
                   </Field>
                   <Field label="Tax rate">
                     <Input type="number" step="0.1" {...defaultsForm.register("defaultTaxRate", { valueAsNumber: true })} />

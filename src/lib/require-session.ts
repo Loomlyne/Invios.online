@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ensureUserProfile } from "@/lib/profile-bootstrap";
 
 export async function requireSession() {
   const supabase = await createSupabaseServerClient();
@@ -15,5 +16,7 @@ export async function requireSession() {
     throw new Error("You need to be signed in.");
   }
 
-  return { supabase, user };
+  const profile = await ensureUserProfile(supabase, user);
+
+  return { supabase, user, profile };
 }

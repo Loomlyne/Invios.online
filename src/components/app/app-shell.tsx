@@ -3,8 +3,10 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Settings2 } from "lucide-react";
 import { AppSidebarNav } from "@/components/app/app-sidebar-nav";
+import { BottomNav } from "@/components/app/bottom-nav";
+import { InviosLogo } from "@/components/app/invios-logo";
+import { PageTransition } from "@/components/app/page-transition";
 import { SignOutButton } from "@/components/app/sign-out-button";
-import { Button } from "@/components/ui/button";
 import type { AppContext } from "@/lib/types";
 
 export function AppShell({
@@ -20,8 +22,8 @@ export function AppShell({
         <aside className="hidden w-64 shrink-0 lg:block">
           <div className="glass-panel sticky top-6 rounded-[1.8rem] border border-black/8 px-4 py-5 subtle-shadow">
             <div className="border-b border-black/6 px-2 pb-4">
-              <Link href="/app" className="display-text text-2xl font-semibold text-foreground">
-                Invios
+              <Link href="/app">
+                <InviosLogo />
               </Link>
             </div>
             <div className="pt-4">
@@ -38,12 +40,9 @@ export function AppShell({
               </p>
 
               <div className="flex items-center gap-2">
-                <Button asChild variant="accent" size="sm">
-                  <Link href={"/app/invoices/new" as Route}>New invoice</Link>
-                </Button>
                 <Link
                   href={"/app/settings" as Route}
-                  className="inline-flex size-10 items-center justify-center rounded-full border border-border bg-white/80 text-muted-strong transition hover:bg-[#FFF8ED]"
+                  className="hidden lg:inline-flex size-10 items-center justify-center rounded-full border border-border bg-white/80 text-muted-strong transition hover:bg-[#FFF8ED]"
                   aria-label="Settings"
                 >
                   <Settings2 className="size-4" />
@@ -51,13 +50,15 @@ export function AppShell({
                 <SignOutButton />
               </div>
             </div>
-
-            <AppSidebarNav mode="mobile" />
           </header>
 
-          <main className="relative flex-1">{children}</main>
+          <main className="relative flex-1">
+            <PageTransition>{children}</PageTransition>
+          </main>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

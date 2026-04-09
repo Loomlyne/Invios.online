@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
+import { InviosLogo } from "@/components/app/invios-logo";
 
 export function AuthShell({
   title,
@@ -17,8 +18,8 @@ export function AuthShell({
         <section className="relative overflow-hidden rounded-[2rem] border border-black/10 bg-[#1C1917] px-6 py-8 text-[#F8F4EE] soft-shadow sm:px-8 sm:py-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(202,138,4,0.28),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.07),transparent_30%)]" />
           <div className="relative flex h-full flex-col">
-            <Link href="/" className="display-text text-2xl font-semibold">
-              Invios
+            <Link href="/">
+              <InviosLogo />
             </Link>
 
             <div className="mt-14 max-w-md space-y-5">

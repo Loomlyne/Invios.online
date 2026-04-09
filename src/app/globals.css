@@ -13,6 +13,7 @@
   --accent-soft: rgba(202, 138, 4, 0.12);
   --success: #24583a;
   --danger: #8d3d2e;
+  --on-dark: #fff9f0;
   --shadow-lg: 0 32px 80px rgba(21, 17, 13, 0.16);
   --shadow-md: 0 18px 48px rgba(21, 17, 13, 0.12);
   --radius-lg: 1.75rem;
@@ -33,6 +34,7 @@
   --color-accent-soft: var(--accent-soft);
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-on-dark: var(--on-dark);
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
 }
@@ -105,6 +107,11 @@ img {
 
 .text-balance {
   text-wrap: balance;
+}
+
+/* Always-emitted utility — bypasses Tailwind scanner for dark-surface text */
+.text-on-dark {
+  color: var(--on-dark);
 }
 
 .animate-enter {
