@@ -1,7 +1,8 @@
 ---
 phase: 4
 slug: public-trust-surfaces
-status: draft
+status: approved
+reviewed_at: 2026-04-09
 shadcn_initialized: true
 preset: default / stone / radix / lucide
 created: 2026-04-09
