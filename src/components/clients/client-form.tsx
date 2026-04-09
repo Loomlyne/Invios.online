@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { ClientFormInput } from "@/lib/billing";
 import type { ActionState } from "@/lib/types";
@@ -42,15 +43,19 @@ export function ClientForm({
           <Input id="phone" name="phone" defaultValue={initialValue?.phone ?? ""} />
         </Field>
         <Field label="Status" htmlFor="status">
-          <select
+          <Select
             id="status"
             name="status"
             defaultValue={initialValue?.status ?? "lead"}
-            className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
-          >
-            <option value="lead">Lead</option>
-            <option value="active">Active</option>
-          </select>
+            options={[
+              { value: "lead", label: "Lead" },
+              { value: "in_review", label: "In Review" },
+              { value: "approved", label: "Approved" },
+              { value: "active", label: "Active" },
+              { value: "rejected", label: "Rejected" },
+              { value: "canceled", label: "Canceled" },
+            ]}
+          />
         </Field>
         <Field label="TRN" htmlFor="trn">
           <Input id="trn" name="trn" defaultValue={initialValue?.trn ?? ""} />
