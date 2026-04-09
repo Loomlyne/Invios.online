@@ -17,6 +17,7 @@ interface DocumentStatusActionsProps {
   id: string;
   status: string;
   convertedToInvoiceId?: string | null;
+  hideDelete?: boolean;
 }
 
 export function DocumentStatusActions({
@@ -24,6 +25,7 @@ export function DocumentStatusActions({
   id,
   status,
   convertedToInvoiceId,
+  hideDelete = false,
 }: DocumentStatusActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -83,8 +85,12 @@ export function DocumentStatusActions({
   };
 
   if (kind === "invoice") {
+    if (status !== "draft" && hideDelete) {
+      return null;
+    }
+
     return (
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className={hideDelete ? "grid gap-3" : "grid gap-3 sm:grid-cols-2"}>
         {status === "draft" && (
           <Button
             onClick={() => handleSetInvoiceStatus("sent")}
@@ -97,15 +103,17 @@ export function DocumentStatusActions({
           </Button>
         )}
 
-        <Button
-          onClick={handleDeleteInvoice}
-          disabled={isPending}
-          variant="danger"
-          className="w-full"
-        >
-          <Trash2 className="size-4" />
-          {isPending ? "Deleting..." : "Delete invoice"}
-        </Button>
+        {!hideDelete ? (
+          <Button
+            onClick={handleDeleteInvoice}
+            disabled={isPending}
+            variant="danger"
+            className="w-full"
+          >
+            <Trash2 className="size-4" />
+            {isPending ? "Deleting..." : "Delete invoice"}
+          </Button>
+        ) : null}
       </div>
     );
   }

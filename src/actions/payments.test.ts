@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { paymentFormSchema, paymentMethods } from "@/lib/billing";
+import {
+  normalizePaymentMethodInput,
+  paymentFormSchema,
+  paymentMethods,
+} from "@/lib/billing";
 
 // ---------------------------------------------------------------------------
 // paymentFormSchema
@@ -12,6 +16,7 @@ describe("paymentFormSchema", () => {
       datePaid: "2026-04-08",
       amount: 1500,
       method: "bank_transfer",
+      description: "Mashreq Bank transfer",
     });
     expect(result.success).toBe(true);
   });
@@ -65,6 +70,21 @@ describe("paymentFormSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.method).toBe("other");
+      expect(result.data.description).toBe("");
+    }
+  });
+
+  it("trims payment descriptions", () => {
+    const result = paymentFormSchema.safeParse({
+      invoiceId: "550e8400-e29b-41d4-a716-446655440000",
+      datePaid: "2026-04-08",
+      amount: 1500,
+      method: "other",
+      description: "  Sent from personal account  ",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.description).toBe("Sent from personal account");
     }
   });
 
@@ -101,5 +121,13 @@ describe("paymentFormSchema", () => {
     if (result.success) {
       expect(result.data.amount).toBe(2500);
     }
+  });
+
+  it("normalizes display labels and stale free-text values", () => {
+    expect(normalizePaymentMethodInput("Bank transfer")).toBe("bank_transfer");
+    expect(normalizePaymentMethodInput("cash")).toBe("cash");
+    expect(normalizePaymentMethodInput("Cheque")).toBe("cheque");
+    expect(normalizePaymentMethodInput("Cash, transfer, cheque...")).toBe("cash");
+    expect(normalizePaymentMethodInput("")).toBe("other");
   });
 });

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { env, isSupabaseConfigured } from "@/lib/env";
+import { ensureUserProfile } from "@/lib/profile-bootstrap";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/types";
 
@@ -110,6 +111,9 @@ export async function signUpAction(
   }
 
   if (data.session) {
+    if (data.user) {
+      await ensureUserProfile(supabase, data.user);
+    }
     revalidatePath("/app", "layout");
     redirect("/app");
   }

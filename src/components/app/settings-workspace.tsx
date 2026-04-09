@@ -2,7 +2,7 @@
 
 import { startTransition, useState } from "react";
 import type { ReactNode } from "react";
-import { Bell, Loader2, LogOut, Settings2, SlidersHorizontal, FileText } from "lucide-react";
+import { Bell, ChevronRight, Loader2, LogOut, Palette, Settings2, SlidersHorizontal, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   saveGeneralSettingsAction,
@@ -10,6 +10,7 @@ import {
   saveNotificationsAction,
 } from "@/actions/app";
 import { signOutAction } from "@/actions/auth";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,6 +135,21 @@ export function SettingsWorkspace({
       </CardHeader>
 
       <CardContent className="px-5 py-5 sm:px-6">
+        {/* Branding shortcut — visible on mobile where sidebar nav is hidden */}
+        <Link
+          href="/app/branding"
+          className="mb-4 flex items-center gap-3 rounded-[1.15rem] border border-black/6 bg-surface px-4 py-3.5 transition hover:bg-surface-strong lg:hidden"
+        >
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/10">
+            <Palette className="size-4 text-accent-strong" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Branding</p>
+            <p className="text-xs text-muted">Logo, colors, fonts, and document identity.</p>
+          </div>
+          <ChevronRight className="size-4 shrink-0 text-muted" />
+        </Link>
+
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SettingsSection)}>
           <TabsList>
             <TabsTrigger value="general">

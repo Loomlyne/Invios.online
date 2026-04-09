@@ -23,7 +23,7 @@ export const quotationConfig: DataViewConfig<QuotationRecord, QuotationStatus> =
   kanbanColumns: [
     { status: "draft", label: "Draft", color: "#9ca3af" },
     { status: "sent", label: "Sent", color: "#2563eb" },
-    { status: "accepted", label: "Accepted", color: "#059669" },
+    { status: "accepted", label: "Accepted", color: "#d7c4a7" },
     { status: "rejected", label: "Rejected", color: "#dc2626" },
     { status: "expired", label: "Expired", color: "#6b7280" },
   ],
@@ -116,10 +116,10 @@ export const quotationConfig: DataViewConfig<QuotationRecord, QuotationStatus> =
   renderKanbanCard: (q) => (
     <div className="flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-foreground leading-tight">
+        <p className="min-w-0 text-sm font-semibold text-foreground leading-tight">
           {q.quotationNumber}
         </p>
-        <DocumentStatusBadge status={q.status} />
+        <DocumentStatusBadge status={q.status} className="shrink-0 whitespace-nowrap" />
       </div>
       <p className="text-xs text-muted-strong truncate">{q.client.name}</p>
       <p className="text-sm font-medium text-foreground">

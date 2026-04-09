@@ -11,6 +11,7 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
 
   statusOptions: [
     { value: "all", label: "All statuses" },
+    { value: "open", label: "Open receivables" },
     { value: "draft", label: "Draft" },
     { value: "sent", label: "Sent" },
     { value: "partial_paid", label: "Partial paid" },
@@ -24,7 +25,7 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
     { status: "draft", label: "Draft", color: "#9ca3af" },
     { status: "sent", label: "Sent", color: "#2563eb" },
     { status: "partial_paid", label: "Partial Paid", color: "#d97706" },
-    { status: "paid", label: "Paid", color: "#059669" },
+    { status: "paid", label: "Paid", color: "#d7c4a7" },
     { status: "overdue", label: "Overdue", color: "#dc2626" },
   ],
 
@@ -116,10 +117,10 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
   renderKanbanCard: (inv) => (
     <div className="flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-foreground leading-tight">
+        <p className="min-w-0 text-sm font-semibold text-foreground leading-tight">
           {inv.invoiceNumber}
         </p>
-        <DocumentStatusBadge status={inv.status} />
+        <DocumentStatusBadge status={inv.status} className="shrink-0 whitespace-nowrap" />
       </div>
       <p className="text-xs text-muted-strong truncate">{inv.client.name}</p>
       <p className="text-sm font-medium text-foreground">

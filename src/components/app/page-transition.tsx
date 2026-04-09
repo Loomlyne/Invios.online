@@ -17,13 +17,19 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
         "(prefers-reduced-motion: reduce)",
       ).matches;
 
-      gsap.from(containerRef.current, {
-        opacity: prefersReduced ? 1 : 0,
-        y: prefersReduced ? 0 : 16,
-        duration: prefersReduced ? 0 : 0.38,
-        ease: "power3.out",
-        clearProps: "opacity,transform",
-      });
+      if (prefersReduced) return;
+
+      gsap.fromTo(
+        containerRef.current,
+        { autoAlpha: 0, y: 16 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.38,
+          ease: "power3.out",
+          clearProps: "opacity,visibility,transform",
+        },
+      );
     },
     { scope: containerRef, dependencies: [pathname] },
   );

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import type { Route } from "next";
+import { Select } from "@/components/ui/select";
 import { ViewSwitcher } from "./view-switcher";
 import type { StatusOption, ViewMode } from "./types";
 
@@ -73,6 +74,14 @@ export function DataViewToolbar({
           placeholder={searchPlaceholder}
           className="h-11 flex-1 rounded-[1rem] border border-border bg-white px-4 text-sm"
         />
+        <div className="sm:w-56">
+          <Select
+            options={statusOptions}
+            value={currentStatus}
+            onChange={(value) => navigate({ status: value })}
+            placeholder="All statuses"
+          />
+        </div>
       </div>
       <ViewSwitcher value={currentView} onChange={handleViewChange} />
     </div>

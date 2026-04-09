@@ -102,7 +102,7 @@ export function KanbanView<TItem, TStatus extends string>({
             const colItems = grouped.get(col.status) ?? [];
             return (
               <DroppableColumn key={col.status} id={col.status}>
-                <div className="w-[260px] shrink-0 snap-start flex flex-col gap-2">
+                <div className="w-[280px] shrink-0 snap-start flex flex-col gap-2">
                   {/* Column header */}
                   <div className="flex items-center justify-between px-1 py-1.5">
                     <div className="flex items-center gap-2">

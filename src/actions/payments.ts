@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { paymentFormSchema } from "@/lib/billing";
+import { normalizePaymentMethodInput, paymentFormSchema } from "@/lib/billing";
 import { computeAndWriteInvoiceStatus } from "@/lib/billing-data";
 import { requireSession } from "@/lib/require-session";
 import type { ActionState } from "@/lib/types";
@@ -12,12 +12,15 @@ export async function addPaymentAction(
 ): Promise<ActionState> {
   try {
     const { supabase, user } = await requireSession();
+    const rawDescription = formData.get("description");
+    const description = typeof rawDescription === "string" ? rawDescription.trim() : "";
 
     const parsed = paymentFormSchema.safeParse({
       invoiceId: formData.get("invoiceId"),
       datePaid: formData.get("datePaid"),
       amount: formData.get("amount"),
-      method: formData.get("method") || "other",
+      method: normalizePaymentMethodInput(formData.get("method")),
+      description,
     });
 
     if (!parsed.success) {
@@ -30,6 +33,7 @@ export async function addPaymentAction(
       amount: parsed.data.amount,
       date_paid: parsed.data.datePaid,
       method: parsed.data.method,
+      description: parsed.data.description,
     });
 
     if (error) {

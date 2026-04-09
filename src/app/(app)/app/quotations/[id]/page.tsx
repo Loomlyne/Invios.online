@@ -38,7 +38,7 @@ export default async function QuotationDetailPage({
         </Link>
       </Button>
 
-      <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
+      <section className="flex flex-col gap-5">
         <Card>
           <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>

@@ -24,7 +24,7 @@ export const clientConfig: DataViewConfig<ClientRecord, ClientStatus> = {
     { status: "lead", label: "Lead", color: "#ca8a04" },
     { status: "in_review", label: "In Review", color: "#2563eb" },
     { status: "active", label: "Active", color: "#059669" },
-    { status: "approved", label: "Approved", color: "#059669" },
+    { status: "approved", label: "Approved", color: "#d7c4a7" },
     { status: "rejected", label: "Rejected", color: "#dc2626" },
     { status: "canceled", label: "Canceled", color: "#9ca3af" },
   ],
@@ -97,10 +97,14 @@ export const clientConfig: DataViewConfig<ClientRecord, ClientStatus> = {
   renderKanbanCard: (client) => (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-foreground leading-tight">
+        <p className="min-w-0 text-sm font-semibold text-foreground leading-tight">
           {client.name}
         </p>
-        <ClientStatusBadge status={client.status} />
+        <ClientStatusBadge
+          status={client.status}
+          variantOverride={client.status === "active" ? "accent" : undefined}
+          className="shrink-0 whitespace-nowrap"
+        />
       </div>
       <p className="text-xs text-muted-strong truncate">
         {client.company || "Independent client"}

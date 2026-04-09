@@ -18,6 +18,13 @@ export const quotationStatuses = [
 export const documentLanguages = ["en", "ar", "bilingual"] as const;
 export const invoiceTypes = ["invoice", "tax_invoice"] as const;
 export const documentKinds = ["invoice", "quotation"] as const;
+export const dashboardMetricKeys = [
+  "total-billed",
+  "collected",
+  "outstanding",
+  "collection-rate",
+] as const;
+export const dashboardRangeKeys = ["all", "30d", "90d", "12m"] as const;
 
 export const documentLineItemSchema = z.object({
   id: z.string().min(1),
@@ -75,6 +82,8 @@ export type QuotationStatus = (typeof quotationStatuses)[number];
 export type DocumentLanguage = (typeof documentLanguages)[number];
 export type InvoiceType = (typeof invoiceTypes)[number];
 export type DocumentKind = (typeof documentKinds)[number];
+export type DashboardMetricKey = (typeof dashboardMetricKeys)[number];
+export type DashboardRangeKey = (typeof dashboardRangeKeys)[number];
 
 export type DocumentLineItem = z.infer<typeof documentLineItemSchema>;
 export type ClientFormInput = z.infer<typeof clientFormSchema>;
@@ -154,11 +163,37 @@ export interface QuotationRecord extends DocumentRecordBase {
 export const paymentMethods = ["cash", "bank_transfer", "cheque", "other"] as const;
 export type PaymentMethod = (typeof paymentMethods)[number];
 
+export const paymentMethodLabels = {
+  cash: "Cash",
+  bank_transfer: "Bank transfer",
+  cheque: "Cheque",
+  other: "Other",
+};
+
+export function formatPaymentMethod(method: PaymentMethod): string {
+  return paymentMethodLabels[method];
+}
+
+export function normalizePaymentMethodInput(value: unknown): PaymentMethod {
+  if (typeof value !== "string") return "other";
+
+  const normalized = value.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  if (!normalized) return "other";
+  if (normalized in paymentMethodLabels) return normalized as PaymentMethod;
+  if (normalized.includes("cash")) return "cash";
+  if (normalized.includes("transfer")) return "bank_transfer";
+  if (normalized.includes("cheque") || normalized.includes("check")) return "cheque";
+  if (normalized.includes("other")) return "other";
+
+  return "other";
+}
+
 export const paymentFormSchema = z.object({
   invoiceId: z.string().uuid(),
   datePaid: z.string().min(1, "Enter a date."),
   amount: z.coerce.number().positive("Enter a valid amount."),
   method: z.enum(paymentMethods).default("other"),
+  description: z.string().max(160, "Keep the description under 160 characters.").default(""),
 });
 
 export const expenseFormSchema = z.object({
@@ -179,6 +214,7 @@ export interface PaymentRecord {
   amount: number;
   datePaid: string;
   method: PaymentMethod;
+  description: string;
   createdAt: string;
 }
 

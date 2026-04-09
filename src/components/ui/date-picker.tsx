@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 const DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
@@ -43,7 +44,11 @@ export function DatePicker({
   compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelWidth = 280;
+  const panelHeightEstimate = 320;
 
   // Parse current value to set initial view month
   const parsed = value ? new Date(value + "T00:00:00") : new Date();
@@ -54,9 +59,11 @@ export function DatePicker({
   const todayIso = toIso(today.getFullYear(), today.getMonth(), today.getDate());
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
-    if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-      setOpen(false);
+    const target = event.target as Node;
+    if (triggerRef.current?.contains(target) || panelRef.current?.contains(target)) {
+      return;
     }
+    setOpen(false);
   }, []);
 
   useEffect(() => {
@@ -69,6 +76,37 @@ export function DatePicker({
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open, handleClickOutside, value]);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
+
+  function openCalendar() {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const openAbove = spaceBelow < panelHeightEstimate && rect.top > panelHeightEstimate;
+      const preferredLeft = align === "right" ? rect.right - panelWidth : rect.left;
+      const left = Math.min(
+        Math.max(12, preferredLeft),
+        Math.max(12, window.innerWidth - panelWidth - 12),
+      );
+
+      setPosition({
+        top: openAbove ? Math.max(12, rect.top - panelHeightEstimate - 6) : rect.bottom + 6,
+        left,
+      });
+    }
+
+    setOpen(true);
+  }
 
   function prevMonth() {
     if (viewMonth === 0) {
@@ -123,108 +161,119 @@ export function DatePicker({
 
   const monthName = new Date(viewYear, viewMonth).toLocaleDateString("en-US", { month: "long" });
 
+  const panel = open ? (
+    <div
+      ref={panelRef}
+      style={{
+        position: "fixed",
+        top: position.top,
+        left: position.left,
+        width: panelWidth,
+      }}
+      className="z-[9999] rounded-[1rem] border border-border bg-white p-3 shadow-[0_16px_48px_rgba(19,15,11,0.12)]"
+    >
+      {/* Header */}
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-sm font-semibold text-foreground">
+          {monthName} {viewYear}
+        </span>
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={prevMonth}
+            className="flex size-8 items-center justify-center rounded-full text-muted transition hover:bg-[#FFF7EA] hover:text-foreground"
+            aria-label="Previous month"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={nextMonth}
+            className="flex size-8 items-center justify-center rounded-full text-muted transition hover:bg-[#FFF7EA] hover:text-foreground"
+            aria-label="Next month"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Weekday headers */}
+      <div className="mb-1 grid grid-cols-7">
+        {DAYS.map((d) => (
+          <div key={d} className="flex h-8 items-center justify-center text-xs font-medium text-muted">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Day grid */}
+      <div className="grid grid-cols-7">
+        {cells.map((cell, i) => {
+          const isSelected = cell.current && isSameDay(value, viewYear, viewMonth, cell.day);
+          const isToday = cell.current && isSameDay(todayIso, viewYear, viewMonth, cell.day);
+
+          return (
+            <button
+              key={i}
+              type="button"
+              disabled={!cell.current}
+              onClick={() => cell.current && selectDay(cell.day)}
+              className={`flex size-9 items-center justify-center rounded-full text-sm transition ${
+                isSelected
+                  ? "bg-foreground font-semibold text-on-dark"
+                  : isToday
+                    ? "font-semibold text-[#92700C] ring-1 ring-inset ring-[#CA8A04]/30"
+                    : cell.current
+                      ? "text-foreground hover:bg-[#FFF7EA]"
+                      : "text-black/20"
+              }`}
+            >
+              {cell.day}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-2 flex items-center justify-between border-t border-black/6 pt-2">
+        <button
+          type="button"
+          onClick={() => {
+            onChange("");
+            setOpen(false);
+          }}
+          className="rounded-full px-3 py-1 text-xs font-medium text-muted transition hover:bg-[#FFF7EA] hover:text-foreground"
+        >
+          Clear
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onChange(todayIso);
+            setOpen(false);
+          }}
+          className="rounded-full px-3 py-1 text-xs font-medium text-[#92700C] transition hover:bg-[#FFF7EA]"
+        >
+          Today
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   return (
-    <div ref={containerRef} className="relative">
+    <div>
       {name ? <input type="hidden" name={name} value={value} /> : null}
       <button
+        ref={triggerRef}
         type="button"
         id={id}
-        onClick={() => setOpen(!open)}
+        onClick={() => (open ? setOpen(false) : openCalendar())}
         className={`flex w-full items-center justify-between border border-border bg-white/85 text-left text-sm text-foreground shadow-[0_1px_0_rgba(255,255,255,0.6)_inset] transition hover:border-[#CAB9A2] ${compact ? "h-9 rounded-[0.75rem] px-3 gap-2" : "h-12 rounded-[1rem] px-4"}`}
       >
         <span className={compact ? "text-xs" : ""}>{formatDisplay(value) || "Select date"}</span>
         <Calendar className={compact ? "size-3.5 text-muted" : "size-4 text-muted"} />
       </button>
-
-      {open ? (
-        <div className={`absolute top-[calc(100%+6px)] z-50 w-[280px] rounded-[1rem] border border-border bg-white p-3 shadow-[0_16px_48px_rgba(19,15,11,0.12)] ${align === "right" ? "right-0" : "left-0"}`}>
-          {/* Header */}
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground">
-              {monthName} {viewYear}
-            </span>
-            <div className="flex gap-1">
-              <button
-                type="button"
-                onClick={prevMonth}
-                className="flex size-8 items-center justify-center rounded-full text-muted transition hover:bg-[#FFF7EA] hover:text-foreground"
-                aria-label="Previous month"
-              >
-                <ChevronLeft className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={nextMonth}
-                className="flex size-8 items-center justify-center rounded-full text-muted transition hover:bg-[#FFF7EA] hover:text-foreground"
-                aria-label="Next month"
-              >
-                <ChevronRight className="size-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Weekday headers */}
-          <div className="mb-1 grid grid-cols-7">
-            {DAYS.map((d) => (
-              <div key={d} className="flex h-8 items-center justify-center text-xs font-medium text-muted">
-                {d}
-              </div>
-            ))}
-          </div>
-
-          {/* Day grid */}
-          <div className="grid grid-cols-7">
-            {cells.map((cell, i) => {
-              const isSelected = cell.current && isSameDay(value, viewYear, viewMonth, cell.day);
-              const isToday = cell.current && isSameDay(todayIso, viewYear, viewMonth, cell.day);
-
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  disabled={!cell.current}
-                  onClick={() => cell.current && selectDay(cell.day)}
-                  className={`flex size-9 items-center justify-center rounded-full text-sm transition ${
-                    isSelected
-                      ? "bg-foreground font-semibold text-on-dark"
-                      : isToday
-                        ? "font-semibold text-[#92700C] ring-1 ring-inset ring-[#CA8A04]/30"
-                        : cell.current
-                          ? "text-foreground hover:bg-[#FFF7EA]"
-                          : "text-black/20"
-                  }`}
-                >
-                  {cell.day}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Footer */}
-          <div className="mt-2 flex items-center justify-between border-t border-black/6 pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                onChange("");
-                setOpen(false);
-              }}
-              className="rounded-full px-3 py-1 text-xs font-medium text-muted transition hover:bg-[#FFF7EA] hover:text-foreground"
-            >
-              Clear
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onChange(todayIso);
-                setOpen(false);
-              }}
-              className="rounded-full px-3 py-1 text-xs font-medium text-[#92700C] transition hover:bg-[#FFF7EA]"
-            >
-              Today
-            </button>
-          </div>
-        </div>
-      ) : null}
+      {typeof document !== "undefined" ? createPortal(panel, document.body) : panel}
     </div>
   );
 }

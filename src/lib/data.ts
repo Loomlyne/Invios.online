@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createDefaultUserState, buildInvoicePreviewData, getBrandingWarnings } from "@/lib/preview";
+import { ensureUserProfile } from "@/lib/profile-bootstrap";
 import { deriveSetupProgress } from "@/lib/setup";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -131,12 +132,13 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     };
   }
 
+  const bootstrappedProfile = await ensureUserProfile(supabase, user);
   const [profileResult, brandingResult, settingsResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("id,email,full_name,onboarding_step,onboarding_completed_at,setup_checklist_dismissed_at")
       .eq("id", user.id)
-      .single<ProfileRow>(),
+      .maybeSingle<ProfileRow>(),
     supabase
       .from("branding")
       .select(
@@ -175,9 +177,8 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       profileResult.data.onboarding_step ?? "business-profile";
     userState.onboardingCompletedAt = profileResult.data.onboarding_completed_at;
   } else {
-    userState.profile.fullName =
-      (user.user_metadata.full_name as string | undefined) ?? "";
-    userState.email = user.email ?? "";
+    userState.profile.fullName = bootstrappedProfile.full_name ?? "";
+    userState.email = bootstrappedProfile.email ?? user.email ?? "";
   }
 
   if (brandingResult.data) {

@@ -2,6 +2,8 @@ import { cache } from "react";
 import type {
   ClientRecord,
   ClientStatus,
+  DashboardMetricKey,
+  DashboardRangeKey,
   ExpenseRecord,
   InvoiceRecord,
   InvoiceStatus,
@@ -11,6 +13,12 @@ import type {
   QuotationStatus,
 } from "@/lib/billing";
 import { computePaymentStatus } from "@/lib/billing-utils";
+import {
+  buildDashboardInsights,
+  buildDashboardInvoiceRows,
+  buildDashboardMetrics,
+  selectDashboardDrilldownRows,
+} from "@/lib/dashboard";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -306,7 +314,7 @@ export async function listInvoices({
   status,
 }: {
   search?: string;
-  status?: InvoiceStatus | "all";
+  status?: InvoiceStatus | "all" | "open";
 }) {
   const supabase = await createSupabaseServerClient();
 
@@ -319,7 +327,9 @@ export async function listInvoices({
     .select(invoiceSelect)
     .order("created_at", { ascending: false });
 
-  if (status && status !== "all") {
+  if (status === "open") {
+    query = query.in("status", ["sent", "partial_paid", "overdue"]);
+  } else if (status && status !== "all") {
     query = query.eq("status", status);
   }
 
@@ -524,6 +534,7 @@ type PaymentRow = {
   amount: string; // numeric(12,2) returns as string from Supabase
   date_paid: string;
   method: string;
+  description: string | null;
   created_at: string;
 };
 
@@ -546,6 +557,7 @@ function mapPayment(row: PaymentRow): PaymentRecord {
     amount: Number(row.amount),
     datePaid: row.date_paid,
     method: row.method as PaymentMethod,
+    description: row.description ?? "",
     createdAt: row.created_at,
   };
 }
@@ -656,40 +668,133 @@ export async function syncOverdueStatuses(userId: string): Promise<void> {
  * Aggregate dashboard metrics across all non-draft invoices for the user.
  * Syncs overdue statuses before aggregating.
  */
-export async function getDashboardMetrics(userId: string): Promise<{
-  totalBilled: number;
-  totalCollected: number;
-  outstanding: number;
-  collectionRate: number | null;
-}> {
+const getDashboardDataset = cache(async (userId: string, range: DashboardRangeKey = "all") => {
   const supabase = await createSupabaseServerClient();
-  const defaultMetrics = {
-    totalBilled: 0,
-    totalCollected: 0,
-    outstanding: 0,
-    collectionRate: null as number | null,
-  };
-  if (!supabase) return defaultMetrics;
+  const today = new Date().toISOString().split("T")[0];
+
+  const emptyRows = [] as ReturnType<typeof buildDashboardInvoiceRows>;
+  const emptyInsights = buildDashboardInsights({
+    rows: [],
+    quotations: [],
+    payments: [],
+    expenses: [],
+    range,
+    today,
+  });
+
+  if (!supabase) {
+    return {
+      rows: emptyRows,
+      metrics: buildDashboardMetrics([]),
+      insights: emptyInsights,
+      recentInvoices: [] as InvoiceRecord[],
+      recentQuotations: [] as QuotationRecord[],
+    };
+  }
 
   await syncOverdueStatuses(userId);
 
-  const { data: invoices } = await supabase
-    .from("invoices")
-    .select("total")
-    .eq("user_id", userId)
-    .not("status", "eq", "draft");
+  const [invoiceResult, paymentResult, expenseResult, quotationResult] = await Promise.all([
+    supabase
+      .from("invoices")
+      .select(invoiceSelect)
+      .eq("user_id", userId)
+      .returns<InvoiceRow[]>(),
+    supabase
+      .from("payments")
+      .select("*")
+      .eq("user_id", userId)
+      .returns<PaymentRow[]>(),
+    supabase
+      .from("expenses")
+      .select("*")
+      .eq("user_id", userId)
+      .returns<ExpenseRow[]>(),
+    supabase
+      .from("quotations")
+      .select(quotationSelect)
+      .eq("user_id", userId)
+      .returns<QuotationRow[]>(),
+  ]);
 
-  const { data: payments } = await supabase
-    .from("payments")
-    .select("amount")
-    .eq("user_id", userId);
+  if (invoiceResult.error || paymentResult.error || expenseResult.error || quotationResult.error) {
+    const message =
+      invoiceResult.error?.message ||
+      paymentResult.error?.message ||
+      expenseResult.error?.message ||
+      quotationResult.error?.message;
+    throw new Error(message);
+  }
 
-  const totalBilled = (invoices ?? []).reduce((s, i) => s + Number(i.total), 0);
-  const totalCollected = (payments ?? []).reduce((s, p) => s + Number(p.amount), 0);
-  const outstanding = Math.max(0, totalBilled - totalCollected);
-  const collectionRate = totalBilled > 0 ? Math.round((totalCollected / totalBilled) * 100) : null;
+  const invoices = (invoiceResult.data ?? []).map(mapInvoice);
+  const payments = (paymentResult.data ?? []).map(mapPayment);
+  const expenses = (expenseResult.data ?? []).map(mapExpense);
+  const quotations = (quotationResult.data ?? []).map(mapQuotation);
+  const rows = buildDashboardInvoiceRows({
+    invoices,
+    payments,
+    expenses,
+    range,
+    today,
+  });
 
-  return { totalBilled, totalCollected, outstanding, collectionRate };
+  const recentInvoices = [...invoices]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 5);
+  const recentQuotations = [...quotations]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 5);
+
+  return {
+    rows,
+    metrics: buildDashboardMetrics(rows),
+    insights: buildDashboardInsights({
+      rows,
+      quotations,
+      payments,
+      expenses,
+      range,
+      today,
+    }),
+    recentInvoices,
+    recentQuotations,
+  };
+});
+
+export async function getDashboardMetrics(
+  userId: string,
+  range: DashboardRangeKey = "all",
+) {
+  return (await getDashboardDataset(userId, range)).metrics;
+}
+
+export async function getDashboardDrilldown(
+  userId: string,
+  metric: DashboardMetricKey,
+  range: DashboardRangeKey = "all",
+) {
+  return selectDashboardDrilldownRows((await getDashboardDataset(userId, range)).rows, metric);
+}
+
+export async function getDashboardInsights(
+  userId: string,
+  range: DashboardRangeKey = "all",
+) {
+  return (await getDashboardDataset(userId, range)).insights;
+}
+
+export async function getDashboardRecentInvoices(
+  userId: string,
+  range: DashboardRangeKey = "all",
+) {
+  return (await getDashboardDataset(userId, range)).recentInvoices;
+}
+
+export async function getDashboardRecentQuotations(
+  userId: string,
+  range: DashboardRangeKey = "all",
+) {
+  return (await getDashboardDataset(userId, range)).recentQuotations;
 }
 
 export async function listRecentInvoices(userId: string, limit = 5): Promise<InvoiceRecord[]> {

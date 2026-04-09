@@ -5,6 +5,44 @@ import type {
   UserSettings,
 } from "@/lib/types";
 
+export const bottomNavItems: AppNavItemConfig[] = [
+  {
+    key: "dashboard",
+    label: "Home",
+    href: "/app",
+    icon: "layout-dashboard",
+    description: "Workspace summary and setup readiness.",
+  },
+  {
+    key: "invoices",
+    label: "Invoices",
+    href: "/app/invoices",
+    icon: "receipt-text",
+    description: "Draft, share, and export live invoices.",
+  },
+  {
+    key: "quotations",
+    label: "Quotes",
+    href: "/app/quotations",
+    icon: "file-text",
+    description: "Scope work, share quotations, and convert accepted deals.",
+  },
+  {
+    key: "clients",
+    label: "Clients",
+    href: "/app/clients",
+    icon: "users-round",
+    description: "Manage the client records tied to every document.",
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    href: "/app/settings",
+    icon: "settings-2",
+    description: "Preferences, invoice defaults, and notifications.",
+  },
+];
+
 export const appNavItems: AppNavItemConfig[] = [
   {
     key: "dashboard",
