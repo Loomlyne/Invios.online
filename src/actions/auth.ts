@@ -2,31 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import { env, isSupabaseConfigured } from "@/lib/env";
+import { ensureUserProfile } from "@/lib/profile-bootstrap";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/types";
 
-const signInSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
-
-const signUpSchema = signInSchema.extend({
-  fullName: z.string().min(2, "Enter your full name."),
-});
-
-const emailSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
-});
-
-const updatePasswordSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters."),
-  confirmPassword: z.string().min(8, "Confirm your password."),
-}).refine((value) => value.password === value.confirmPassword, {
-  message: "Passwords do not match.",
-  path: ["confirmPassword"],
-});
+import {
+  signInSchema,
+  signUpSchema,
+  emailSchema,
+  updatePasswordSchema,
+} from "@/lib/auth-schemas";
 
 export async function signInAction(
   _prevState: ActionState,
@@ -125,6 +111,9 @@ export async function signUpAction(
   }
 
   if (data.session) {
+    if (data.user) {
+      await ensureUserProfile(supabase, data.user);
+    }
     revalidatePath("/app", "layout");
     redirect("/app");
   }
