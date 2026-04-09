@@ -14,7 +14,7 @@ Coverage: 100%
 | 1 | Foundation & Onboarding | Get a new user signed in, branded, and ready to work from an installable app shell | AUTH-01..04, ONB-01..05, SET-01..02, UX-01 |
 | 2 | 1/6 | In Progress|  |
 | 3 | 4/5 | In Progress|  |
-| 4 | Public Trust Surfaces | Make public document experiences and compliance/localization feel professional and reliable | PUB-01..04, SET-03..04, UX-03, UX-04 |
+| 4 | Public Trust Surfaces | Make public document experiences and compliance/localization feel professional and reliable | PUB-01..04, PUB-05, SET-03..04, UX-03, UX-04 |
 | 5 | Automation & Recovery | Add version safety, recurring workflows, and reminder automation without breaking financial truth | AUTO-01..05 |
 
 ## Phase Details
@@ -127,9 +127,20 @@ Plans:
 Make client-facing links, compliance details, and localization feel good enough to send to real clients.
 
 **Requirements**  
-PUB-01, PUB-02, PUB-03, PUB-04  
+PUB-01, PUB-02, PUB-03, PUB-04, PUB-05  
 SET-03, SET-04  
 UX-03, UX-04
+
+**Plans:** 7 plans
+
+Plans:
+- [ ] 04-00-PLAN.md — Wave 0 test scaffolds (portal token, slug alias, accept/reject guards, UUID detection, TRN, bilingual helpers)
+- [ ] 04-01-PLAN.md — DB migration (slug aliases), data layer functions, public quotation accept/reject actions, utility helpers
+- [ ] 04-02-PLAN.md — Slug route migration ([id] to [slug]) with UUID fallback and alias redirects, all callsite updates
+- [ ] 04-03-PLAN.md — Public page components (PublicPageShell, AcceptRejectForm, PortalDocumentRow) + branded public pages + client portal
+- [ ] 04-04-PLAN.md — InvoicePreview bilingual/RTL rendering, TRN display, Arabic font loading (SET-03, SET-04)
+- [ ] 04-05-PLAN.md — UX-03 visual quality pass across all views (dashboard, lists, details, public pages)
+- [ ] 04-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
 
 **Success Criteria**
 1. Public invoice and quotation links work without authentication and look professional.
