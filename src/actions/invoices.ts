@@ -257,39 +257,18 @@ export async function setInvoiceStatusAction(id: string, status: InvoiceStatus) 
   revalidatePath(`/app/invoices/${id}`);
 }
 
-export async function deleteInvoiceAction(id: string): Promise<ActionState> {
-  try {
-    const { supabase, user } = await requireSession();
-    const { data, error } = await supabase
-      .from("invoices")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .select("id");
+export async function deleteInvoiceAction(id: string) {
+  const { supabase, user } = await requireSession();
+  const { error } = await supabase
+    .from("invoices")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
 
-    if (error) {
-      return {
-        status: "error",
-        message: `Failed to delete invoice: ${error.message}`,
-      };
-    }
-
-    if (!data || data.length === 0) {
-      return {
-        status: "error",
-        message: "Invoice not found or you don't have permission to delete it.",
-      };
-    }
-
-    revalidatePath("/app/invoices");
-    return {
-      status: "success",
-      redirectTo: "/app/invoices" as Route,
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      message: error instanceof Error ? error.message : "Could not delete invoice.",
-    };
+  if (error) {
+    throw new Error(error.message);
   }
+
+  revalidatePath("/app/invoices");
+  redirect("/app/invoices");
 }

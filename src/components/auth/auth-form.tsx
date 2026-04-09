@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,6 @@ export function AuthForm({
   fields,
   footer,
   submitLabel,
-  forgotPasswordHref,
 }: {
   title: string;
   description: string;
@@ -38,14 +37,8 @@ export function AuthForm({
     href: Route;
   };
   submitLabel: string;
-  forgotPasswordHref?: Route;
 }) {
   const [state, formAction, isPending] = useActionState(action, initialState);
-  const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>({});
-
-  function toggleVisibility(name: string) {
-    setVisibleFields((prev) => ({ ...prev, [name]: !prev[name] }));
-  }
 
   return (
     <div>
@@ -58,48 +51,19 @@ export function AuthForm({
       </div>
 
       <form action={formAction} className="mt-8 space-y-5">
-        {fields.map((field) => {
-          const isPassword = field.type === "password";
-          const isVisible = visibleFields[field.name];
-          const resolvedType = isPassword ? (isVisible ? "text" : "password") : (field.type ?? "text");
-
-          return (
-            <div key={field.name} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor={field.name}>{field.label}</Label>
-                {isPassword && forgotPasswordHref ? (
-                  <Link
-                    href={forgotPasswordHref}
-                    className="text-xs text-muted underline-offset-4 hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                ) : null}
-              </div>
-              <div className="relative">
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type={resolvedType}
-                  placeholder={field.placeholder}
-                  autoComplete={field.autoComplete}
-                  className={isPassword ? "pr-10" : undefined}
-                  required
-                />
-                {isPassword ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleVisibility(field.name)}
-                    className="absolute inset-y-0 right-3 flex items-center text-muted hover:text-foreground"
-                    aria-label={isVisible ? "Hide password" : "Show password"}
-                  >
-                    {isVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          );
-        })}
+        {fields.map((field) => (
+          <div key={field.name} className="space-y-2">
+            <Label htmlFor={field.name}>{field.label}</Label>
+            <Input
+              id={field.name}
+              name={field.name}
+              type={field.type ?? "text"}
+              placeholder={field.placeholder}
+              autoComplete={field.autoComplete}
+              required
+            />
+          </div>
+        ))}
 
         {state.message ? (
           <div

@@ -3,7 +3,6 @@ import type { Route } from "next";
 import { notFound } from "next/navigation";
 import { ArrowRight, FileText, PencilLine, ReceiptText, Trash2 } from "lucide-react";
 import { archiveClientAction, updateClientAction } from "@/actions/clients";
-import { DocumentSummaryRow } from "@/components/documents/document-summary-row";
 import { ClientForm } from "@/components/clients/client-form";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -118,13 +117,21 @@ export default async function ClientDetailPage({
                 />
               ) : (
                 invoices.map((invoice) => (
-                  <DocumentSummaryRow
+                  <Link
                     key={invoice.id}
-                    href={`/app/invoices/${invoice.id}`}
-                    documentNumber={invoice.invoiceNumber}
-                    subtitle={`Due ${invoice.dueDate} \u00b7 ${formatCurrency(invoice.total, invoice.currency)}`}
-                    status={invoice.status}
-                  />
+                  href={`/app/invoices/${invoice.id}` as Route}
+                    className="rounded-[1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{invoice.invoiceNumber}</p>
+                        <p className="mt-1 text-sm text-muted-strong">
+                          Due {invoice.dueDate} • {formatCurrency(invoice.total, invoice.currency)}
+                        </p>
+                      </div>
+                      <ArrowRight className="size-4 text-muted" />
+                    </div>
+                  </Link>
                 ))
               )}
             </CardContent>
@@ -144,13 +151,21 @@ export default async function ClientDetailPage({
                 />
               ) : (
                 quotations.map((quotation) => (
-                  <DocumentSummaryRow
+                  <Link
                     key={quotation.id}
-                    href={`/app/quotations/${quotation.id}`}
-                    documentNumber={quotation.quotationNumber}
-                    subtitle={`Expires ${quotation.expiryDate} \u00b7 ${formatCurrency(quotation.total, quotation.currency)}`}
-                    status={quotation.status}
-                  />
+                    href={`/app/quotations/${quotation.id}` as Route}
+                    className="rounded-[1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{quotation.quotationNumber}</p>
+                        <p className="mt-1 text-sm text-muted-strong">
+                          Expires {quotation.expiryDate} • {formatCurrency(quotation.total, quotation.currency)}
+                        </p>
+                      </div>
+                      <ArrowRight className="size-4 text-muted" />
+                    </div>
+                  </Link>
                 ))
               )}
             </CardContent>

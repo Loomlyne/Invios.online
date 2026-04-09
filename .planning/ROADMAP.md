@@ -12,8 +12,8 @@ Coverage: 100%
 | # | Phase | Goal | Requirements |
 |---|-------|------|--------------|
 | 1 | Foundation & Onboarding | Get a new user signed in, branded, and ready to work from an installable app shell | AUTH-01..04, ONB-01..05, SET-01..02, UX-01 |
-| 2 | 1/6 | In Progress|  |
-| 3 | 4/5 | In Progress|  |
+| 2 | Clients & Document Engine | Let the user create clients, quotations, and invoices with live previews, PDFs, and shareable outputs | CLNT-01..04, QUOT-01..07, INV-01..08 |
+| 3 | Dashboard & Cash Flow | Make the operator clearly see what was billed, collected, due, and profitable | DASH-01..04, OPS-01..05, UX-02 |
 | 4 | Public Trust Surfaces | Make public document experiences and compliance/localization feel professional and reliable | PUB-01..04, SET-03..04, UX-03, UX-04 |
 | 5 | Automation & Recovery | Add version safety, recurring workflows, and reminder automation without breaking financial truth | AUTO-01..05 |
 
@@ -29,13 +29,6 @@ AUTH-01, AUTH-02, AUTH-03, AUTH-04
 ONB-01, ONB-02, ONB-03, ONB-04, ONB-05  
 SET-01, SET-02  
 UX-01
-
-**Plans:** 3 plans
-
-Plans:
-- [x] 01-01-PLAN.md — Wave 0 unit test infrastructure (middleware route protection, setup progress derivation, auth schema validation)
-- [x] 01-02-PLAN.md — D-09 post-onboarding redirect to /app/invoices/new + mobile nav UX-01 verification
-- [x] 01-03-PLAN.md — Sign-out E2E test (AUTH-03) + Vercel deploy verification checkpoint
 
 **Success Criteria**
 1. A new user can sign up, sign in, and get redirected into onboarding without touching broken routes.
@@ -62,16 +55,6 @@ CLNT-01, CLNT-02, CLNT-03, CLNT-04
 QUOT-01, QUOT-02, QUOT-03, QUOT-04, QUOT-05, QUOT-06, QUOT-07  
 INV-01, INV-02, INV-03, INV-04, INV-05, INV-06, INV-07, INV-08
 
-**Plans:** 1/6 plans executed
-
-Plans:
-- [x] 02-00-PLAN.md — Wave 0 behavioral test scaffolds (client/quotation/invoice schema validation)
-- [x] 02-01-PLAN.md — Build ShareModal, DocumentStatusActions, and DocumentSummaryRow components
-- [x] 02-02-PLAN.md — Builder D-04 status dropdown removal + D-06 conversion redirect fix + PDF maxDuration
-- [x] 02-03-PLAN.md — Wire invoice and quotation detail pages with new components + D-07 lock
-- [x] 02-04-PLAN.md — Client detail page DocumentSummaryRow integration (D-08)
-- [x] 02-05-PLAN.md — Full product loop verification + Vercel production deploy
-
 **Success Criteria**
 1. A user can create a client and immediately generate a quotation or invoice for that client.
 2. Quotation and invoice builders support structured line items, dates, tax, discount, notes, and terms.
@@ -96,15 +79,6 @@ Turn Invios into an operator console that exposes cash flow, follow-up urgency, 
 DASH-01, DASH-02, DASH-03, DASH-04  
 OPS-01, OPS-02, OPS-03, OPS-04, OPS-05  
 UX-02
-
-**Plans:** 4/5 plans executed
-
-Plans:
-- [x] 03-01-PLAN.md — DB migration (payments + expenses tables), Zod schemas, pure computation functions + tests
-- [x] 03-02-PLAN.md — Server actions (payment/expense CRUD), data loaders, status computation, dashboard metrics
-- [x] 03-03-PLAN.md — Invoice detail page extensions (ProfitSummary, PaymentsTable, ExpensesTable)
-- [x] 03-04-PLAN.md — Dashboard rebuild (MetricCard, quick actions, recent docs, overdue section)
-- [x] 03-05-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
 
 **Success Criteria**
 1. The dashboard clearly shows billed, collected, due, collection rate, and overdue work.

@@ -2,7 +2,7 @@ import type { SettingsSection } from "@/lib/types";
 import { SettingsWorkspace } from "@/components/app/settings-workspace";
 import { getAppContext } from "@/lib/data";
 
-const validSections = new Set<SettingsSection>(["general", "invoices", "notifications", "account"]);
+const validSections = new Set<SettingsSection>(["profile", "branding", "defaults"]);
 
 export default async function SettingsPage({
   searchParams,
@@ -14,7 +14,7 @@ export default async function SettingsPage({
   const section = resolvedSearchParams?.section;
   const initialSection = validSections.has(section as SettingsSection)
     ? (section as SettingsSection)
-    : "general";
+    : "profile";
 
   return <SettingsWorkspace context={context} initialSection={initialSection} />;
 }

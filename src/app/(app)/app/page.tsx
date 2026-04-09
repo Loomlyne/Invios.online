@@ -1,571 +1,164 @@
 import Link from "next/link";
-import type { Metadata } from "next";
 import type { Route } from "next";
-import { ArrowUpRight, Palette, Plus, UserPlus } from "lucide-react";
-import { MetricCard } from "@/components/app/metric-card";
-import { DashboardRangeToggle } from "@/components/app/dashboard-range-toggle";
+import { ArrowRight, CircleAlert } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { SetupChecklist } from "@/components/app/setup-checklist";
-import { EmptyState } from "@/components/app/empty-state";
-import { DocumentSummaryRow } from "@/components/documents/document-summary-row";
-import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
+import { StatStrip } from "@/components/app/stat-strip";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  dashboardMetricKeys,
-  dashboardRangeKeys,
-  type DashboardMetricKey,
-  type DashboardRangeKey,
-} from "@/lib/billing";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAppContext } from "@/lib/data";
-import { formatDateDisplay, formatCurrency } from "@/lib/utils";
-import {
-  getDashboardDrilldown,
-  getDashboardInsights,
-  getDashboardMetrics,
-  getDashboardRecentInvoices,
-  getDashboardRecentQuotations,
-} from "@/lib/billing-data";
+import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Dashboard",
-};
+function countBusinessFields(context: Awaited<ReturnType<typeof getAppContext>>) {
+  const fields = [
+    context.userState.profile.fullName,
+    context.userState.profile.businessName,
+    context.userState.profile.businessEmail,
+    context.userState.profile.phone,
+    context.userState.profile.address,
+  ];
 
-const dashboardMetricCopy: Record<
-  DashboardMetricKey,
-  { title: string; description: string; fullPageHref: Route }
-> = {
-  "total-billed": {
-    title: "Billed invoices",
-    description: "All non-draft invoices issued in the selected range.",
-    fullPageHref: "/app/invoices?view=table" as Route,
-  },
-  collected: {
-    title: "Collected invoices",
-    description: "Invoices with payment activity recorded in the selected range.",
-    fullPageHref: "/app/invoices?view=table" as Route,
-  },
-  outstanding: {
-    title: "Outstanding invoices",
-    description: "Open receivables still waiting on collection.",
-    fullPageHref: "/app/invoices?view=table&status=open" as Route,
-  },
-  "collection-rate": {
-    title: "Collection rate breakdown",
-    description: "Billed versus collected versus outstanding for invoices in range.",
-    fullPageHref: "/app/invoices?view=table" as Route,
-  },
-};
-
-function parseRange(value?: string): DashboardRangeKey {
-  return dashboardRangeKeys.includes(value as DashboardRangeKey)
-    ? (value as DashboardRangeKey)
-    : "all";
+  return fields.filter((field) => field.trim().length > 0).length;
 }
 
-function parseMetric(value?: string): DashboardMetricKey {
-  return dashboardMetricKeys.includes(value as DashboardMetricKey)
-    ? (value as DashboardMetricKey)
-    : "total-billed";
+function countBrandAssets(context: Awaited<ReturnType<typeof getAppContext>>) {
+  return [
+    context.userState.branding.logoPath,
+    context.userState.branding.signaturePath,
+    context.userState.branding.signatureMode !== "none" ? "signature" : "",
+    context.userState.branding.primaryColor,
+  ].filter(Boolean).length;
 }
 
-function buildDashboardHref(metric: DashboardMetricKey, range: DashboardRangeKey) {
-  return `/app?metric=${metric}&range=${range}`;
-}
-
-function formatMetricValue(value: number, currency: string) {
-  return value > 0 ? formatCurrency(value, currency) : "\u2014";
-}
-
-function formatAnalyticsValue(value: number, currency: string) {
-  return formatCurrency(value, currency);
-}
-
-export default async function AppHomePage({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const params = (await searchParams) ?? {};
-  const currentRange = parseRange(typeof params.range === "string" ? params.range : undefined);
-  const currentMetric = parseMetric(typeof params.metric === "string" ? params.metric : undefined);
+export default async function AppHomePage() {
   const context = await getAppContext();
-  const userId = context.userId ?? "";
-  const [metrics, drilldownRows, insights, recentInvoices, recentQuotations] = await Promise.all([
-    getDashboardMetrics(userId, currentRange),
-    getDashboardDrilldown(userId, currentMetric, currentRange),
-    getDashboardInsights(userId, currentRange),
-    getDashboardRecentInvoices(userId, currentRange),
-    getDashboardRecentQuotations(userId, currentRange),
-  ]);
-
-  const currency = context.userState.settings.defaultCurrency;
-  const hasData = recentInvoices.length > 0 || recentQuotations.length > 0;
+  const businessFieldCount = countBusinessFields(context);
+  const brandAssetCount = countBrandAssets(context);
   const setupItems = context.setupProgress.items;
   const nextItem = setupItems.find((item) => !item.complete) ?? setupItems[setupItems.length - 1];
-  const pageDescription = !context.setupProgress.complete
-    ? `Finish ${nextItem.label.toLowerCase()} to complete setup.`
-    : hasData
-      ? "Operator view for billing, follow-up, and cash flow."
-      : "Workspace is ready. Create your first invoice to start tracking.";
-  const drilldownCopy = dashboardMetricCopy[currentMetric];
-  const emphasizeCollectionRate = currentMetric === "collection-rate";
 
   return (
     <div className="grid gap-6">
       <PageHeader
         title="Dashboard"
-        description={pageDescription}
+        description={
+          context.setupProgress.complete
+            ? "Workspace is ready. Create invoices, manage clients, and export documents."
+            : `Finish ${nextItem.label.toLowerCase()} to complete setup.`
+        }
         actions={
           <Button asChild variant="accent">
-            <Link href={"/app/invoices/new" as Route}>
-              <Plus className="size-4" />
-              New invoice
+            <Link href={context.setupProgress.complete ? ("/app/invoices" as Route) : nextItem.href}>
+              {context.setupProgress.complete ? "Open invoices" : `Finish ${nextItem.label.toLowerCase()}`}
+              <ArrowRight className="size-4" />
             </Link>
           </Button>
         }
-      />
+      >
+        <StatStrip
+          items={[
+            { label: "Setup", value: `${context.setupProgress.percentage}%` },
+            { label: "Identity", value: `${businessFieldCount}/5` },
+            { label: "Brand", value: `${brandAssetCount}/4` },
+            { label: "Currency", value: context.userState.settings.defaultCurrency },
+          ]}
+        />
+      </PageHeader>
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
-            Time window
-          </p>
-          <p className="mt-1 text-sm text-muted">
-            Switch the dashboard between lifetime and recent operator ranges.
-          </p>
-        </div>
-        <DashboardRangeToggle currentRange={currentRange} currentMetric={currentMetric} />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <MetricCard
-          label="Total billed"
-          value={formatMetricValue(metrics.totalBilled, currency)}
-          interactive
-          active={currentMetric === "total-billed"}
-          href={buildDashboardHref("total-billed", currentRange)}
-        />
-        <MetricCard
-          label="Collected"
-          value={formatMetricValue(metrics.totalCollected, currency)}
-          interactive
-          active={currentMetric === "collected"}
-          href={buildDashboardHref("collected", currentRange)}
-        />
-        <MetricCard
-          label="Outstanding"
-          value={formatMetricValue(metrics.outstanding, currency)}
-          interactive
-          active={currentMetric === "outstanding"}
-          href={buildDashboardHref("outstanding", currentRange)}
-        />
-        <MetricCard
-          label="Collection rate"
-          value={metrics.collectionRate !== null ? `${metrics.collectionRate}%` : "\u2014"}
-          accent={metrics.collectionRate === 100}
-          interactive
-          active={currentMetric === "collection-rate"}
-          href={buildDashboardHref("collection-rate", currentRange)}
-        />
-      </div>
-
-      <Card>
-        <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle>{drilldownCopy.title}</CardTitle>
-            <CardDescription>{drilldownCopy.description}</CardDescription>
-          </div>
-          <Button asChild size="sm" variant="secondary">
-            <Link href={drilldownCopy.fullPageHref}>
-              View full page
-              <ArrowUpRight className="size-4" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {drilldownRows.length === 0 ? (
-            <EmptyState
-              title="No matching invoices in this view."
-              description="Switch the range or select another metric to inspect a different slice of the pipeline."
-            />
-          ) : (
-            <div className="overflow-x-auto rounded-[1.25rem] border border-black/7">
-              <table className="min-w-full border-collapse text-sm">
-                <thead>
-                  <tr className="bg-[#FFF7EA]">
-                    {[
-                      "Invoice",
-                      "Client",
-                      "Status",
-                      "Issued",
-                      "Due",
-                      "Billed",
-                      "Collected",
-                      "Outstanding",
-                      "Profit",
-                    ].map((label) => (
-                      <th
-                        key={label}
-                        className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted"
-                      >
-                        {label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {drilldownRows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-t border-black/5 bg-[#FFF8EE] transition hover:bg-[#FFF4E3]"
-                    >
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/app/invoices/${row.id}` as Route}
-                          className="font-semibold text-foreground hover:text-[#8A5E12]"
-                        >
-                          {row.invoiceNumber}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div>
-                          <p className="font-medium text-foreground">{row.client.name}</p>
-                          {row.client.company ? (
-                            <p className="text-xs text-muted">{row.client.company}</p>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <DocumentStatusBadge status={row.status} />
-                      </td>
-                      <td className="px-4 py-3 text-muted-strong">
-                        {formatDateDisplay(row.issueDate)}
-                      </td>
-                      <td className="px-4 py-3 text-muted-strong">
-                        {formatDateDisplay(row.dueDate)}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-foreground">
-                        {formatCurrency(row.total, row.currency)}
-                      </td>
-                      <td
-                        className={
-                          emphasizeCollectionRate
-                            ? "px-4 py-3 font-semibold text-[#6B4A0D]"
-                            : "px-4 py-3 text-muted-strong"
-                        }
-                      >
-                        {formatCurrency(row.collectedAmount, row.currency)}
-                      </td>
-                      <td
-                        className={
-                          emphasizeCollectionRate
-                            ? "px-4 py-3 font-semibold text-[#8D3D2E]"
-                            : "px-4 py-3 text-muted-strong"
-                        }
-                      >
-                        {formatCurrency(row.outstandingAmount, row.currency)}
-                      </td>
-                      <td className="px-4 py-3 text-muted-strong">
-                        {formatCurrency(row.profitAmount, row.currency)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {!context.setupProgress.complete ? (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle>Workspace readiness</CardTitle>
+              <span className="text-sm font-medium text-muted">
+                {context.setupProgress.completedCount}/{context.setupProgress.totalCount}
+              </span>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="flex flex-wrap gap-3">
-        <Button asChild variant="secondary">
-          <Link href={"/app/invoices/new" as Route}>
-            <Plus className="size-4" />
-            New invoice
-          </Link>
-        </Button>
-        <Button asChild variant="secondary">
-          <Link href={"/app/quotations/new" as Route}>
-            <Plus className="size-4" />
-            New quotation
-          </Link>
-        </Button>
-        <Button asChild variant="secondary">
-          <Link href={"/app/clients?create=1" as Route}>
-            <UserPlus className="size-4" />
-            New client
-          </Link>
-        </Button>
-        <Button asChild variant="secondary">
-          <Link href={"/app/settings" as Route}>
-            <Palette className="size-4" />
-            Branding
-          </Link>
-        </Button>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent invoices</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-2">
-            {recentInvoices.length === 0 ? (
-              <EmptyState
-                title="No invoices yet"
-                description="Create your first invoice to start tracking."
-              />
-            ) : (
-              <>
-                {recentInvoices.map((invoice) => (
-                  <DocumentSummaryRow
-                    key={invoice.id}
-                    href={`/app/invoices/${invoice.id}`}
-                    documentNumber={invoice.invoiceNumber}
-                    subtitle={invoice.client.name}
-                    status={invoice.status}
-                    amount={formatCurrency(invoice.total, invoice.currency)}
-                  />
-                ))}
-                <Link
-                  href={"/app/invoices" as Route}
-                  className="mt-2 text-xs text-muted hover:text-foreground transition"
-                >
-                  View all invoices
-                </Link>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent quotations</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-2">
-            {recentQuotations.length === 0 ? (
-              <EmptyState
-                title="No quotations yet"
-                description="Create your first quotation to start tracking."
-              />
-            ) : (
-              <>
-                {recentQuotations.map((quotation) => (
-                  <DocumentSummaryRow
-                    key={quotation.id}
-                    href={`/app/quotations/${quotation.id}`}
-                    documentNumber={quotation.quotationNumber}
-                    subtitle={quotation.client.name}
-                    status={quotation.status}
-                    amount={formatCurrency(quotation.total, quotation.currency)}
-                  />
-                ))}
-                <Link
-                  href={"/app/quotations" as Route}
-                  className="mt-2 text-xs text-muted hover:text-foreground transition"
-                >
-                  View all quotations
-                </Link>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Analytics strip</CardTitle>
-          <CardDescription>Compact financial readout for the selected time window.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {[
-              { label: "Billed", value: formatAnalyticsValue(insights.analytics.totalBilled, currency) },
-              { label: "Collected", value: formatAnalyticsValue(insights.analytics.totalCollected, currency) },
-              { label: "Expenses", value: formatAnalyticsValue(insights.analytics.totalExpenses, currency) },
-              { label: "Net profit", value: formatAnalyticsValue(insights.analytics.netProfit, currency) },
-              { label: "Avg invoice", value: formatAnalyticsValue(insights.analytics.averageInvoice, currency) },
-            ].map((item) => (
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#F3EBDD]">
               <div
-                key={item.label}
-                className="rounded-[1.1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4"
+                className="h-full rounded-full bg-accent transition-[width] duration-300"
+                style={{ width: `${context.setupProgress.percentage}%` }}
+              />
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-2 sm:grid-cols-2">
+            {setupItems.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={cn(
+                  "rounded-[1rem] border px-4 py-3 transition",
+                  item.complete
+                    ? "border-[#DCEBDD] bg-[#F6FBF6]"
+                    : "border-border bg-[#FFFCF7] hover:border-[#D7C4A7] hover:bg-[#FFF8ED]",
+                )}
               >
-                <p className="text-xs uppercase tracking-[0.18em] text-muted">{item.label}</p>
-                <p className="mt-2 text-lg font-semibold text-foreground">{item.value}</p>
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
+                <p className="mt-1 text-xs leading-5 text-muted">
+                  {item.complete ? "Complete" : "Pending"}
+                </p>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <section className="grid gap-4 md:grid-cols-2">
+        {[
+          {
+            title: "Invoices",
+            body: "Create, edit, share, and export invoices.",
+            href: "/app/invoices" as Route,
+          },
+          {
+            title: "Quotations",
+            body: "Scope work and convert accepted quotations into invoices.",
+            href: "/app/quotations" as Route,
+          },
+          {
+            title: "Clients",
+            body: "Manage client records that anchor every document.",
+            href: "/app/clients" as Route,
+          },
+          {
+            title: "Settings",
+            body: "Branding, defaults, and document template.",
+            href: "/app/settings?section=defaults" as Route,
+          },
+        ].map((item) => (
+          <Link
+            key={item.title}
+            href={item.href}
+            className="rounded-[1.1rem] border border-black/7 bg-surface px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF7EA]"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-foreground">{item.title}</p>
+              <ArrowRight className="size-4 text-muted" />
+            </div>
+            <p className="mt-1 text-sm leading-6 text-muted">{item.body}</p>
+          </Link>
+        ))}
+      </section>
+
+      {context.warnings.length > 0 ? (
+        <Card className="border-black/10 bg-[#FCF7EE]">
+          <CardHeader>
+            <Badge variant="warning">Watchouts</Badge>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {context.warnings.map((warning) => (
+              <div
+                key={warning}
+                className="flex items-start gap-3 rounded-[1rem] border border-[#E4D6BF] bg-white px-4 py-3 text-sm text-muted-strong"
+              >
+                <CircleAlert className="mt-0.5 size-4 shrink-0 text-accent-strong" />
+                <span>{warning}</span>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Card>
-          <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <CardTitle>Follow-up queue</CardTitle>
-              <CardDescription>Overdue and still-open invoices that need attention.</CardDescription>
-            </div>
-            <Button asChild size="sm" variant="secondary">
-              <Link href={"/app/invoices?view=table&status=open" as Route}>Open invoices</Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            {insights.followUpQueue.length === 0 ? (
-              <EmptyState
-                title="No urgent follow-up."
-                description="Nothing open is demanding collection right now."
-              />
-            ) : (
-              insights.followUpQueue.map((row) => (
-                <DocumentSummaryRow
-                  key={row.id}
-                  href={`/app/invoices/${row.id}`}
-                  documentNumber={row.invoiceNumber}
-                  subtitle={`${row.client.name} · due ${formatDateDisplay(row.dueDate)}`}
-                  status={row.status}
-                  amount={formatCurrency(row.outstandingAmount, row.currency)}
-                />
-              ))
-            )}
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <CardTitle>Pending quotations</CardTitle>
-              <CardDescription>Sent work that still needs a yes, no, or follow-up.</CardDescription>
-            </div>
-            <Button asChild size="sm" variant="secondary">
-              <Link href={"/app/quotations?view=table&status=sent" as Route}>Sent quotations</Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            {insights.pendingQuotations.length === 0 ? (
-              <EmptyState
-                title="No quotations need chasing."
-                description="Accepted, rejected, or draft quotations are already out of the queue."
-              />
-            ) : (
-              insights.pendingQuotations.map((quotation) => (
-                <DocumentSummaryRow
-                  key={quotation.id}
-                  href={`/app/quotations/${quotation.id}`}
-                  documentNumber={quotation.quotationNumber}
-                  subtitle={`${quotation.client.name} · expires ${formatDateDisplay(quotation.expiryDate)}`}
-                  status={quotation.status}
-                  amount={formatCurrency(quotation.total, quotation.currency)}
-                />
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card>
-          <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <CardTitle>Top clients</CardTitle>
-              <CardDescription>Clients driving the most receivable and billing volume.</CardDescription>
-            </div>
-            <Button asChild size="sm" variant="secondary">
-              <Link href={"/app/clients?view=table" as Route}>Client list</Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {insights.topClients.length === 0 ? (
-              <EmptyState
-                title="No client analytics yet."
-                description="Client summaries appear once invoices have been issued."
-              />
-            ) : (
-              <div className="overflow-x-auto rounded-[1.25rem] border border-black/7">
-                <table className="min-w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-[#FFF7EA]">
-                      {["Client", "Invoices", "Billed", "Collected", "Outstanding"].map((label) => (
-                        <th
-                          key={label}
-                          className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted"
-                        >
-                          {label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {insights.topClients.map((client) => (
-                      <tr key={client.clientId} className="border-t border-black/5 bg-[#FFF8EE]">
-                        <td className="px-4 py-3">
-                          <Link
-                            href={client.href as Route}
-                            className="font-semibold text-foreground hover:text-[#8A5E12]"
-                          >
-                            {client.clientName}
-                          </Link>
-                          {client.company ? (
-                            <p className="text-xs text-muted">{client.company}</p>
-                          ) : null}
-                        </td>
-                        <td className="px-4 py-3 text-muted-strong">{client.invoiceCount}</td>
-                        <td className="px-4 py-3 text-muted-strong">
-                          {formatCurrency(client.billedTotal, currency)}
-                        </td>
-                        <td className="px-4 py-3 text-muted-strong">
-                          {formatCurrency(client.collectedTotal, currency)}
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-[#8D3D2E]">
-                          {formatCurrency(client.outstandingTotal, currency)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent activity</CardTitle>
-            <CardDescription>Latest invoice, quotation, payment, and expense events.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            {insights.recentActivity.length === 0 ? (
-              <EmptyState
-                title="No activity yet."
-                description="Create work or record movement to populate the activity feed."
-              />
-            ) : (
-              insights.recentActivity.map((activity) => (
-                <Link
-                  key={activity.id}
-                  href={activity.href as Route}
-                  className="rounded-[1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{activity.title}</p>
-                      <p className="mt-1 text-sm text-muted-strong">{activity.subtitle}</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.16em] text-muted">
-                        {activity.kind} · {formatDateDisplay(activity.date)}
-                      </p>
-                    </div>
-                    {activity.amount !== undefined ? (
-                      <span className="shrink-0 text-sm font-semibold text-foreground">
-                        {formatCurrency(activity.amount, activity.currency ?? currency)}
-                      </span>
-                    ) : null}
-                  </div>
-                </Link>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      ) : null}
 
       <SetupChecklist context={context} />
     </div>

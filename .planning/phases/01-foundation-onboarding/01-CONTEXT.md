@@ -35,8 +35,8 @@ Phase 1 delivers the first authenticated Invios experience: account creation, si
 - **D-15:** If branding is incomplete, document flows should continue but show unbranded-draft warnings.
 
 ### Mobile Shell And Installability
-- **D-16:** ~~Mobile navigation should use a bottom-tab primary nav for core work.~~ **SUPERSEDED by UI-SPEC (2026-04-06):** The implemented and approved design uses horizontal scroll chips inside a sticky top header (not a bottom tab bar). Executors must preserve the horizontal chip pattern — do not introduce a bottom tab bar for Phase 1.
-- **D-17:** Any non-core or overflow destinations can live behind settings or a secondary menu rather than expanding the chip nav further.
+- **D-16:** Mobile navigation should use a bottom-tab primary nav for core work. Intended core tabs named by the user: invoices, clients, new invoice, quotation, settings.
+- **D-17:** Any non-core or overflow destinations can live behind settings or a secondary menu rather than expanding the tab bar further.
 - **D-18:** The first authenticated shell before onboarding completion is the real dashboard shell with the onboarding wizard layered into it.
 - **D-19:** Install prompting should happen after onboarding is complete, not on first authenticated visit.
 - **D-20:** On small screens, onboarding should prioritize the form and expose a sticky preview button that opens the full document preview in a separate sheet.

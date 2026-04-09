@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect, useCallback } from "react";
+import { useState, useTransition } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { ChevronDown, Loader2, Plus, Search, Trash2, UserPlus } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import {
@@ -13,17 +13,14 @@ import {
   createQuotationAction,
   updateQuotationAction,
 } from "@/actions/quotations";
-import { quickCreateClientAction } from "@/actions/clients";
+import { DocumentLayoutDiagnostics } from "@/components/documents/document-layout-diagnostics";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
-import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { DatePicker } from "@/components/ui/date-picker";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   ClientRecord,
@@ -83,6 +80,7 @@ export function DocumentBuilder({
   const [notes, setNotes] = useState(initialValue?.notes ?? context.userState.settings.defaultNotes);
   const [terms, setTerms] = useState(initialValue?.terms ?? context.userState.settings.defaultTerms);
   const [trn, setTrn] = useState(initialValue?.trn ?? context.userState.profile.trn);
+  const [statusValue, setStatusValue] = useState<string>(initialValue?.status ?? "draft");
   const [invoiceType, setInvoiceType] = useState(initialValue?.invoiceType ?? "invoice");
   const [primaryDate, setPrimaryDate] = useState(
     (kind === "invoice" ? initialValue?.issueDate : initialValue?.quotationDate) ?? isoDateFromNow(0),
@@ -94,16 +92,15 @@ export function DocumentBuilder({
   const [lineItems, setLineItems] = useState<DocumentLineItem[]>(
     initialValue?.lineItems?.length ? initialValue.lineItems : [createLineItem({ description: "" })],
   );
-  const [localClients, setLocalClients] = useState(clients);
 
-  const selectedClient = localClients.find((client) => client.id === clientId) ?? localClients[0];
+  const selectedClient = clients.find((client) => client.id === clientId) ?? clients[0];
 
   const preview = buildInvoicePreviewData(context.userState, {
     kind,
     title: kind === "invoice" ? "Invoice" : "Quotation",
     invoiceNumber: numberValue,
     numberLabel: kind === "invoice" ? "Invoice no." : "Quotation no.",
-    statusLabel: formatStatus(initialValue?.status ?? "draft"),
+    statusLabel: formatStatus(statusValue),
     issueDate: primaryDate,
     dueDate: secondaryDate,
     issueDateLabel: kind === "invoice" ? "Issue date" : "Quotation date",
@@ -147,18 +144,25 @@ export function DocumentBuilder({
   };
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-      <Card className="p-0">
-        <CardHeader className="border-b border-black/8 px-5 py-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_480px]">
+      <Card className="overflow-hidden p-0">
+        <CardHeader className="border-b border-black/8 px-5 py-5 sm:px-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
               <Badge variant="accent">{kind === "invoice" ? "Invoice builder" : "Quotation builder"}</Badge>
-              <DocumentStatusBadge status={initialValue?.status ?? "draft"} />
+              <CardTitle className="mt-3">
+                {kind === "invoice"
+                  ? "Build the branded invoice before it ever leaves the workspace."
+                  : "Shape the quotation, then convert accepted work into an invoice later."}
+              </CardTitle>
+              <CardDescription className="mt-2 max-w-2xl">
+                The builder, view page, public link, and PDF export all reuse this same presentation contract.
+              </CardDescription>
             </div>
             <div className="xl:hidden">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="secondary" size="sm">Preview</Button>
+                  <Button variant="secondary">Preview</Button>
                 </DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-y-auto">{previewNode}</DialogContent>
               </Dialog>
@@ -167,96 +171,152 @@ export function DocumentBuilder({
         </CardHeader>
 
         <CardContent className="px-5 py-5 sm:px-6">
-          <form onSubmit={handleSubmit} className="grid gap-5">
+          <form onSubmit={handleSubmit} className="grid gap-6">
             {initialValue?.id ? <input type="hidden" name="id" value={initialValue.id} /> : null}
             <input type="hidden" name="lineItemsJson" value={JSON.stringify(lineItems)} />
-            <input type="hidden" name="status" value={initialValue?.status ?? "draft"} />
 
-            {/* Client & document type */}
-            <section className="grid gap-3">
-              <SectionTitle>Client & type</SectionTitle>
-              <Field label="Client" htmlFor="clientId">
-                <input type="hidden" name="clientId" value={clientId} />
-                <ClientSelector
-                  clients={localClients}
-                  value={clientId}
-                  onChange={setClientId}
-                  onClientCreated={(client) => {
-                    setLocalClients((prev) => [client, ...prev]);
-                    setClientId(client.id);
-                  }}
-                />
-              </Field>
-
-              {kind === "invoice" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="invoiceType">Invoice type</Label>
-                  <input type="hidden" name="invoiceType" value={invoiceType} />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setInvoiceType("invoice")}
-                      className={`flex h-10 flex-1 items-center justify-center rounded-full text-sm font-medium transition ${
-                        invoiceType === "invoice"
-                          ? "bg-foreground text-on-dark shadow-sm"
-                          : "border border-border bg-white text-foreground hover:bg-[#FFF7EA]"
-                      }`}
-                    >
-                      Invoice
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setInvoiceType("tax_invoice")}
-                      className={`flex h-10 flex-1 items-center justify-center rounded-full text-sm font-medium transition ${
-                        invoiceType === "tax_invoice"
-                          ? "bg-foreground text-on-dark shadow-sm"
-                          : "border border-border bg-white text-foreground hover:bg-[#FFF7EA]"
-                      }`}
-                    >
-                      Tax invoice
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <Field label="Validity days" htmlFor="validityDays">
-                  <Input
-                    id="validityDays"
-                    name="validityDays"
-                    type="number"
-                    min={1}
-                    value={validityDays}
-                    onChange={(event) => setValidityDays(event.target.value)}
-                  />
+            <section className="grid gap-4">
+              <SectionTitle>Document frame</SectionTitle>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Client" htmlFor="clientId">
+                  <select
+                    id="clientId"
+                    name="clientId"
+                    value={clientId}
+                    onChange={(event) => setClientId(event.target.value)}
+                    className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
+                  >
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}{client.company ? ` · ${client.company}` : ""}
+                      </option>
+                    ))}
+                  </select>
                 </Field>
-              )}
-            </section>
 
-            {/* Dates */}
-            <section className="grid gap-3">
-              <SectionTitle>Dates</SectionTitle>
-              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Status" htmlFor="status">
+                  <select
+                    id="status"
+                    name="status"
+                    value={statusValue}
+                    onChange={(event) => setStatusValue(event.target.value)}
+                    className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
+                  >
+                    {(kind === "invoice"
+                      ? [
+                          ["draft", "Draft"],
+                          ["sent", "Sent"],
+                        ]
+                      : [
+                          ["draft", "Draft"],
+                          ["sent", "Sent"],
+                          ["accepted", "Accepted"],
+                          ["rejected", "Rejected"],
+                          ["expired", "Expired"],
+                        ]
+                    ).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                {kind === "invoice" ? (
+                  <Field label="Invoice type" htmlFor="invoiceType">
+                    <select
+                      id="invoiceType"
+                      name="invoiceType"
+                      value={invoiceType}
+                      onChange={(event) => setInvoiceType(event.target.value as InvoiceFormInput["invoiceType"])}
+                      className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
+                    >
+                      <option value="invoice">Invoice</option>
+                      <option value="tax_invoice">Tax invoice</option>
+                    </select>
+                  </Field>
+                ) : (
+                  <Field label="Validity days" htmlFor="validityDays">
+                    <Input
+                      id="validityDays"
+                      name="validityDays"
+                      type="number"
+                      min={1}
+                      value={validityDays}
+                      onChange={(event) => setValidityDays(event.target.value)}
+                    />
+                  </Field>
+                )}
+
                 <Field label={kind === "invoice" ? "Issue date" : "Quotation date"} htmlFor="primaryDate">
-                  <DatePicker
+                  <Input
                     id="primaryDate"
                     name={kind === "invoice" ? "issueDate" : "quotationDate"}
+                    type="date"
                     value={primaryDate}
-                    onChange={setPrimaryDate}
+                    onChange={(event) => setPrimaryDate(event.target.value)}
                   />
                 </Field>
+
                 <Field label={kind === "invoice" ? "Due date" : "Expiry date"} htmlFor="secondaryDate">
-                  <DatePicker
+                  <Input
                     id="secondaryDate"
                     name={kind === "invoice" ? "dueDate" : "expiryDate"}
+                    type="date"
                     value={secondaryDate}
-                    onChange={setSecondaryDate}
-                    align="right"
+                    onChange={(event) => setSecondaryDate(event.target.value)}
                   />
                 </Field>
               </div>
             </section>
 
-            {/* Line items */}
-            <section className="grid gap-3">
+            <section className="grid gap-4">
+              <SectionTitle>Commercial settings</SectionTitle>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Currency" htmlFor="currency">
+                  <Input id="currency" name="currency" value={currency} onChange={(event) => setCurrency(event.target.value)} />
+                </Field>
+                <Field label="Language" htmlFor="language">
+                  <select
+                    id="language"
+                    name="language"
+                    value={language}
+                    onChange={(event) => setLanguage(event.target.value as InvoiceFormInput["language"])}
+                    className="flex h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm"
+                  >
+                    <option value="en">English</option>
+                    <option value="ar">Arabic</option>
+                    <option value="bilingual">Bilingual</option>
+                  </select>
+                </Field>
+                <Field label="Tax rate %" htmlFor="taxRate">
+                  <Input
+                    id="taxRate"
+                    name="taxRate"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.01"
+                    value={taxRate}
+                    onChange={(event) => setTaxRate(event.target.value)}
+                  />
+                </Field>
+                <Field label="Discount %" htmlFor="discount">
+                  <Input
+                    id="discount"
+                    name="discount"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.01"
+                    value={discount}
+                    onChange={(event) => setDiscount(event.target.value)}
+                  />
+                </Field>
+              </div>
+            </section>
+
+            <section className="grid gap-4">
               <div className="flex items-center justify-between gap-4">
                 <SectionTitle>Line items</SectionTitle>
                 <Button
@@ -269,10 +329,10 @@ export function DocumentBuilder({
                   Add line
                 </Button>
               </div>
-              <div className="grid gap-3">
+              <div className="grid gap-4">
                 {lineItems.map((item, index) => (
                   <Card key={item.id} className="border border-black/7 bg-[#FFF8EE] p-4 shadow-none">
-                    <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
+                    <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px_160px_auto]">
                       <Field label="Description" htmlFor={`description-${item.id}`}>
                         <Input
                           id={`description-${item.id}`}
@@ -297,7 +357,10 @@ export function DocumentBuilder({
                             setLineItems((current) =>
                               current.map((line) =>
                                 line.id === item.id
-                                  ? { ...line, quantity: Number(event.target.value) }
+                                  ? {
+                                      ...line,
+                                      quantity: Number(event.target.value),
+                                    }
                                   : line,
                               ),
                             )
@@ -315,7 +378,10 @@ export function DocumentBuilder({
                             setLineItems((current) =>
                               current.map((line) =>
                                 line.id === item.id
-                                  ? { ...line, unitPrice: Number(event.target.value) }
+                                  ? {
+                                      ...line,
+                                      unitPrice: Number(event.target.value),
+                                    }
                                   : line,
                               ),
                             )
@@ -338,7 +404,7 @@ export function DocumentBuilder({
                         </Button>
                       </div>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-4">
                       <Field label="Notes" htmlFor={`notes-${item.id}`}>
                         <Textarea
                           id={`notes-${item.id}`}
@@ -358,43 +424,13 @@ export function DocumentBuilder({
               </div>
             </section>
 
-            {/* Pricing & tax */}
-            <section className="grid gap-3">
-              <SectionTitle>Pricing</SectionTitle>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <Field label="Currency" htmlFor="currency">
-                  <Input id="currency" name="currency" value={currency} onChange={(event) => setCurrency(event.target.value)} />
-                </Field>
-                <Field label="Tax %" htmlFor="taxRate">
-                  <Input id="taxRate" name="taxRate" type="number" min={0} max={100} step="0.01" value={taxRate} onChange={(event) => setTaxRate(event.target.value)} />
-                </Field>
-                <Field label="Discount %" htmlFor="discount">
-                  <Input id="discount" name="discount" type="number" min={0} max={100} step="0.01" value={discount} onChange={(event) => setDiscount(event.target.value)} />
-                </Field>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+            <section className="grid gap-4">
+              <SectionTitle>Notes and terms</SectionTitle>
+              <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="TRN" htmlFor="trn">
                   <Input id="trn" name="trn" value={trn} onChange={(event) => setTrn(event.target.value)} />
                 </Field>
-                <Field label="Language" htmlFor="language">
-                  <Select
-                    id="language"
-                    name="language"
-                    value={language}
-                    onChange={(v) => setLanguage(v as InvoiceFormInput["language"])}
-                    options={[
-                      { value: "en", label: "English" },
-                      { value: "ar", label: "Arabic" },
-                      { value: "bilingual", label: "Bilingual" },
-                    ]}
-                  />
-                </Field>
               </div>
-            </section>
-
-            {/* Notes & terms */}
-            <section className="grid gap-3">
-              <SectionTitle>Notes & terms</SectionTitle>
               <Field label="Notes" htmlFor="notes">
                 <Textarea id="notes" name="notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
               </Field>
@@ -402,6 +438,8 @@ export function DocumentBuilder({
                 <Textarea id="terms" name="terms" value={terms} onChange={(event) => setTerms(event.target.value)} />
               </Field>
             </section>
+
+            <DocumentLayoutDiagnostics preview={preview} />
 
             {state.message ? (
               <div
@@ -426,188 +464,6 @@ export function DocumentBuilder({
       <div className="hidden xl:block">
         <div className="sticky top-[7rem]">{previewNode}</div>
       </div>
-    </div>
-  );
-}
-
-function ClientSelector({
-  clients,
-  value,
-  onChange,
-  onClientCreated,
-}: {
-  clients: ClientRecord[];
-  value: string;
-  onChange: (id: string) => void;
-  onClientCreated: (client: ClientRecord) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [addOpen, setAddOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState("");
-  const containerRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  const selected = clients.find((c) => c.id === value);
-  const filtered = clients.filter((c) => {
-    const q = search.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q);
-  });
-
-  const handleClickOutside = useCallback((event: MouseEvent) => {
-    if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-      setOpen(false);
-      setSearch("");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-      requestAnimationFrame(() => searchRef.current?.focus());
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open, handleClickOutside]);
-
-  const handleQuickCreate = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setCreating(true);
-    setCreateError("");
-    const formData = new FormData(event.currentTarget);
-    const result = await quickCreateClientAction(formData);
-    setCreating(false);
-
-    if (result.status === "error") {
-      setCreateError(result.message);
-      return;
-    }
-
-    onClientCreated(result.client as unknown as ClientRecord);
-    setAddOpen(false);
-  };
-
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex h-12 w-full items-center justify-between rounded-[1rem] border border-border bg-white px-4 text-left text-sm transition hover:border-[#CAB9A2]"
-      >
-        <span className="flex items-center gap-2 truncate">
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#FFF1D6] text-xs font-semibold text-[#92700C]">
-            {selected?.name.charAt(0).toUpperCase() ?? "?"}
-          </span>
-          <span className="truncate font-medium text-foreground">
-            {selected?.name ?? "Select client"}
-          </span>
-          {selected?.company ? (
-            <span className="hidden truncate text-muted sm:inline">· {selected.company}</span>
-          ) : null}
-        </span>
-        <ChevronDown className={`size-4 shrink-0 text-muted transition ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      {open ? (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-full rounded-[1rem] border border-border bg-white shadow-[0_16px_48px_rgba(19,15,11,0.12)]">
-          <div className="border-b border-black/6 p-2">
-            <div className="flex items-center gap-2 rounded-[0.6rem] bg-[#FAFAF8] px-3">
-              <Search className="size-3.5 shrink-0 text-muted" />
-              <input
-                ref={searchRef}
-                type="text"
-                placeholder="Search clients..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-muted"
-              />
-            </div>
-          </div>
-
-          <div className="max-h-48 overflow-y-auto p-1.5">
-            {filtered.length === 0 ? (
-              <p className="px-3 py-4 text-center text-sm text-muted">No clients found</p>
-            ) : (
-              filtered.map((client) => (
-                <button
-                  key={client.id}
-                  type="button"
-                  onClick={() => {
-                    onChange(client.id);
-                    setOpen(false);
-                    setSearch("");
-                  }}
-                  className={`flex w-full items-center gap-2.5 rounded-[0.6rem] px-3 py-2.5 text-left text-sm transition hover:bg-[#FFF7EA] ${
-                    client.id === value ? "bg-[#FFF1D6]" : ""
-                  }`}
-                >
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#FFF1D6] text-xs font-semibold text-[#92700C]">
-                    {client.name.charAt(0).toUpperCase()}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium text-foreground">{client.name}</span>
-                    {client.company ? (
-                      <span className="block truncate text-xs text-muted">{client.company}</span>
-                    ) : null}
-                  </span>
-                </button>
-              ))
-            )}
-          </div>
-
-          <div className="border-t border-black/6 p-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                setSearch("");
-                setAddOpen(true);
-              }}
-              className="flex w-full items-center gap-2 rounded-[0.6rem] px-3 py-2.5 text-left text-sm font-medium text-[#92700C] transition hover:bg-[#FFF7EA]"
-            >
-              <UserPlus className="size-4" />
-              New client
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent>
-          <h2 className="text-lg font-semibold text-foreground">Quick-add client</h2>
-          <p className="mt-1 text-sm text-muted">Create a client and continue building your document.</p>
-          <form onSubmit={handleQuickCreate} className="mt-5 grid gap-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="qa-name">Client name</Label>
-                <Input id="qa-name" name="name" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="qa-company">Company</Label>
-                <Input id="qa-company" name="company" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="qa-email">Email</Label>
-                <Input id="qa-email" name="email" type="email" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="qa-phone">Phone</Label>
-                <Input id="qa-phone" name="phone" />
-              </div>
-            </div>
-            <input type="hidden" name="status" value="active" />
-            {createError ? (
-              <div className="rounded-[1rem] border border-[#E7B1A8] bg-[#FFF3F1] px-4 py-3 text-sm text-[#8D3D2E]">
-                {createError}
-              </div>
-            ) : null}
-            <Button type="submit" variant="accent" className="w-full sm:w-fit">
-              {creating ? <Loader2 className="size-4 animate-spin" /> : null}
-              Create & select
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

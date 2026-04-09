@@ -12,13 +12,14 @@ Make it dead simple for a service business to send a polished branded quote or i
 
 ### Validated
 
-- [x] User can sign up, sign in, and complete onboarding with business branding and default invoice settings. — *Validated in Phase 1: Foundation & Onboarding*
-- [x] User can create, edit, preview, save, share, and export branded quotations and invoices. — *Validated in Phase 2: Clients & Document Engine*
-- [x] User can manage clients and see all quotations and invoices tied to each client. — *Validated in Phase 2: Clients & Document Engine*
-- [x] User can track payments, expenses, outstanding balances, and profit per invoice. — *Validated in Phase 3: Dashboard & Cash Flow*
+(None yet — ship to validate)
 
 ### Active
 
+- [ ] User can sign up, sign in, and complete onboarding with business branding and default invoice settings.
+- [ ] User can create, edit, preview, save, share, and export branded quotations and invoices.
+- [ ] User can manage clients and see all quotations and invoices tied to each client.
+- [ ] User can track payments, expenses, outstanding balances, and profit per invoice.
 - [ ] User can convert quotations into invoices and preserve document history safely.
 - [ ] User can share polished public document links and client portal links.
 - [ ] User can configure reminders and recurring billing for repeat invoicing workflows.
@@ -79,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-08 after Phase 3 completion — Dashboard & Cash Flow verified*
+*Last updated: 2026-04-05 after initialization*

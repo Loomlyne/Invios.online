@@ -34,7 +34,6 @@ export default function SignInPage() {
           href: "/sign-up",
         }}
         submitLabel="Enter Invios"
-        forgotPasswordHref="/forgot-password"
       />
     </AuthShell>
   );
