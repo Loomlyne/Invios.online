@@ -206,6 +206,26 @@ test("sign-up surface submits and either redirects or confirms verification", as
   ]);
 });
 
+test("sign-out clears session and redirects to sign-in", async ({ page }) => {
+  // Step 1: Create a confirmed user and sign in
+  const credentials = await createConfirmedUser();
+  await signIn(page, credentials);
+
+  // Step 2: Verify we are in the authenticated shell
+  await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+
+  // Step 3: Click sign-out
+  await page.getByRole("button", { name: "Sign out" }).click();
+
+  // Step 4: Verify redirect to /sign-in
+  await page.waitForURL(/\/sign-in/, { timeout: 10_000 });
+
+  // Step 5: Verify session is cleared — visiting /app should redirect back to /sign-in
+  await page.goto("/app");
+  await page.waitForURL(/\/sign-in/, { timeout: 10_000 });
+  expect(new URL(page.url()).pathname).toBe("/sign-in");
+});
+
 test("shell shortcuts and empty states route into live surfaces", async ({ page }) => {
   await signUpAndEnterApp(page);
   await page.waitForLoadState("networkidle");
