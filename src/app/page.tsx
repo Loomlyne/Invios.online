@@ -6,6 +6,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { InstallPromptButton } from "@/components/app/install-prompt";
+import { InviosLogo } from "@/components/app/invios-logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,8 +19,8 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(202,138,4,0.18),transparent_24%),radial-gradient(circle_at_top_right,rgba(28,25,23,0.08),transparent_18%)]" />
         <div className="relative mx-auto max-w-[1400px] px-4 pb-12 pt-6 sm:px-6 lg:px-8 lg:pb-20">
           <header className="glass-panel flex items-center justify-between gap-4 rounded-[1.4rem] border border-black/8 px-4 py-3 subtle-shadow">
-            <Link href="/" className="display-text text-3xl font-semibold text-foreground">
-              Invios
+            <Link href="/">
+              <InviosLogo />
             </Link>
             <div className="flex items-center gap-2">
               <Button asChild variant="ghost" size="sm" className="h-10 px-4">
