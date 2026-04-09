@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getInvoiceById } from "@/lib/billing-data";
-import { renderDocumentUrlToPdf } from "@/lib/document-pdf";
+import { renderDocumentUrlToPng } from "@/lib/document-png";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,14 +18,14 @@ export async function GET(
   }
 
   const origin = new URL(request.url).origin;
-  const pdfBuffer = await renderDocumentUrlToPdf(
+  const pngBuffer = await renderDocumentUrlToPng(
     `${origin}/invoices/public/${invoice.shareToken}?print=1`,
   );
 
-  return new NextResponse(pdfBuffer, {
+  return new NextResponse(pngBuffer, {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${invoice.invoiceNumber}.pdf"`,
+      "Content-Type": "image/png",
+      "Content-Disposition": `inline; filename="${invoice.invoiceNumber}.png"`,
     },
   });
 }
