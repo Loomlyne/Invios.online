@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useTransition } from "react";
+import { useState, useRef, useEffect, useCallback, useTransition, useOptimistic } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ export function StatusButton({
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic(currentStatus);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -43,11 +44,12 @@ export function StatusButton({
     setOpen(false);
     if (status === currentStatus) return;
     startTransition(async () => {
+      setOptimisticStatus(status);
       try {
         await setInvoiceStatusAction(invoiceId, status);
         router.refresh();
       } catch {
-        // no-op — action throws on error
+        // useOptimistic reverts to currentStatus automatically on error
       }
     });
   };
@@ -60,7 +62,7 @@ export function StatusButton({
         onClick={() => setOpen(!open)}
         disabled={isPending}
       >
-        {STATUS_LABELS[currentStatus]}
+        {STATUS_LABELS[optimisticStatus]}
         <ChevronDown className={`size-3.5 transition ${open ? "rotate-180" : ""}`} />
       </Button>
       {open ? (
@@ -72,7 +74,7 @@ export function StatusButton({
               className="flex w-full items-center gap-2.5 rounded-[0.6rem] px-3 py-2.5 text-sm text-foreground transition hover:bg-[#FFF7EA]"
             >
               <Check
-                className={`size-3.5 shrink-0 ${status === currentStatus ? "opacity-100" : "opacity-0"}`}
+                className={`size-3.5 shrink-0 ${status === optimisticStatus ? "opacity-100" : "opacity-0"}`}
               />
               {STATUS_LABELS[status]}
             </button>
