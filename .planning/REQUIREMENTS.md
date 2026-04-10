@@ -62,10 +62,10 @@
 
 ### Public Experiences
 
-- [ ] **PUB-01**: Client can open a public invoice page without authentication using a secure token.
-- [ ] **PUB-02**: Client can open a public quotation page without authentication using a secure token.
+- [x] **PUB-01**: Client can open a public invoice page without authentication using a secure token.
+- [x] **PUB-02**: Client can open a public quotation page without authentication using a secure token.
 - [ ] **PUB-03**: Public document pages display branding, line items, totals, status, and download action clearly.
-- [ ] **PUB-04**: User can create a client portal link that shows all invoices and quotations for that client.
+- [x] **PUB-04**: User can create a client portal link that shows all invoices and quotations for that client.
 
 ### Versioning, Recurring, Reminders
 
@@ -79,20 +79,20 @@
 
 - [x] **SET-01**: User can manage business profile, branding, bank details, and footer details in settings.
 - [x] **SET-02**: User can configure invoice prefix, quotation prefix, default terms, default notes, and tax settings in settings.
-- [ ] **SET-03**: User can issue UAE-friendly tax invoices with AED currency and TRN support.
-- [ ] **SET-04**: User can render documents with English/Arabic bilingual support and RTL-safe layout behavior.
+- [x] **SET-03**: User can issue UAE-friendly tax invoices with AED currency and TRN support.
+- [x] **SET-04**: User can render documents with English/Arabic bilingual support and RTL-safe layout behavior.
 
 ### UX & Reliability
 
 - [x] **UX-01**: Core app screens remain usable on small mobile widths.
 - [x] **UX-02**: Product exposes clear loading, empty, success, validation, and error states throughout core flows.
 - [ ] **UX-03**: Public and private document views maintain a premium, trustworthy visual quality rather than generic admin styling.
-- [ ] **UX-04**: Canonical slug-based URLs are supported for clients and documents, with alias support for redirects when slugs change.
+- [x] **UX-04**: Canonical slug-based URLs are supported for clients and documents, with alias support for redirects when slugs change.
 
 ## v2 Requirements
 
 - [ ] **AUTH-05**: User can sign in with OAuth providers.
-- [ ] **PUB-05**: Client can explicitly accept or reject quotations from the public quotation page.
+- [x] **PUB-05**: Client can explicitly accept or reject quotations from the public quotation page.
 - [ ] **AUTO-06**: Recurring invoices can auto-send on schedule without manual review.
 - [ ] **OPS-06**: User can collect invoice payment online via integrated payment links.
 - [ ] **CLNT-05**: User can import clients from CSV or external sources.

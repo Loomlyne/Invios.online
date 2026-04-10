@@ -134,7 +134,7 @@ UX-03, UX-04
 **Plans:** 7 plans
 
 Plans:
-- [ ] 04-00-PLAN.md — Wave 0 test scaffolds (portal token, slug alias, accept/reject guards, UUID detection, TRN, bilingual helpers)
+- [x] 04-00-PLAN.md — Wave 0 test scaffolds (portal token, slug alias, accept/reject guards, UUID detection, TRN, bilingual helpers)
 - [ ] 04-01-PLAN.md — DB migration (slug aliases), data layer functions, public quotation accept/reject actions, utility helpers
 - [ ] 04-02-PLAN.md — Slug route migration ([id] to [slug]) with UUID fallback and alias redirects, all callsite updates
 - [ ] 04-03-PLAN.md — Public page components (PublicPageShell, AcceptRejectForm, PortalDocumentRow) + branded public pages + client portal

@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-last_updated: "2026-04-08T02:30:02.372Z"
+status: Executing Phase 04
+last_updated: "2026-04-10T17:53:33.193Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 21
+  completed_plans: 15
 ---
 
 # STATE
@@ -56,11 +56,15 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 04-public-trust-surfaces]: Bilingual layout = side-by-side columns (EN left, AR right), full RTL flip for Arabic-only docs
 - [Phase 04-public-trust-surfaces]: Document routes switch from ID-based to slug-based with 301 redirect aliases
 - [Phase 04-public-trust-surfaces]: UX-03 visual pass covers ALL views (public + private), not just client-facing surfaces
+- [Phase 04-public-trust-surfaces]: Wave 0 tests use dynamic imports (await import) to isolate RED state per test without module caching issues
+- [Phase 04-public-trust-surfaces]: getSlugAliasRedirect test uses call-count mock pattern for multi-table Supabase queries
 
 ## Session State
 
-- Stopped at: Phase 4 context gathered — 15 decisions captured across 4 areas (public pages, client portal, UAE compliance, canonical URLs)
-- Resume from: `/gsd:plan-phase 4` — research and plan Phase 4
+- Stopped at: Completed 04-00-PLAN.md — Wave 0 test scaffolds (21 RED tests across 3 files)
+- Resume from: `/gsd:execute-phase 4` — execute Phase 4 Plan 01
 - Latest artifacts:
-  - `.planning/phases/04-public-trust-surfaces/04-CONTEXT.md`
-  - `.planning/phases/04-public-trust-surfaces/04-DISCUSSION-LOG.md`
+  - `.planning/phases/04-public-trust-surfaces/04-00-SUMMARY.md`
+  - `src/lib/billing-data.test.ts`
+  - `src/actions/public-quotations.test.ts`
+  - `src/lib/billing-utils.test.ts`
