@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
+import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
+import { PublicPageShell } from "@/components/public/public-page-shell";
+import { PublicDocumentActions } from "@/components/public/public-document-actions";
 import { getPublicInvoiceByToken } from "@/lib/billing-data";
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
-import { getOwnerUserState } from "@/lib/public-documents";
+import { getOwnerUserState, getPublicLogoUrl } from "@/lib/public-documents";
 
 export default async function PublicInvoicePage({
   params,
@@ -23,9 +26,33 @@ export default async function PublicInvoicePage({
   const ownerState = await getOwnerUserState(invoice.userId);
   const preview = buildInvoicePreviewFromRecord({ userState: ownerState }, invoice);
 
+  // Print mode: bare document for PDF generation — no chrome
+  if (printMode) {
+    return (
+      <main className="mx-auto max-w-5xl px-0 py-0">
+        <InvoicePreview preview={preview} mode="print" />
+      </main>
+    );
+  }
+
+  const logoUrl = await getPublicLogoUrl(ownerState.branding.logoPath);
+
   return (
-    <main className={printMode ? "mx-auto max-w-5xl px-0 py-0" : "mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8"}>
-      <InvoicePreview preview={preview} mode={printMode ? "print" : "public"} />
-    </main>
+    <PublicPageShell
+      businessName={ownerState.profile.businessName}
+      logoUrl={logoUrl}
+      primaryColor={ownerState.branding.primaryColor || "var(--accent)"}
+    >
+      <div className="mb-4">
+        <DocumentStatusBadge status={invoice.status} />
+      </div>
+      <InvoicePreview preview={preview} mode="public" />
+      <PublicDocumentActions
+        shareToken={shareToken}
+        documentKind="invoice"
+        invoiceId={invoice.id}
+        invoiceNumber={invoice.invoiceNumber}
+      />
+    </PublicPageShell>
   );
 }

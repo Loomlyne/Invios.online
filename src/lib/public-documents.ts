@@ -1,6 +1,24 @@
 import { createDefaultUserState } from "@/lib/preview";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
+/**
+ * Resolve a branding asset path to a short-lived signed URL.
+ * Returns null if path is missing or Supabase is not configured.
+ */
+export async function getPublicLogoUrl(logoPath: string | null | undefined): Promise<string | null> {
+  if (!logoPath) return null;
+
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase.storage
+    .from("branding-assets")
+    .createSignedUrl(logoPath, 60 * 10); // 10-minute TTL — sufficient for a page render
+
+  if (error) return null;
+  return data.signedUrl;
+}
+
 type BrandingRow = {
   business_name: string | null;
   business_email: string | null;
