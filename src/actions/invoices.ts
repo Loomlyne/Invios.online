@@ -143,7 +143,7 @@ export async function createInvoiceAction(
         trn: parsed.data.trn || null,
         share_token: shareToken,
       })
-      .select("id")
+      .select("id,slug")
       .single();
 
     if (error) {
@@ -154,7 +154,7 @@ export async function createInvoiceAction(
     revalidatePath("/app");
     return {
       status: "success",
-      redirectTo: `/app/invoices/${data.id}` as Route,
+      redirectTo: `/app/invoices/${data.slug}` as Route,
     };
   } catch (error) {
     return {
@@ -220,7 +220,7 @@ export async function updateInvoiceAction(
       })
       .eq("id", parsed.data.id)
       .eq("user_id", userId)
-      .select("id")
+      .select("id,slug")
       .single();
 
     if (error) {
@@ -228,10 +228,10 @@ export async function updateInvoiceAction(
     }
 
     revalidatePath("/app/invoices");
-    revalidatePath(`/app/invoices/${data.id}`);
+    revalidatePath(`/app/invoices/${data.slug}`);
     return {
       status: "success",
-      redirectTo: `/app/invoices/${data.id}` as Route,
+      redirectTo: `/app/invoices/${data.slug}` as Route,
     };
   } catch (error) {
     return {
@@ -243,18 +243,22 @@ export async function updateInvoiceAction(
 
 export async function setInvoiceStatusAction(id: string, status: InvoiceStatus) {
   const { supabase, user } = await requireSession();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("invoices")
     .update({ status })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("slug")
+    .single();
 
   if (error) {
     throw new Error(error.message);
   }
 
   revalidatePath("/app/invoices");
-  revalidatePath(`/app/invoices/${id}`);
+  if (data?.slug) {
+    revalidatePath(`/app/invoices/${data.slug}`);
+  }
 }
 
 export async function deleteInvoiceAction(id: string): Promise<ActionState> {

@@ -84,7 +84,7 @@ export default async function ClientDetailPage({
             invoices.map((invoice) => (
               <DocumentSummaryRow
                 key={invoice.id}
-                href={`/app/invoices/${invoice.id}`}
+                href={`/app/invoices/${invoice.slug}`}
                 documentNumber={invoice.invoiceNumber}
                 subtitle={`Due ${invoice.dueDate} \u00b7 ${formatCurrency(invoice.total, invoice.currency)}`}
                 status={invoice.status}
@@ -110,7 +110,7 @@ export default async function ClientDetailPage({
             quotations.map((quotation) => (
               <DocumentSummaryRow
                 key={quotation.id}
-                href={`/app/quotations/${quotation.id}`}
+                href={`/app/quotations/${quotation.slug}`}
                 documentNumber={quotation.quotationNumber}
                 subtitle={`Expires ${quotation.expiryDate} \u00b7 ${formatCurrency(quotation.total, quotation.currency)}`}
                 status={quotation.status}

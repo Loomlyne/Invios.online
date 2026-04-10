@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { expenseFormSchema } from "@/lib/billing";
+import { getInvoiceById } from "@/lib/billing-data";
 import { requireSession } from "@/lib/require-session";
 import type { ActionState } from "@/lib/types";
 
@@ -37,7 +38,10 @@ export async function addExpenseAction(
       throw new Error(error.message);
     }
 
-    revalidatePath(`/app/invoices/${parsed.data.invoiceId}`);
+    const invoice = await getInvoiceById(parsed.data.invoiceId);
+    if (invoice) {
+      revalidatePath(`/app/invoices/${invoice.slug}`);
+    }
     revalidatePath("/app/invoices");
     revalidatePath("/app");
 
@@ -70,7 +74,10 @@ export async function deleteExpenseAction(
       };
     }
 
-    revalidatePath(`/app/invoices/${invoiceId}`);
+    const invoice = await getInvoiceById(invoiceId);
+    if (invoice) {
+      revalidatePath(`/app/invoices/${invoice.slug}`);
+    }
     revalidatePath("/app/invoices");
     revalidatePath("/app");
 

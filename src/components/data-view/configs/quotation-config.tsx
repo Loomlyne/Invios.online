@@ -6,7 +6,7 @@ import type { DataViewConfig } from "../types";
 
 export const quotationConfig: DataViewConfig<QuotationRecord, QuotationStatus> = {
   getId: (q) => q.id,
-  getHref: (q) => `/app/quotations/${q.id}`,
+  getHref: (q) => `/app/quotations/${q.slug}`,
   getStatus: (q) => q.status,
 
   statusOptions: [

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { normalizePaymentMethodInput, paymentFormSchema } from "@/lib/billing";
-import { computeAndWriteInvoiceStatus } from "@/lib/billing-data";
+import { computeAndWriteInvoiceStatus, getInvoiceById } from "@/lib/billing-data";
 import { requireSession } from "@/lib/require-session";
 import type { ActionState } from "@/lib/types";
 
@@ -42,7 +42,10 @@ export async function addPaymentAction(
 
     await computeAndWriteInvoiceStatus(supabase, parsed.data.invoiceId, user.id);
 
-    revalidatePath(`/app/invoices/${parsed.data.invoiceId}`);
+    const invoice = await getInvoiceById(parsed.data.invoiceId);
+    if (invoice) {
+      revalidatePath(`/app/invoices/${invoice.slug}`);
+    }
     revalidatePath("/app/invoices");
     revalidatePath("/app");
 
@@ -77,7 +80,10 @@ export async function deletePaymentAction(
 
     await computeAndWriteInvoiceStatus(supabase, invoiceId, user.id);
 
-    revalidatePath(`/app/invoices/${invoiceId}`);
+    const invoice = await getInvoiceById(invoiceId);
+    if (invoice) {
+      revalidatePath(`/app/invoices/${invoice.slug}`);
+    }
     revalidatePath("/app/invoices");
     revalidatePath("/app");
 

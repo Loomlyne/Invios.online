@@ -196,7 +196,7 @@ export default async function AppHomePage({
               {drilldownRows.map((row) => (
                 <Link
                   key={row.id}
-                  href={`/app/invoices/${row.id}` as Route}
+                  href={`/app/invoices/${row.slug}` as Route}
                   className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -267,7 +267,7 @@ export default async function AppHomePage({
                     >
                       <td className="px-3 py-2.5">
                         <Link
-                          href={`/app/invoices/${row.id}` as Route}
+                          href={`/app/invoices/${row.slug}` as Route}
                           className="font-semibold text-foreground hover:text-[#8A5E12]"
                         >
                           {row.invoiceNumber}
@@ -367,7 +367,7 @@ export default async function AppHomePage({
                 {recentInvoices.map((invoice) => (
                   <DocumentSummaryRow
                     key={invoice.id}
-                    href={`/app/invoices/${invoice.id}`}
+                    href={`/app/invoices/${invoice.slug}`}
                     documentNumber={invoice.invoiceNumber}
                     subtitle={invoice.client.name}
                     status={invoice.status}
@@ -400,7 +400,7 @@ export default async function AppHomePage({
                 {recentQuotations.map((quotation) => (
                   <DocumentSummaryRow
                     key={quotation.id}
-                    href={`/app/quotations/${quotation.id}`}
+                    href={`/app/quotations/${quotation.slug}`}
                     documentNumber={quotation.quotationNumber}
                     subtitle={quotation.client.name}
                     status={quotation.status}
@@ -466,7 +466,7 @@ export default async function AppHomePage({
               insights.followUpQueue.map((row) => (
                 <DocumentSummaryRow
                   key={row.id}
-                  href={`/app/invoices/${row.id}`}
+                  href={`/app/invoices/${row.slug}`}
                   documentNumber={row.invoiceNumber}
                   subtitle={`${row.client.name} · due ${formatDateDisplay(row.dueDate)}`}
                   status={row.status}
@@ -497,7 +497,7 @@ export default async function AppHomePage({
               insights.pendingQuotations.map((quotation) => (
                 <DocumentSummaryRow
                   key={quotation.id}
-                  href={`/app/quotations/${quotation.id}`}
+                  href={`/app/quotations/${quotation.slug}`}
                   documentNumber={quotation.quotationNumber}
                   subtitle={`${quotation.client.name} · expires ${formatDateDisplay(quotation.expiryDate)}`}
                   status={quotation.status}
