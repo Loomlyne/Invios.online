@@ -18,14 +18,14 @@ export function InvoicePreview({
 
   return (
     <div
-      className="overflow-hidden rounded-[1.6rem] border border-black/8 bg-white"
+      className="overflow-hidden rounded-[var(--radius-card)] border border-black/8 bg-white"
       data-document-kind={preview.kind ?? "invoice"}
       data-document-mode={mode}
       data-document-template={template.id}
     >
       {/* Header */}
       <div className="px-6 pb-5 pt-5">
-        <div className="flex items-start justify-between gap-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
             <p className="text-xl font-semibold text-foreground">{preview.businessName}</p>
             <p className="text-sm leading-6 text-[#78716C]">{preview.address}</p>

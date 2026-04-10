@@ -2,18 +2,19 @@
 
 import { startTransition, useCallback, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Bell, Check, ChevronRight, Loader2, LogOut, Palette, Settings2, SlidersHorizontal, FileText } from "lucide-react";
+import { AlertTriangle, Bell, Check, ChevronRight, Eye, EyeOff, KeyRound, Loader2, LogOut, Mail, Palette, Settings2, Shield, SlidersHorizontal, FileText, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   saveGeneralSettingsAction,
   saveInvoiceDefaultsAction,
   saveNotificationsAction,
 } from "@/actions/app";
-import { signOutAction } from "@/actions/auth";
+import { signOutAction, changePasswordAction, deleteAccountAction } from "@/actions/auth";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -152,7 +153,7 @@ export function SettingsWorkspace({
           </Button>
         </div>
         {message ? (
-          <div className="mt-4 rounded-[1rem] border border-black/8 bg-white px-4 py-3 text-sm text-muted-strong">
+          <div className="mt-4 rounded-[var(--radius-inner)] border border-black/8 bg-white px-4 py-3 text-sm text-muted-strong">
             {message}
           </div>
         ) : null}
@@ -162,7 +163,7 @@ export function SettingsWorkspace({
         {/* Branding shortcut — visible on mobile where sidebar nav is hidden */}
         <Link
           href="/app/branding"
-          className="mb-4 flex items-center gap-3 rounded-[1.15rem] border border-black/6 bg-surface px-4 py-3.5 transition hover:bg-surface-strong lg:hidden"
+          className="mb-4 flex items-center gap-3 rounded-[var(--radius-inner)] border border-black/6 bg-surface px-4 py-3.5 transition hover:bg-surface-strong lg:hidden"
         >
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/10">
             <Palette className="size-4 text-accent-strong" />
@@ -249,7 +250,7 @@ export function SettingsWorkspace({
                     />
                   </Field>
                 </div>
-                <label className="flex items-center gap-3 rounded-[1rem] border border-border bg-white px-4 py-3 text-sm text-muted-strong">
+                <label className="flex items-center gap-3 rounded-[var(--radius-inner)] border border-border bg-white px-4 py-3 text-sm text-muted-strong">
                   <input
                     type="checkbox"
                     className="size-4 accent-black"
@@ -293,7 +294,7 @@ export function SettingsWorkspace({
           <TabsContent value="notifications">
             <div className="grid gap-6">
               <Section title="Payment Reminders" description="Reminders are sent automatically based on your due date settings.">
-                <label className="flex items-center gap-3 rounded-[1rem] border border-border bg-white px-4 py-3 text-sm text-muted-strong">
+                <label className="flex items-center gap-3 rounded-[var(--radius-inner)] border border-border bg-white px-4 py-3 text-sm text-muted-strong">
                   <input
                     type="checkbox"
                     className="size-4 accent-black"
@@ -324,7 +325,7 @@ export function SettingsWorkspace({
                   </Field>
                 </div>
 
-                <label className="flex items-center gap-3 rounded-[1rem] border border-border bg-white px-4 py-3 text-sm text-muted-strong">
+                <label className="flex items-center gap-3 rounded-[var(--radius-inner)] border border-border bg-white px-4 py-3 text-sm text-muted-strong">
                   <input
                     type="checkbox"
                     className="size-4 accent-black"
@@ -350,8 +351,36 @@ export function SettingsWorkspace({
 
           {/* ── Account ──────────────────────────────────────── */}
           <TabsContent value="account">
-            <div className="grid gap-4">
-              <Section title="Sign Out" description="Sign out of the application. This will return you to the sign-in page.">
+            <div className="grid gap-6">
+              <Section title="Security overview" description="Your account identity and authentication method.">
+                <div className="grid gap-3">
+                  <div className="flex items-center gap-3 rounded-[var(--radius-inner)] border border-border bg-white px-4 py-3">
+                    <Mail className="size-4 shrink-0 text-muted" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs uppercase tracking-[0.16em] text-muted">Email</p>
+                      <p className="truncate text-sm font-medium text-foreground">{context.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-[var(--radius-inner)] border border-border bg-white px-4 py-3">
+                    <Shield className="size-4 shrink-0 text-muted" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs uppercase tracking-[0.16em] text-muted">Authentication</p>
+                      <p className="text-sm font-medium text-foreground">Email &amp; password</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-[var(--radius-inner)] border border-border bg-white px-4 py-3">
+                    <KeyRound className="size-4 shrink-0 text-muted" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs uppercase tracking-[0.16em] text-muted">Password strength</p>
+                      <p className="text-sm font-medium text-foreground">Set — last changed via settings or reset link</p>
+                    </div>
+                  </div>
+                </div>
+              </Section>
+
+              <ChangePasswordSection />
+
+              <Section title="Sign out" description="End your current session and return to the sign-in page.">
                 <Button
                   type="button"
                   variant="secondary"
@@ -359,9 +388,11 @@ export function SettingsWorkspace({
                   onClick={handleSignOut}
                 >
                   <LogOut className="mr-2 size-4" />
-                  Sign Out
+                  Sign out
                 </Button>
               </Section>
+
+              <DeleteAccountSection email={context.email ?? ""} />
             </div>
           </TabsContent>
         </Tabs>
@@ -388,7 +419,7 @@ export function SettingsWorkspace({
   );
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
@@ -401,18 +432,197 @@ function Section({
   title,
   description,
   children,
+  danger = false,
 }: {
   title: string;
   description: string;
   children: ReactNode;
+  danger?: boolean;
 }) {
   return (
-    <div className="grid gap-4 rounded-[1.4rem] border border-border bg-white p-5">
+    <div className={`grid gap-4 rounded-[var(--radius-card)] border p-5 ${danger ? "border-danger/20 bg-[#FFF5F3]" : "border-border bg-white"}`}>
       <div>
-        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <p className={`text-sm font-semibold ${danger ? "text-danger" : "text-foreground"}`}>{title}</p>
         <p className="text-sm text-muted">{description}</p>
       </div>
       {children}
     </div>
+  );
+}
+
+function PasswordInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        type={visible ? "text" : "password"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition"
+        tabIndex={-1}
+      >
+        {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+      </button>
+    </div>
+  );
+}
+
+function ChangePasswordSection() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const canSubmit = currentPassword.length > 0 && newPassword.length >= 8 && confirmNewPassword.length >= 8;
+
+  const handleSubmit = () => {
+    setSaving(true);
+    setMessage(null);
+
+    startTransition(async () => {
+      const result = await changePasswordAction({
+        currentPassword,
+        newPassword,
+        confirmNewPassword,
+      });
+
+      setSaving(false);
+
+      if (result.status === "success") {
+        setMessage({ type: "success", text: result.message ?? "Password updated." });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+      } else {
+        setMessage({ type: "error", text: result.message ?? "Could not update password." });
+      }
+    });
+  };
+
+  return (
+    <Section title="Change password" description="Update your password. You'll need your current password to confirm.">
+      <div className="grid gap-4">
+        <Field label="Current password">
+          <PasswordInput value={currentPassword} onChange={setCurrentPassword} placeholder="Enter current password" />
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="New password">
+            <PasswordInput value={newPassword} onChange={setNewPassword} placeholder="At least 8 characters" />
+          </Field>
+          <Field label="Confirm new password">
+            <PasswordInput value={confirmNewPassword} onChange={setConfirmNewPassword} placeholder="Repeat new password" />
+          </Field>
+        </div>
+        {message ? (
+          <div className={`rounded-[var(--radius-inner)] border px-4 py-3 text-sm ${message.type === "success" ? "border-success/20 bg-[#F0F9F2] text-success" : "border-danger/20 bg-[#FFF5F3] text-danger"}`}>
+            {message.text}
+          </div>
+        ) : null}
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full sm:w-fit"
+          disabled={saving || !canSubmit}
+          onClick={handleSubmit}
+        >
+          {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <KeyRound className="mr-2 size-4" />}
+          {saving ? "Updating…" : "Update password"}
+        </Button>
+      </div>
+    </Section>
+  );
+}
+
+function DeleteAccountSection({ email }: { email: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleDelete = () => {
+    setDeleting(true);
+    setError("");
+
+    startTransition(async () => {
+      const result = await deleteAccountAction(confirmation);
+      setDeleting(false);
+
+      if (result.status === "success" && result.redirectTo) {
+        router.push(result.redirectTo as "/sign-in");
+      } else {
+        setError(result.message ?? "Could not delete account.");
+      }
+    });
+  };
+
+  return (
+    <Section danger title="Delete account" description="Permanently delete your account and all associated data. This action cannot be undone.">
+      <Dialog open={open} onOpenChange={(v) => { setOpen(v); setConfirmation(""); setError(""); }}>
+        <DialogTrigger asChild>
+          <Button type="button" className="w-full bg-danger text-white hover:bg-danger/90 sm:w-fit">
+            <Trash2 className="mr-2 size-4" />
+            Delete my account
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <div className="grid gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-full bg-danger/10">
+                <AlertTriangle className="size-5 text-danger" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Delete account permanently</p>
+                <p className="text-sm text-muted">{email}</p>
+              </div>
+            </div>
+
+            <div className="rounded-[1rem] border border-danger/20 bg-[#FFF5F3] px-4 py-3 text-sm text-danger">
+              This will permanently delete your account, all invoices, quotations, clients, branding, and settings. This cannot be reversed.
+            </div>
+
+            <Field label={<>Type <span className="font-mono font-semibold">DELETE</span> to confirm</>}>
+              <Input
+                value={confirmation}
+                onChange={(e) => setConfirmation(e.target.value)}
+                placeholder="DELETE"
+                className="font-mono"
+              />
+            </Field>
+
+            {error ? (
+              <div className="rounded-[1rem] border border-danger/20 bg-[#FFF5F3] px-4 py-3 text-sm text-danger">
+                {error}
+              </div>
+            ) : null}
+
+            <Button
+              type="button"
+              disabled={confirmation !== "DELETE" || deleting}
+              onClick={handleDelete}
+              className="w-full bg-danger text-white hover:bg-danger/90"
+            >
+              {deleting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Trash2 className="mr-2 size-4" />}
+              {deleting ? "Deleting…" : "Permanently delete account"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </Section>
   );
 }

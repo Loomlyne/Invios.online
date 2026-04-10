@@ -27,7 +27,7 @@ export default async function NewInvoicePage({
             Back to invoices
           </Link>
         </Button>
-        <div className="rounded-[1.6rem] border border-dashed border-black/10 bg-[#FFF8EE] px-6 py-8">
+        <div className="rounded-[var(--radius-card)] border border-dashed border-black/10 bg-[#FFF8EE] px-6 py-8">
           <p className="text-xl font-semibold text-foreground">Create a client before drafting an invoice.</p>
           <p className="mt-2 text-sm leading-7 text-muted-strong">
             The invoice builder needs a real client record so pricing, public share pages, and future portal flows stay anchored correctly.

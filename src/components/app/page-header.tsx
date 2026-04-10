@@ -22,7 +22,7 @@ export function PageHeader({
             {badge}
           </Badge>
         ) : null}
-        <h1 className="display-text text-3xl font-semibold tracking-tight sm:text-4xl">
+        <h1 className="display-text font-semibold text-[clamp(1.625rem,1.25rem+0.9375vw,2.25rem)]">
           {title}
         </h1>
         {description ? (

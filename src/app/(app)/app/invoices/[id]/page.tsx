@@ -40,7 +40,7 @@ export default async function InvoiceDetailPage({
   const preview = buildInvoicePreviewFromRecord(context, invoice);
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-[var(--space-section)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" className="w-fit">
           <Link href={"/app/invoices" as Route}>
@@ -51,7 +51,7 @@ export default async function InvoiceDetailPage({
         <FinancialQuickActions invoiceId={invoice.id} />
       </div>
 
-      <section className="flex flex-col gap-5">
+      <section className="flex flex-col gap-[var(--space-grid)]">
         <Card>
           <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex gap-[21px]">
@@ -90,8 +90,8 @@ export default async function InvoiceDetailPage({
               currency={invoice.currency}
             />
 
-            <div className="flex border-t border-black/7 pt-4">
-              <div className="flex w-full flex-row gap-0">
+            <div className="border-t border-black/7 pt-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 <InvoiceMeta label="Issue date" value={invoice.issueDate} />
                 <InvoiceMeta label="Due date" value={invoice.dueDate} />
                 <InvoiceMeta
@@ -115,7 +115,7 @@ export default async function InvoiceDetailPage({
       </section>
 
       {/* Financial details — per D-01, D-04 from CONTEXT.md */}
-      <section className="grid gap-6">
+      <section className="grid gap-[var(--space-section)]">
         <PaymentsTable
           invoiceId={invoice.id}
           invoiceTotal={invoice.total}
@@ -143,10 +143,10 @@ function InvoiceMeta({
   emphasize?: boolean;
 }) {
   return (
-    <div className="w-full border-b border-dashed border-black/8 pb-3 sm:pb-4">
+    <div className="border-b border-dashed border-black/8 pb-3">
       <p className="text-[11px] uppercase tracking-[0.18em] text-muted">{label}</p>
       <p
-        className={`mt-2 text-sm ${emphasize ? "font-semibold text-[#92700C]" : "font-medium text-foreground"}`}
+        className={`mt-2 truncate text-sm ${emphasize ? "font-semibold text-[#92700C]" : "font-medium text-foreground"}`}
       >
         {value}
       </p>

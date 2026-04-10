@@ -62,9 +62,9 @@ export function PaymentsTable({
       <h3 className="text-xs uppercase tracking-[0.24em] text-muted font-medium mb-2">
         Payments
       </h3>
-      <div className="rounded-[1rem] border border-border bg-surface overflow-visible">
+      <div className="rounded-[var(--radius-inner)] border border-border bg-surface overflow-visible">
         {/* Header row */}
-        <div className="px-4 py-2 bg-surface-strong border-b border-border hidden md:flex items-center gap-3 rounded-t-[1rem]">
+        <div className="px-4 py-2 bg-surface-strong border-b border-border hidden md:flex items-center gap-3 rounded-t-[var(--radius-inner)]">
           <span className="text-xs text-muted uppercase tracking-[0.18em] w-24 shrink-0">
             Date paid
           </span>
@@ -149,7 +149,7 @@ export function PaymentsTable({
         <form
           ref={formRef}
           action={formAction}
-          className="flex flex-wrap items-end gap-3 rounded-b-[1rem] border-t border-dashed border-border/60 bg-[#FFFCF7] px-4 py-3"
+          className="flex flex-wrap items-end gap-3 rounded-b-[var(--radius-inner)] border-t border-dashed border-border/60 bg-[#FFFCF7] px-4 py-3"
         >
           <input type="hidden" name="invoiceId" value={invoiceId} />
           <div className="w-[120px] shrink-0">

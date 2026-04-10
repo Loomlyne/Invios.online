@@ -41,7 +41,7 @@ export function TableView<TItem, TStatus extends string>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-[1.25rem] border border-black/7">
+    <div className="overflow-x-auto rounded-[var(--radius-card)] border border-black/7">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-[#FFF7EA]">
@@ -95,7 +95,7 @@ export function TableView<TItem, TStatus extends string>({
                 {config.tableColumns.map((col) => (
                   <td
                     key={col.key}
-                    className={cn("px-4 py-3 whitespace-nowrap", col.className)}
+                    className={cn("px-4 py-3", col.className)}
                   >
                     {col.render(item)}
                   </td>

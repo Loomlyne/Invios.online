@@ -43,7 +43,7 @@ export default async function ClientsPage({
   const leadClients = clients.filter((c) => c.status === "lead").length;
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-[var(--space-section)]">
       <PageHeader
         title="Clients"
         description="Manage the client records that anchor every quotation and invoice."

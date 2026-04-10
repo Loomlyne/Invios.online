@@ -112,7 +112,7 @@ export default async function AppHomePage({
   const emphasizeCollectionRate = currentMetric === "collection-rate";
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-[var(--space-section)]">
       <PageHeader
         title="Dashboard"
         description={pageDescription}
@@ -138,7 +138,7 @@ export default async function AppHomePage({
         <DashboardRangeToggle currentRange={currentRange} currentMetric={currentMetric} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-[var(--space-grid)] md:grid-cols-4">
         <MetricCard
           label="Total billed"
           value={formatMetricValue(metrics.totalBilled, currency)}
@@ -190,7 +190,52 @@ export default async function AppHomePage({
               description="Switch the range or select another metric to inspect a different slice of the pipeline."
             />
           ) : (
-            <div className="overflow-x-auto rounded-[1.25rem] border border-black/7">
+            <>
+            {/* Mobile card list */}
+            <div className="grid gap-2 xl:hidden">
+              {drilldownRows.map((row) => (
+                <Link
+                  key={row.id}
+                  href={`/app/invoices/${row.id}` as Route}
+                  className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {row.invoiceNumber}
+                      </p>
+                      <p className="mt-1 truncate text-sm text-muted-strong">
+                        {row.client.name}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">
+                        {formatCurrency(row.total, row.currency)}
+                      </span>
+                      <DocumentStatusBadge status={row.status} />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                    <span>Due {formatDateDisplay(row.dueDate)}</span>
+                    {emphasizeCollectionRate ? (
+                      <>
+                        <span className="font-semibold text-[#6B4A0D]">
+                          Collected {formatCurrency(row.collectedAmount, row.currency)}
+                        </span>
+                        <span className="font-semibold text-[#8D3D2E]">
+                          Owed {formatCurrency(row.outstandingAmount, row.currency)}
+                        </span>
+                      </>
+                    ) : (
+                      <span>Outstanding {formatCurrency(row.outstandingAmount, row.currency)}</span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto rounded-[var(--radius-card)] border border-black/7 xl:block">
               <table className="min-w-full border-collapse text-sm">
                 <thead>
                   <tr className="bg-[#FFF7EA]">
@@ -207,7 +252,7 @@ export default async function AppHomePage({
                     ].map((label) => (
                       <th
                         key={label}
-                        className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted"
+                        className="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted"
                       >
                         {label}
                       </th>
@@ -220,7 +265,7 @@ export default async function AppHomePage({
                       key={row.id}
                       className="border-t border-black/5 bg-[#FFF8EE] transition hover:bg-[#FFF4E3]"
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <Link
                           href={`/app/invoices/${row.id}` as Route}
                           className="font-semibold text-foreground hover:text-[#8A5E12]"
@@ -228,7 +273,7 @@ export default async function AppHomePage({
                           {row.invoiceNumber}
                         </Link>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <div>
                           <p className="font-medium text-foreground">{row.client.name}</p>
                           {row.client.company ? (
@@ -236,23 +281,23 @@ export default async function AppHomePage({
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         <DocumentStatusBadge status={row.status} />
                       </td>
-                      <td className="px-4 py-3 text-muted-strong">
+                      <td className="px-3 py-2.5 text-muted-strong">
                         {formatDateDisplay(row.issueDate)}
                       </td>
-                      <td className="px-4 py-3 text-muted-strong">
+                      <td className="px-3 py-2.5 text-muted-strong">
                         {formatDateDisplay(row.dueDate)}
                       </td>
-                      <td className="px-4 py-3 font-medium text-foreground">
+                      <td className="px-3 py-2.5 font-medium text-foreground">
                         {formatCurrency(row.total, row.currency)}
                       </td>
                       <td
                         className={
                           emphasizeCollectionRate
-                            ? "px-4 py-3 font-semibold text-[#6B4A0D]"
-                            : "px-4 py-3 text-muted-strong"
+                            ? "px-3 py-2.5 font-semibold text-[#6B4A0D]"
+                            : "px-3 py-2.5 text-muted-strong"
                         }
                       >
                         {formatCurrency(row.collectedAmount, row.currency)}
@@ -260,13 +305,13 @@ export default async function AppHomePage({
                       <td
                         className={
                           emphasizeCollectionRate
-                            ? "px-4 py-3 font-semibold text-[#8D3D2E]"
-                            : "px-4 py-3 text-muted-strong"
+                            ? "px-3 py-2.5 font-semibold text-[#8D3D2E]"
+                            : "px-3 py-2.5 text-muted-strong"
                         }
                       >
                         {formatCurrency(row.outstandingAmount, row.currency)}
                       </td>
-                      <td className="px-4 py-3 text-muted-strong">
+                      <td className="px-3 py-2.5 text-muted-strong">
                         {formatCurrency(row.profitAmount, row.currency)}
                       </td>
                     </tr>
@@ -274,6 +319,7 @@ export default async function AppHomePage({
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -305,7 +351,7 @@ export default async function AppHomePage({
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-[var(--space-grid)] md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Recent invoices</CardTitle>
@@ -379,7 +425,7 @@ export default async function AppHomePage({
           <CardDescription>Compact financial readout for the selected time window.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-[var(--space-grid)] sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
             {[
               { label: "Billed", value: formatAnalyticsValue(insights.analytics.totalBilled, currency) },
               { label: "Collected", value: formatAnalyticsValue(insights.analytics.totalCollected, currency) },
@@ -389,7 +435,7 @@ export default async function AppHomePage({
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-[1.1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4"
+                className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] px-4 py-4"
               >
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">{item.label}</p>
                 <p className="mt-2 text-lg font-semibold text-foreground">{item.value}</p>
@@ -399,7 +445,7 @@ export default async function AppHomePage({
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-[var(--space-grid)] xl:grid-cols-2">
         <Card>
           <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -463,7 +509,7 @@ export default async function AppHomePage({
         </Card>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid gap-[var(--space-grid)] xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
           <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -481,7 +527,39 @@ export default async function AppHomePage({
                 description="Client summaries appear once invoices have been issued."
               />
             ) : (
-              <div className="overflow-x-auto rounded-[1.25rem] border border-black/7">
+              <>
+              {/* Mobile card list */}
+              <div className="grid gap-2 md:hidden">
+                {insights.topClients.map((client) => (
+                  <Link
+                    key={client.clientId}
+                    href={client.href as Route}
+                    className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {client.clientName}
+                        </p>
+                        {client.company ? (
+                          <p className="truncate text-xs text-muted">{client.company}</p>
+                        ) : null}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="text-sm font-semibold text-[#8D3D2E]">
+                          {formatCurrency(client.outstandingTotal, currency)}
+                        </p>
+                        <p className="text-xs text-muted">
+                          {client.invoiceCount} invoice{client.invoiceCount !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden overflow-x-auto rounded-[var(--radius-card)] border border-black/7 md:block">
                 <table className="min-w-full border-collapse text-sm">
                   <thead>
                     <tr className="bg-[#FFF7EA]">
@@ -524,6 +602,7 @@ export default async function AppHomePage({
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -544,7 +623,7 @@ export default async function AppHomePage({
                 <Link
                   key={activity.id}
                   href={activity.href as Route}
-                  className="rounded-[1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
+                  className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

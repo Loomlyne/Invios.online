@@ -30,7 +30,7 @@ export default async function QuotationDetailPage({
   const isLocked = quotation.convertedToInvoiceId !== null;
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-[var(--space-section)]">
       <Button asChild variant="ghost" className="w-fit">
         <Link href={"/app/quotations" as Route}>
           <MoveLeft className="size-4" />
@@ -38,7 +38,7 @@ export default async function QuotationDetailPage({
         </Link>
       </Button>
 
-      <section className="flex flex-col gap-5">
+      <section className="flex flex-col gap-[var(--space-grid)]">
         <Card>
           <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -110,7 +110,7 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="rounded-[1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4">
+    <div className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] px-4 py-4">
       <p className="text-xs uppercase tracking-[0.18em] text-muted">{label}</p>
       <p className="mt-2 text-sm font-medium text-foreground">{value}</p>
     </div>

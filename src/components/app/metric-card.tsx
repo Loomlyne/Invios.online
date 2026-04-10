@@ -21,9 +21,9 @@ export function MetricCard({
 }) {
   const router = useRouter();
   const classes = cn(
-    "rounded-[1.1rem] border p-4 text-left transition sm:p-5",
+    "rounded-[var(--radius-inner)] border p-4 text-left transition sm:p-5",
     interactive
-      ? "min-h-28 cursor-pointer border-black/7 bg-surface hover:border-[#D7C4A7] hover:bg-[#FFF8ED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CA8A04]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFCF7]"
+      ? "min-h-24 cursor-pointer border-black/7 bg-surface sm:min-h-28 hover:border-[#D7C4A7] hover:bg-[#FFF8ED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CA8A04]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFCF7]"
       : "border-black/7 bg-surface",
     active && "border-[#D7C4A7] bg-[#FFF8ED] shadow-[0_18px_42px_rgba(202,138,4,0.12)]",
   );
@@ -44,7 +44,7 @@ export function MetricCard({
       </div>
       <p
         className={cn(
-          "mt-1 text-2xl font-semibold tracking-tight",
+          "mt-1 truncate font-semibold tracking-tight text-[clamp(1.125rem,0.875rem+0.625vw,1.5rem)]",
           accent ? "text-success" : "text-foreground",
         )}
       >
