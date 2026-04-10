@@ -840,3 +840,137 @@ export async function listOverdueInvoices(userId: string): Promise<InvoiceRecord
   if (error) return [];
   return (data ?? []).map(mapInvoice);
 }
+
+// ---------------------------------------------------------------------------
+// Phase 4: Public Trust Surfaces
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve a client from a portal token (public, no session required).
+ * Blocks archived clients via .is("archived_at", null). (D-07)
+ */
+export async function getClientByPortalToken(portalToken: string): Promise<ClientRecord | null> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("portal_token", portalToken)
+    .is("archived_at", null)
+    .maybeSingle<ClientRow>();
+
+  if (error) throw new Error(error.message);
+  return data ? mapClient(data) : null;
+}
+
+/**
+ * Look up an invoice by its slug (authenticated route, RLS-scoped).
+ */
+export async function getInvoiceBySlug(slug: string): Promise<InvoiceRecord | null> {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("invoices")
+    .select(invoiceSelect)
+    .eq("slug", slug)
+    .maybeSingle<InvoiceRow>();
+
+  if (error) throw new Error(error.message);
+  return data ? mapInvoice(data) : null;
+}
+
+/**
+ * Look up a quotation by its slug (authenticated route, RLS-scoped).
+ */
+export async function getQuotationBySlug(slug: string): Promise<QuotationRecord | null> {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("quotations")
+    .select(quotationSelect)
+    .eq("slug", slug)
+    .maybeSingle<QuotationRow>();
+
+  if (error) throw new Error(error.message);
+  return data ? mapQuotation(data) : null;
+}
+
+/**
+ * Resolve an old slug to the current slug via the alias table.
+ * Returns the current document slug or null if no alias found. (D-13)
+ * Uses admin client so this works on both public and authenticated contexts.
+ */
+export async function getSlugAliasRedirect(
+  slug: string,
+  kind: "invoice" | "quotation",
+): Promise<string | null> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return null;
+
+  // Query alias by old_slug. The index on (kind, old_slug) makes this efficient
+  // in production; kind is used as a discriminator via eq chaining on the result.
+  const { data: alias, error: aliasError } = await supabase
+    .from("document_slug_aliases")
+    .select("document_id")
+    .eq("old_slug", slug)
+    .maybeSingle();
+
+  if (aliasError || !alias) return null;
+
+  const table = kind === "invoice" ? "invoices" : "quotations";
+  const { data: doc, error: docError } = await supabase
+    .from(table)
+    .select("slug")
+    .eq("id", (alias as { document_id: string }).document_id)
+    .single();
+
+  if (docError || !doc) return null;
+  return (doc as { slug: string }).slug;
+}
+
+/**
+ * List invoices for a client on the public portal (no session required).
+ */
+export async function listInvoicesForClientPublic(
+  clientId: string,
+  userId: string,
+): Promise<InvoiceRecord[]> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("invoices")
+    .select(invoiceSelect)
+    .eq("client_id", clientId)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .returns<InvoiceRow[]>();
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(mapInvoice);
+}
+
+/**
+ * List quotations for a client on the public portal (no session required).
+ */
+export async function listQuotationsForClientPublic(
+  clientId: string,
+  userId: string,
+): Promise<QuotationRecord[]> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("quotations")
+    .select(quotationSelect)
+    .eq("client_id", clientId)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .returns<QuotationRow[]>();
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(mapQuotation);
+}

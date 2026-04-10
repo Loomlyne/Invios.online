@@ -180,3 +180,23 @@ export function computeCollectionRate(params: {
   if (totalBilled === 0) return null;
   return Math.round((totalCollected / totalBilled) * 100);
 }
+
+// ---------------------------------------------------------------------------
+// Phase 4: Public Trust Surfaces — utility helpers
+// ---------------------------------------------------------------------------
+
+/** UUID v4 detection for slug-vs-id route migration (D-12) */
+export function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+/** Format TRN for display with label prefix (SET-03, D-10) */
+export function formatTrnDisplay(trn: string | null | undefined): string {
+  if (!trn || trn.trim() === "") return "";
+  return `TRN: ${trn.trim()}`;
+}
+
+/** Get Arabic description with English fallback for bilingual docs (SET-04) */
+export function getArabicDescription(item: { description: string; arabicDescription?: string }): string {
+  return item.arabicDescription && item.arabicDescription.trim() !== "" ? item.arabicDescription : item.description;
+}
