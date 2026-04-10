@@ -1,32 +1,46 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { MoveLeft } from "lucide-react";
 import { DocumentBuilder } from "@/components/documents/document-builder";
 import { Button } from "@/components/ui/button";
-import { getInvoiceById, listClients } from "@/lib/billing-data";
+import { getInvoiceById, getInvoiceBySlug, getSlugAliasRedirect, listClients } from "@/lib/billing-data";
+import { isUuid } from "@/lib/billing-utils";
 import { getAppContext } from "@/lib/data";
 
 export default async function EditInvoicePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const [context, clients, invoice] = await Promise.all([
-    getAppContext(),
-    listClients({ status: "all" }),
-    getInvoiceById(id),
-  ]);
+  const { slug } = await params;
 
+  // UUID fallback redirect (D-12)
+  if (isUuid(slug)) {
+    const invoice = await getInvoiceById(slug);
+    if (!invoice) notFound();
+    permanentRedirect(`/app/invoices/${invoice.slug}/edit` as Route);
+  }
+
+  // Primary slug lookup
+  let invoice = await getInvoiceBySlug(slug);
+
+  // Alias redirect (D-13)
   if (!invoice) {
+    const currentSlug = await getSlugAliasRedirect(slug, "invoice");
+    if (currentSlug) permanentRedirect(`/app/invoices/${currentSlug}/edit` as Route);
     notFound();
   }
+
+  const [context, clients] = await Promise.all([
+    getAppContext(),
+    listClients({ status: "all" }),
+  ]);
 
   return (
     <div className="grid gap-4">
       <Button asChild variant="ghost" className="w-fit">
-        <Link href={`/app/invoices/${invoice.id}` as Route}>
+        <Link href={`/app/invoices/${invoice.slug}` as Route}>
           <MoveLeft className="size-4" />
           Back to invoice
         </Link>

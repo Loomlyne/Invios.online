@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { MoveLeft, SquarePen } from "lucide-react";
 import { DocumentStatusActions } from "@/components/documents/document-status-actions";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
@@ -8,7 +8,12 @@ import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getQuotationById } from "@/lib/billing-data";
+import {
+  getQuotationById,
+  getQuotationBySlug,
+  getSlugAliasRedirect,
+} from "@/lib/billing-data";
+import { isUuid } from "@/lib/billing-utils";
 import { getAppContext } from "@/lib/data";
 import { buildQuotationPreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
@@ -17,14 +22,28 @@ import { ExportButton } from "./export-button";
 export default async function QuotationDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const [context, quotation] = await Promise.all([getAppContext(), getQuotationById(id)]);
+  const { slug } = await params;
 
+  // UUID fallback redirect (D-12): old /app/quotations/[uuid] links → slug URL
+  if (isUuid(slug)) {
+    const quotation = await getQuotationById(slug);
+    if (!quotation) notFound();
+    permanentRedirect(`/app/quotations/${quotation.slug}` as Route);
+  }
+
+  // Primary slug lookup
+  let quotation = await getQuotationBySlug(slug);
+
+  // Alias redirect (D-13): renamed slugs redirect to current slug
   if (!quotation) {
+    const currentSlug = await getSlugAliasRedirect(slug, "quotation");
+    if (currentSlug) permanentRedirect(`/app/quotations/${currentSlug}` as Route);
     notFound();
   }
+
+  const [context] = await Promise.all([getAppContext()]);
 
   const preview = buildQuotationPreviewFromRecord(context, quotation);
   const isLocked = quotation.convertedToInvoiceId !== null;
@@ -68,7 +87,7 @@ export default async function QuotationDetailPage({
                 </Button>
               ) : (
                 <Button asChild variant="secondary" size="sm">
-                  <Link href={`/app/quotations/${quotation.id}/edit` as Route}>
+                  <Link href={`/app/quotations/${quotation.slug}/edit` as Route}>
                     <SquarePen className="size-4" />
                     Edit
                   </Link>

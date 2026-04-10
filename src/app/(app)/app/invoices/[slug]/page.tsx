@@ -1,13 +1,20 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { MoveLeft, SquarePen } from "lucide-react";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getInvoiceById, listExpensesForInvoice, listPaymentsForInvoice } from "@/lib/billing-data";
+import {
+  getInvoiceById,
+  getInvoiceBySlug,
+  getSlugAliasRedirect,
+  listExpensesForInvoice,
+  listPaymentsForInvoice,
+} from "@/lib/billing-data";
+import { isUuid } from "@/lib/billing-utils";
 import { getAppContext } from "@/lib/data";
 import { ExpensesTable } from "@/components/documents/expenses-table";
 import { PaymentsTable } from "@/components/documents/payments-table";
@@ -22,19 +29,33 @@ import { StatusButton } from "./status-button";
 export default async function InvoiceDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const [context, invoice, payments, expenses] = await Promise.all([
-    getAppContext(),
-    getInvoiceById(id),
-    listPaymentsForInvoice(id),
-    listExpensesForInvoice(id),
-  ]);
+  const { slug } = await params;
 
+  // UUID fallback redirect (D-12): old /app/invoices/[uuid] links → slug URL
+  if (isUuid(slug)) {
+    const invoice = await getInvoiceById(slug);
+    if (!invoice) notFound();
+    permanentRedirect(`/app/invoices/${invoice.slug}` as Route);
+  }
+
+  // Primary slug lookup
+  let invoice = await getInvoiceBySlug(slug);
+
+  // Alias redirect (D-13): renamed slugs redirect to current slug
   if (!invoice) {
+    const currentSlug = await getSlugAliasRedirect(slug, "invoice");
+    if (currentSlug) permanentRedirect(`/app/invoices/${currentSlug}` as Route);
     notFound();
   }
+
+  const [context, payments, expenses] = await Promise.all([
+    getAppContext(),
+    listPaymentsForInvoice(invoice.id),
+    listExpensesForInvoice(invoice.id),
+  ]);
+
   const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   const preview = buildInvoicePreviewFromRecord(context, invoice);
@@ -74,7 +95,7 @@ export default async function InvoiceDetailPage({
             <div className="flex flex-nowrap gap-2">
               <InvoiceDeleteButton invoiceId={invoice.id} />
               <Button asChild variant="secondary" size="sm">
-                <Link href={`/app/invoices/${invoice.id}/edit` as Route}>
+                <Link href={`/app/invoices/${invoice.slug}/edit` as Route}>
                   <SquarePen className="size-4" />
                   Edit
                 </Link>
