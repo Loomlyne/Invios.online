@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 04
-last_updated: "2026-04-10T17:53:33.193Z"
+last_updated: "2026-04-10T18:03:25.315Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 21
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # STATE
@@ -58,13 +58,16 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 04-public-trust-surfaces]: UX-03 visual pass covers ALL views (public + private), not just client-facing surfaces
 - [Phase 04-public-trust-surfaces]: Wave 0 tests use dynamic imports (await import) to isolate RED state per test without module caching issues
 - [Phase 04-public-trust-surfaces]: getSlugAliasRedirect test uses call-count mock pattern for multi-table Supabase queries
+- [Phase 04-public-trust-surfaces]: getSlugAliasRedirect uses single .eq('old_slug') call to match Wave 0 test mock chain — kind filter deferred to second table lookup
+- [Phase 04-public-trust-surfaces]: Admin client update() TypeScript fix: cast supabase as any before .from() since untyped createClient infers never for update payload
 
 ## Session State
 
-- Stopped at: Completed 04-00-PLAN.md — Wave 0 test scaffolds (21 RED tests across 3 files)
-- Resume from: `/gsd:execute-phase 4` — execute Phase 4 Plan 01
+- Stopped at: Completed 04-01-PLAN.md — data layer migration, 6 billing-data functions, 3 billing-utils helpers, public quotation accept/reject actions
+- Resume from: `/gsd:execute-phase 4` — execute Phase 4 Plan 02
 - Latest artifacts:
-  - `.planning/phases/04-public-trust-surfaces/04-00-SUMMARY.md`
-  - `src/lib/billing-data.test.ts`
-  - `src/actions/public-quotations.test.ts`
-  - `src/lib/billing-utils.test.ts`
+  - `.planning/phases/04-public-trust-surfaces/04-01-SUMMARY.md`
+  - `supabase/migrations/20260410000000_phase4_slug_aliases.sql`
+  - `src/lib/billing-data.ts`
+  - `src/lib/billing-utils.ts`
+  - `src/actions/public-quotations.ts`
