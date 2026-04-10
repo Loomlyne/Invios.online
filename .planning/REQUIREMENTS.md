@@ -64,7 +64,7 @@
 
 - [x] **PUB-01**: Client can open a public invoice page without authentication using a secure token.
 - [x] **PUB-02**: Client can open a public quotation page without authentication using a secure token.
-- [ ] **PUB-03**: Public document pages display branding, line items, totals, status, and download action clearly.
+- [x] **PUB-03**: Public document pages display branding, line items, totals, status, and download action clearly.
 - [x] **PUB-04**: User can create a client portal link that shows all invoices and quotations for that client.
 
 ### Versioning, Recurring, Reminders

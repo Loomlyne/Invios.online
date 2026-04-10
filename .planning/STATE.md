@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 04
-last_updated: "2026-04-10T22:20:00.000Z"
+last_updated: "2026-04-10T18:24:14.033Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 21
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # STATE
@@ -63,14 +63,19 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 04-public-trust-surfaces]: Route migration [id]→[slug] requires clearing .next/types cache — stale generated type files reference old [id] paths
 - [Phase 04-public-trust-surfaces]: payments/expenses actions import getInvoiceById to resolve slug for revalidatePath — one extra query per action, acceptable tradeoff
 - [Phase 04-public-trust-surfaces]: convertQuotationToInvoiceAction removed detail-level revalidatePath for quotation; list revalidation sufficient since the quotation is locked after conversion
+- [Phase 04-public-trust-surfaces]: getPublicLogoUrl uses admin client to create signed URLs from branding-assets bucket — session-less equivalent of data.ts pattern for public pages
+- [Phase 04-public-trust-surfaces]: Print mode early return on public pages skips getPublicLogoUrl call — avoids unnecessary Supabase round-trip on PDF generation path
 
 ## Session State
 
-- Stopped at: Completed 04-02-PLAN.md — route migration [id]→[slug], UUID/alias redirects, all callsites updated to use document.slug
-- Resume from: `/gsd:execute-phase 4` — execute Phase 4 Plan 03
+- Stopped at: Completed 04-03-PLAN.md Tasks 1 & 2 — public trust surfaces built. Checkpoint Task 3 awaiting human visual verification.
+- Resume from: `/gsd:execute-phase 4` — execute Phase 4 Plan 04 after checkpoint approval
 - Latest artifacts:
-  - `.planning/phases/04-public-trust-surfaces/04-02-SUMMARY.md`
-  - `src/app/(app)/app/invoices/[slug]/page.tsx`
-  - `src/app/(app)/app/quotations/[slug]/page.tsx`
-  - `src/actions/invoices.ts`
-  - `src/actions/quotations.ts`
+  - `.planning/phases/04-public-trust-surfaces/04-03-SUMMARY.md`
+  - `src/components/public/public-page-shell.tsx`
+  - `src/components/public/accept-reject-form.tsx`
+  - `src/components/public/portal-document-row.tsx`
+  - `src/components/public/public-document-actions.tsx`
+  - `src/app/portal/[portalToken]/page.tsx`
+  - `src/app/invoices/public/[shareToken]/page.tsx`
+  - `src/app/quotations/public/[shareToken]/page.tsx`
