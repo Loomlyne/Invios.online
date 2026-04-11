@@ -66,7 +66,7 @@ completed: "2026-04-10"
 - **Duration:** ~20 min
 - **Started:** 2026-04-10T18:18:52Z
 - **Completed:** 2026-04-10T18:40:00Z
-- **Tasks:** 2 completed (Task 3 is checkpoint:human-verify — awaiting visual confirmation)
+- **Tasks:** 3 completed (Task 3 checkpoint:human-verify APPROVED by user)
 - **Files modified:** 8
 
 ## Accomplishments
@@ -82,6 +82,7 @@ completed: "2026-04-10"
 
 1. **Task 1: Create public page components and update public invoice/quotation pages** - `cda5e87` (feat)
 2. **Task 2: Create client portal page** - `db1b18d` (feat)
+3. **Task 3: Visual verification checkpoint** - APPROVED (no commit — verification gate)
 
 ## Files Created/Modified
 
@@ -135,7 +136,8 @@ None. All data is wired end-to-end:
 ## Next Phase Readiness
 
 - Plan 04 (bilingual/RTL document rendering) can use the same `PublicPageShell` and `InvoicePreview mode="public"` — no breaking changes to the shell
-- Task 3 checkpoint (visual verification) is still pending — human must confirm branded pages render correctly before marking PUB-01 through PUB-05 complete
+- All public pages approved by user visual inspection: branded header, status badges, accept/reject form, portal document list all render correctly
+- Requirements PUB-01 through PUB-05 complete and verified
 
 ---
 *Phase: 04-public-trust-surfaces*
