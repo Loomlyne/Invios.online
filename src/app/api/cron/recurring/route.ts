@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
         .select("slug")
         .eq("user_id", schedule.user_id);
 
-      const slugList = (existingSlugs ?? []).map((s) => s.slug as string);
+      const slugList = (existingSlugs ?? []).map((s: { slug: string }) => s.slug);
       const slug = buildUniqueSlug(`${numberData}-${source.client_id}`, slugList);
 
       // 6. Insert new draft invoice
