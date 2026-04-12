@@ -13,6 +13,7 @@ import type {
   QuotationStatus,
 } from "@/lib/billing";
 import { computePaymentStatus } from "@/lib/billing-utils";
+import type { RecurringFrequency } from "@/lib/cron-utils";
 import {
   buildDashboardInsights,
   buildDashboardInvoiceRows,
@@ -973,6 +974,46 @@ export async function listQuotationsForClientPublic(
 
   if (error) throw new Error(error.message);
   return (data ?? []).map(mapQuotation);
+}
+
+// ---------------------------------------------------------------------------
+// Phase 5: Version History
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Phase 5: Recurring Schedules
+// ---------------------------------------------------------------------------
+
+/**
+ * Get the active recurring schedule for a given invoice, if one exists.
+ * Returns null if no active schedule exists.
+ */
+export async function getRecurringSchedule(invoiceId: string) {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from("recurring_schedules")
+    .select("id, frequency, next_due_date, is_active, created_at")
+    .eq("source_invoice_id", invoiceId)
+    .eq("user_id", user.id)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id as string,
+    frequency: data.frequency as RecurringFrequency,
+    nextDueDate: data.next_due_date as string,
+    isActive: data.is_active as boolean,
+    createdAt: data.created_at as string,
+  };
 }
 
 // ---------------------------------------------------------------------------

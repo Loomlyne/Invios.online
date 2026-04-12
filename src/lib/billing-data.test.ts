@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   getClientByPortalToken,
+  getRecurringSchedule,
   getSlugAliasRedirect,
   listInvoiceVersions,
 } from "@/lib/billing-data";
@@ -256,15 +257,101 @@ describe("listInvoiceVersions", () => {
 
 // ---------------------------------------------------------------------------
 // getRecurringSchedule (AUTO-03)
-// RED stubs — implemented in plan 05-04
 // ---------------------------------------------------------------------------
 
 describe("getRecurringSchedule", () => {
-  it.todo(
-    "returns active recurring schedule for a given invoice"
-  );
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-  it.todo(
-    "returns null when no schedule exists"
-  );
+  it("returns active recurring schedule for a given invoice", async () => {
+    const mockScheduleRow = {
+      id: "schedule-uuid-001",
+      frequency: "monthly",
+      next_due_date: "2026-05-12",
+      is_active: true,
+      created_at: "2026-04-12T10:00:00Z",
+    };
+
+    const mockMaybeSingle = vi.fn().mockResolvedValue({ data: mockScheduleRow, error: null });
+    const mockEqActive = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
+    const mockEqUser = vi.fn().mockReturnValue({ eq: mockEqActive });
+    const mockEqInvoice = vi.fn().mockReturnValue({ eq: mockEqUser });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEqInvoice });
+    const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+    const mockGetUser = vi.fn().mockResolvedValue({
+      data: { user: { id: "user-uuid-123" } },
+    });
+
+    const mockSupabase = {
+      from: mockFrom,
+      auth: { getUser: mockGetUser },
+    };
+
+    (createSupabaseServerClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabase);
+
+    const result = await getRecurringSchedule("invoice-uuid-abc");
+
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe("schedule-uuid-001");
+    expect(result?.frequency).toBe("monthly");
+    expect(result?.nextDueDate).toBe("2026-05-12");
+    expect(result?.isActive).toBe(true);
+    expect(result?.createdAt).toBe("2026-04-12T10:00:00Z");
+
+    expect(mockFrom).toHaveBeenCalledWith("recurring_schedules");
+    expect(mockSelect).toHaveBeenCalledWith("id, frequency, next_due_date, is_active, created_at");
+    expect(mockEqInvoice).toHaveBeenCalledWith("source_invoice_id", "invoice-uuid-abc");
+    expect(mockEqUser).toHaveBeenCalledWith("user_id", "user-uuid-123");
+    expect(mockEqActive).toHaveBeenCalledWith("is_active", true);
+  });
+
+  it("returns null when no schedule exists", async () => {
+    const mockMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+    const mockEqActive = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
+    const mockEqUser = vi.fn().mockReturnValue({ eq: mockEqActive });
+    const mockEqInvoice = vi.fn().mockReturnValue({ eq: mockEqUser });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEqInvoice });
+    const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+    const mockGetUser = vi.fn().mockResolvedValue({
+      data: { user: { id: "user-uuid-123" } },
+    });
+
+    const mockSupabase = {
+      from: mockFrom,
+      auth: { getUser: mockGetUser },
+    };
+
+    (createSupabaseServerClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabase);
+
+    const result = await getRecurringSchedule("invoice-uuid-no-schedule");
+
+    expect(result).toBeNull();
+  });
+
+  it("returns null when supabase client is null", async () => {
+    (createSupabaseServerClient as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const result = await getRecurringSchedule("invoice-uuid-abc");
+
+    expect(result).toBeNull();
+  });
+
+  it("returns null when user is not authenticated", async () => {
+    const mockGetUser = vi.fn().mockResolvedValue({
+      data: { user: null },
+    });
+
+    const mockSupabase = {
+      auth: { getUser: mockGetUser },
+    };
+
+    (createSupabaseServerClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabase);
+
+    const result = await getRecurringSchedule("invoice-uuid-abc");
+
+    expect(result).toBeNull();
+  });
 });
