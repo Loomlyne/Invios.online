@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 05
-last_updated: "2026-04-12T11:46:01.073Z"
+last_updated: "2026-04-12T12:26:14.278Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 28
-  completed_plans: 25
+  completed_plans: 27
 ---
 
 # STATE
@@ -69,6 +69,8 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 05-automation-recovery]: isCronAuthenticated in env.ts centralizes Bearer token validation so all cron route handlers share one auth check
 - [Phase 05-automation-recovery]: reminder_logs has no UPDATE/DELETE RLS — write-once rows; cron handler uses admin client which bypasses RLS
 - [Phase 05-automation-recovery]: VersionHistoryPanel returns null when versions.length === 0 — no empty state rendered per D-03 and UI-SPEC
+- [Phase 05-automation-recovery]: sendReminderEmail adapts subject/title/body based on overdue vs upcoming state using new Date(dueDate) < new Date()
+- [Phase 05-automation-recovery]: Outstanding amount shown in reminder email not invoice total — cron sums payments table to calculate
 
 ## Session State
 
