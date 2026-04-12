@@ -15,7 +15,7 @@ Coverage: 100%
 | 2 | 1/6 | In Progress|  |
 | 3 | 4/5 | In Progress|  |
 | 4 | 4/7 | In Progress|  |
-| 5 | Automation & Recovery | Add version safety, recurring workflows, and reminder automation without breaking financial truth | AUTO-01..05 |
+| 5 | 1/7 | In Progress|  |
 
 ## Phase Details
 
@@ -166,11 +166,11 @@ Add safety and automation so users can recover mistakes and reduce repetitive bi
 **Requirements**  
 AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05
 
-**Plans:** 7 plans
+**Plans:** 1/7 plans executed
 
 Plans:
 - [ ] 05-00-PLAN.md — Wave 0 RED test scaffolds for version, recurring, and reminder logic
-- [ ] 05-01-PLAN.md — DB migration (3 tables), cron utilities, env config, vercel.json cron schedule
+- [x] 05-01-PLAN.md — DB migration (3 tables), cron utilities, env config, vercel.json cron schedule
 - [ ] 05-02-PLAN.md — Version snapshot on save + restore action + data fetcher (AUTO-01, AUTO-02)
 - [ ] 05-03-PLAN.md — Version history UI panel + restore dialog on invoice detail page (AUTO-02)
 - [ ] 05-04-PLAN.md — Recurring billing actions, config form, builder/detail integration, cron endpoint (AUTO-03)

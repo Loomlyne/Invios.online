@@ -69,11 +69,11 @@
 
 ### Versioning, Recurring, Reminders
 
-- [ ] **AUTO-01**: System creates invoice version snapshots on save.
+- [x] **AUTO-01**: System creates invoice version snapshots on save.
 - [ ] **AUTO-02**: User can view invoice version history and restore a prior version safely.
-- [ ] **AUTO-03**: User can configure an invoice as recurring with weekly, monthly, or quarterly frequency.
-- [ ] **AUTO-04**: User can configure reminder timing rules for invoices.
-- [ ] **AUTO-05**: Reminder sends are logged so duplicate reminders can be prevented.
+- [x] **AUTO-03**: User can configure an invoice as recurring with weekly, monthly, or quarterly frequency.
+- [x] **AUTO-04**: User can configure reminder timing rules for invoices.
+- [x] **AUTO-05**: Reminder sends are logged so duplicate reminders can be prevented.
 
 ### Settings, Localization, Compliance
 

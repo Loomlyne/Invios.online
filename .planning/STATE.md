@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 04
-last_updated: "2026-04-10T18:42:00.000Z"
+status: Executing Phase 05
+last_updated: "2026-04-12T09:22:56.462Z"
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 21
-  completed_plans: 19
+  completed_phases: 4
+  total_plans: 28
+  completed_plans: 22
 ---
 
 # STATE
@@ -18,7 +18,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Make it dead simple for a service business to send a polished branded quote or invoice and reliably know what has been paid, what is still due, and what profit remains.
-**Current focus:** Phase 04 — public-trust-surfaces
+**Current focus:** Phase 05 — automation-recovery
 
 ## Current Status
 
@@ -65,17 +65,16 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 04-public-trust-surfaces]: convertQuotationToInvoiceAction removed detail-level revalidatePath for quotation; list revalidation sufficient since the quotation is locked after conversion
 - [Phase 04-public-trust-surfaces]: getPublicLogoUrl uses admin client to create signed URLs from branding-assets bucket — session-less equivalent of data.ts pattern for public pages
 - [Phase 04-public-trust-surfaces]: Print mode early return on public pages skips getPublicLogoUrl call — avoids unnecessary Supabase round-trip on PDF generation path
+- [Phase 05-automation-recovery]: UTC date arithmetic: T00:00:00Z suffix on string→Date conversion + setUTCDate/setUTCMonth prevents DST-related off-by-one errors in cron date math
+- [Phase 05-automation-recovery]: isCronAuthenticated in env.ts centralizes Bearer token validation so all cron route handlers share one auth check
+- [Phase 05-automation-recovery]: reminder_logs has no UPDATE/DELETE RLS — write-once rows; cron handler uses admin client which bypasses RLS
 
 ## Session State
 
-- Completed: 04-03-PLAN.md all tasks including checkpoint approval
-- Ready for: Phase 4 Plan 04 execution
+- Completed: Phase 4 all 7 plans done — deployed to invios.online
+- Ready for: Phase 5 (Automation & Recovery) — `/gsd:plan-phase 5`
 - Latest artifacts:
-  - `.planning/phases/04-public-trust-surfaces/04-03-SUMMARY.md`
-  - `src/components/public/public-page-shell.tsx`
-  - `src/components/public/accept-reject-form.tsx`
-  - `src/components/public/portal-document-row.tsx`
-  - `src/components/public/public-document-actions.tsx`
-  - `src/app/portal/[portalToken]/page.tsx`
-  - `src/app/invoices/public/[shareToken]/page.tsx`
-  - `src/app/quotations/public/[shareToken]/page.tsx`
+  - `.planning/phases/04-public-trust-surfaces/04-06-SUMMARY.md`
+  - `src/app/globals.css` (surface-warm tokens)
+  - `src/lib/billing-data.test.ts` (static imports + server mock fix)
+  - `supabase/migrations/20260410000000_phase4_slug_aliases.sql` (deployed)
