@@ -63,9 +63,9 @@ All roles inherited from Phase 4 contract. No new type roles introduced.
 | Role | Size | Weight | Line Height | Font | Phase 5 Usage |
 |------|------|--------|-------------|------|----------------|
 | Body | 16px | 400 (regular) | 1.5 | DM Sans | Restore dialog body copy, recurring config descriptions |
-| Label | 14px | 400 (regular) | 1.4 | DM Sans | Version row date/time, frequency picker labels, "Next generation date" label |
+| Label | 14px | 400 (regular) | 1.4 | DM Sans | Version row date/time, frequency picker labels, "Next generation date" label. Italic is a modifier within this role (e.g., conditional warning lines) — not a separate size. |
 | Heading | 20px | 600 (semibold) | 1.2 | DM Sans | Version history panel header ("Version History"), restore dialog title ("Restore this version?") |
-| Small / micro | 11px | 400 (regular) | 1.3 | DM Sans | Section subheadings using `text-[11px] uppercase tracking-[0.18em] text-muted` — matches existing InvoiceMeta pattern |
+| Small / micro | 11px | 400 (regular) | 1.3 | DM Sans | Section subheadings using `text-[11px] uppercase tracking-[0.18em] text-muted` — matches existing InvoiceMeta pattern. Also used for helper text below fields. |
 
 Version row total amounts: use `font-semibold text-foreground` at 14px (matches PaymentsTable amount style).
 
@@ -99,6 +99,12 @@ Recurring config surface: rendered inline within a `bg-[#FFFCF7]` section (match
 
 ---
 
+## Visuals
+
+The invoice detail card remains the primary focal point; the version panel is secondary and collapsed by default to avoid competing for attention.
+
+---
+
 ## Component Inventory
 
 Components already existing — reuse without modification:
@@ -106,7 +112,7 @@ Components already existing — reuse without modification:
 | Component | Path | Phase 5 Usage |
 |-----------|------|----------------|
 | `Card`, `CardHeader`, `CardContent`, `CardTitle`, `CardDescription` | `src/components/ui/card.tsx` | Version history panel wrapper, recurring config wrapper on detail page |
-| `Button` | `src/components/ui/button.tsx` | "Restore" row action, "Make recurring" detail page action, restore dialog confirm/cancel |
+| `Button` | `src/components/ui/button.tsx` | "Restore version" row action, "Make recurring" detail page action, restore dialog confirm/cancel |
 | `Dialog`, `DialogContent` | `src/components/ui/dialog.tsx` | Restore confirmation dialog (warn + confirm), recurring config modal on detail page (optional) |
 | `Badge` | `src/components/ui/badge.tsx` | "Recurring" indicator badge on invoice list rows (Claude's discretion — see below) |
 | `Select` | `src/components/ui/select.tsx` | Frequency picker (weekly/monthly/quarterly) as fallback; prefer pill buttons if layout permits |
@@ -140,14 +146,14 @@ Surface: Invoice detail page (`/app/invoices/[slug]`), below the ExpensesTable s
 - Each version row displays:
   - Date/time: formatted as "Apr 10, 2026 · 14:32" — 14px regular muted
   - Total amount: `formatCurrency(snapshot.total, currency)` — 14px semibold foreground, right-aligned
-  - "Restore" button: ghost variant, 14px, right side of row, `min-h-[44px]` touch target
+  - "Restore version" button: ghost variant, 14px, right side of row, `min-h-[44px]` touch target
 - Rows separated by 1px `border-border` divider. No card wrapping per row.
 - Most recent version is listed first (descending by `created_at`).
 - Panel header row: "Version History" (14px semibold) + "Up to 10 saved" (11px muted) on right side.
 - Max 10 rows shown (matches D-02 rolling window). No pagination — cap is the UI limit.
 
 **Restore flow (per D-05):**
-1. User clicks "Restore" on any version row.
+1. User clicks "Restore version" on any version row.
 2. `VersionRestoreDialog` opens (shadcn Dialog, not AlertDialog — need to show comparison content).
 3. Dialog content:
    - Heading: "Restore this version?" — 20px semibold
@@ -156,14 +162,14 @@ Surface: Invoice detail page (`/app/invoices/[slug]`), below the ExpensesTable s
      - "Current total" label → current invoice total (14px muted label, 16px semibold value)
      - Arrow icon (`MoveRight`) in muted
      - "Restored total" label → snapshot total (14px muted label, 16px semibold value in accent-strong if different, foreground if same)
-   - Warning line (only if payments exist): "Payment status will recalculate based on the restored total." — 13px muted, italic.
+   - Warning line (only if payments exist): "Payment status will recalculate based on the restored total." — 14px muted, italic.
    - Actions row: "Cancel" (ghost button) + "Restore Version" (destructive variant — `bg-danger text-on-dark`)
 4. On confirm: `restoreInvoiceVersionAction` is called. Dialog closes. Page revalidates (server action calls `revalidatePath`). Success: inline success toast or message "Invoice restored to selected version." below the panel toggle.
 5. On cancel: dialog closes, no change.
 
 **Mobile behavior:**
 - Panel toggle and rows are full-width. Same visual, same interaction.
-- "Restore" button stacks below the date/total on screens below `md` breakpoint (768px) if horizontal space is insufficient. Alternatively, use `min-w-[44px]` icon-only restore button on mobile (clock-return icon with aria-label="Restore this version").
+- "Restore version" button stacks below the date/total on screens below `md` breakpoint (768px) if horizontal space is insufficient. Alternatively, use `min-w-[44px]` icon-only restore button on mobile (clock-return icon with aria-label="Restore this version").
 
 ---
 
@@ -184,7 +190,7 @@ Placement: Below the "Notes & terms" section in `DocumentBuilder`, before the su
 - "Frequency" row: three pill buttons side-by-side — "Weekly", "Monthly", "Quarterly".
   - Pill style: `rounded-full border border-border px-4 h-10 text-sm font-medium`. Selected: `bg-foreground text-on-dark border-foreground`. Unselected: `bg-surface text-foreground`.
   - Only one can be selected at a time. Default: "Monthly".
-- "Next generation date" row: `DatePicker` component. Label: "Next generation date". Helper text below field: "The next draft will be created on this date." — 12px muted.
+- "Next generation date" row: `DatePicker` component. Label: "Next generation date". Helper text below field: "The next draft will be created on this date." — 11px muted.
   - Default value: auto-calculated from issue date + frequency interval (calculated in the component, not user-entered unless overridden).
 - These fields submit as hidden inputs or are serialized into the invoice creation form payload.
 
@@ -230,7 +236,7 @@ No visual changes to Settings in Phase 5.
 | Element | Copy | Surface |
 |---------|------|---------|
 | Primary CTA — version panel toggle (collapsed) | "3 saved versions" (dynamic count) | Invoice detail, version history panel trigger |
-| Primary CTA — restore | "Restore" | Version history row action |
+| Primary CTA — restore | "Restore version" | Version history row action |
 | Version panel heading | "Version History" | Version history panel expanded header |
 | Version panel subheading | "Up to 10 saved" | Version history panel expanded header, right side |
 | Restore dialog heading | "Restore this version?" | VersionRestoreDialog |
@@ -240,7 +246,7 @@ No visual changes to Settings in Phase 5.
 | Restore dialog — restored total label | "Restored total" | VersionRestoreDialog comparison block |
 | Restore confirm button | "Restore Version" | VersionRestoreDialog primary action |
 | Restore success message | "Invoice restored to selected version." | Invoice detail, inline below version panel |
-| Restore error | "Restore failed. The version may no longer be available." | VersionRestoreDialog, inline error below actions |
+| Restore error | "Restore failed. The version may no longer be available. Refresh the page and try again, or contact support if the issue persists." | VersionRestoreDialog, inline error below actions |
 | Primary CTA — make recurring | "Make recurring" | Invoice detail actions row |
 | Recurring button (active schedule) | "Recurring: Monthly" (or Weekly / Quarterly) | Invoice detail actions row, after schedule is set |
 | Recurring dialog heading | "Set up recurring billing" | RecurringConfigForm dialog |
