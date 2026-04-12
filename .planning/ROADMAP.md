@@ -166,14 +166,14 @@ Add safety and automation so users can recover mistakes and reduce repetitive bi
 **Requirements**  
 AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05
 
-**Plans:** 4/7 plans executed
+**Plans:** 5/7 plans executed
 
 Plans:
 - [x] 05-00-PLAN.md — Wave 0 RED test scaffolds for version, recurring, and reminder logic
 - [x] 05-01-PLAN.md — DB migration (3 tables), cron utilities, env config, vercel.json cron schedule
 - [x] 05-02-PLAN.md — Version snapshot on save + restore action + data fetcher (AUTO-01, AUTO-02)
 - [x] 05-03-PLAN.md — Version history UI panel + restore dialog on invoice detail page (AUTO-02)
-- [ ] 05-04-PLAN.md — Recurring billing actions, config form, builder/detail integration, cron endpoint (AUTO-03)
+- [x] 05-04-PLAN.md — Recurring billing actions, config form, builder/detail integration, cron endpoint (AUTO-03)
 - [ ] 05-05-PLAN.md — Reminder email sender + reminder cron endpoint with deduplication (AUTO-04, AUTO-05)
 - [ ] 05-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
 
