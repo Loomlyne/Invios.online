@@ -182,3 +182,48 @@ export function sendPasswordChangedEmail(email: string): void {
     })
     .catch((err: unknown) => console.error("[email] Failed to send password changed email:", err));
 }
+
+/**
+ * Send a payment reminder email to a client.
+ * Content: invoice public link + amount due + due date (per D-16).
+ * Sent to the client's email address (per D-17).
+ */
+export function sendReminderEmail(params: {
+  clientEmail: string;
+  clientName: string;
+  invoiceNumber: string;
+  amountDue: string;
+  dueDate: string;
+  publicUrl: string;
+  businessName: string;
+}): void {
+  const client = getResend();
+  if (!client) return;
+
+  const firstName = params.clientName.split(" ")[0] || params.clientName;
+  const isOverdue = new Date(params.dueDate) < new Date();
+  const subject = isOverdue
+    ? `Payment overdue: Invoice ${params.invoiceNumber}`
+    : `Payment reminder: Invoice ${params.invoiceNumber}`;
+
+  client.emails
+    .send({
+      from: env.emailFrom,
+      to: params.clientEmail,
+      subject,
+      html: brandedEmailHtml({
+        title: isOverdue ? "Payment Overdue" : "Payment Reminder",
+        bodyLines: [
+          `Hi ${firstName},`,
+          isOverdue
+            ? `This is a reminder that Invoice ${params.invoiceNumber} for ${params.amountDue} was due on ${params.dueDate} and is now overdue.`
+            : `This is a friendly reminder that Invoice ${params.invoiceNumber} for ${params.amountDue} is due on ${params.dueDate}.`,
+          "Please review the invoice and arrange payment at your earliest convenience.",
+        ],
+        ctaUrl: params.publicUrl,
+        ctaLabel: "View Invoice",
+        footnote: `Sent on behalf of ${params.businessName} via Invios.`,
+      }),
+    })
+    .catch((err: unknown) => console.error("[email] Failed to send reminder email:", err));
+}
