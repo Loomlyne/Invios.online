@@ -159,5 +159,5 @@ async function getCollectedAmount(
     .select("amount")
     .eq("invoice_id", invoiceId);
 
-  return (data ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+  return (data ?? []).reduce((sum: number, p: { amount: string | number }) => sum + Number(p.amount), 0);
 }
