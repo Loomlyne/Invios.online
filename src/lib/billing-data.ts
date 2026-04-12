@@ -840,3 +840,37 @@ export async function listOverdueInvoices(userId: string): Promise<InvoiceRecord
   if (error) return [];
   return (data ?? []).map(mapInvoice);
 }
+
+// ---------------------------------------------------------------------------
+// Phase 5: Version History
+// ---------------------------------------------------------------------------
+
+/**
+ * List all version snapshots for an invoice, ordered by created_at desc.
+ * Used by VersionHistoryPanel on the invoice detail page.
+ */
+export const listInvoiceVersions = cache(async (invoiceId: string) => {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return [];
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("invoice_versions")
+    .select("id, snapshot, created_at")
+    .eq("invoice_id", invoiceId)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (error) return [];
+
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    snapshot: row.snapshot as Record<string, unknown>,
+    createdAt: row.created_at as string,
+  }));
+});
