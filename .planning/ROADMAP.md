@@ -131,16 +131,16 @@ PUB-01, PUB-02, PUB-03, PUB-04, PUB-05
 SET-03, SET-04  
 UX-03, UX-04
 
-**Plans:** 4/7 plans executed (04-03 verified)
+**Plans:** 5/7 plans executed
 
 Plans:
 - [x] 04-00-PLAN.md — Wave 0 test scaffolds (portal token, slug alias, accept/reject guards, UUID detection, TRN, bilingual helpers)
 - [x] 04-01-PLAN.md — DB migration (slug aliases), data layer functions, public quotation accept/reject actions, utility helpers
 - [x] 04-02-PLAN.md — Slug route migration ([id] to [slug]) with UUID fallback and alias redirects, all callsite updates
 - [x] 04-03-PLAN.md — Public page components (PublicPageShell, AcceptRejectForm, PortalDocumentRow) + branded public pages + client portal [VERIFIED]
-- [ ] 04-04-PLAN.md — InvoicePreview bilingual/RTL rendering, TRN display, Arabic font loading (SET-03, SET-04)
-- [ ] 04-05-PLAN.md — UX-03 visual quality pass across all views (dashboard, lists, details, public pages)
-- [ ] 04-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
+- [x] 04-04-PLAN.md — InvoicePreview bilingual/RTL rendering, TRN display, Arabic font loading (SET-03, SET-04)
+- [x] 04-05-PLAN.md — UX-03 visual quality pass across all views (dashboard, lists, details, public pages)
+- [x] 04-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
 
 **Success Criteria**
 1. Public invoice and quotation links work without authentication and look professional.
@@ -165,6 +165,17 @@ Add safety and automation so users can recover mistakes and reduce repetitive bi
 
 **Requirements**  
 AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05
+
+**Plans:** 7 plans
+
+Plans:
+- [ ] 05-00-PLAN.md — Wave 0 RED test scaffolds for version, recurring, and reminder logic
+- [ ] 05-01-PLAN.md — DB migration (3 tables), cron utilities, env config, vercel.json cron schedule
+- [ ] 05-02-PLAN.md — Version snapshot on save + restore action + data fetcher (AUTO-01, AUTO-02)
+- [ ] 05-03-PLAN.md — Version history UI panel + restore dialog on invoice detail page (AUTO-02)
+- [ ] 05-04-PLAN.md — Recurring billing actions, config form, builder/detail integration, cron endpoint (AUTO-03)
+- [ ] 05-05-PLAN.md — Reminder email sender + reminder cron endpoint with deduplication (AUTO-04, AUTO-05)
+- [ ] 05-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
 
 **Success Criteria**
 1. Invoice versions are captured on save and can be reviewed later.
