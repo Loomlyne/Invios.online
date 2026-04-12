@@ -13,6 +13,7 @@ import {
 } from "@/lib/billing-utils";
 import { requireSession } from "@/lib/require-session";
 import type { ActionState } from "@/lib/types";
+import { snapshotInvoiceVersion, type InvoiceSnapshot } from "@/actions/versions";
 
 function parseInvoicePayload(formData: FormData) {
   const lineItemsResult = z.array(documentLineItemSchema).safeParse(
@@ -226,6 +227,37 @@ export async function updateInvoiceAction(
     if (error) {
       throw new Error(error.message);
     }
+
+    // AUTO-01: Snapshot version after successful save (per D-01)
+    // Fetch client name for denormalized snapshot display
+    const { data: clientRow } = await supabase
+      .from("clients")
+      .select("name")
+      .eq("id", parsed.data.clientId)
+      .single();
+
+    const snapshot: InvoiceSnapshot = {
+      invoice_number: existingInvoice.invoice_number,
+      client_id: parsed.data.clientId,
+      client_name: clientRow?.name ?? "Unknown",
+      issue_date: parsed.data.issueDate,
+      due_date: parsed.data.dueDate,
+      currency: parsed.data.currency,
+      tax_rate: parsed.data.taxRate,
+      discount: parsed.data.discount,
+      subtotal: totals.subtotal,
+      discount_amount: totals.discountAmount,
+      tax_amount: totals.taxAmount,
+      total: totals.total,
+      line_items: parsed.data.lineItems,
+      notes: parsed.data.notes || "",
+      terms: parsed.data.terms || "",
+      language: parsed.data.language,
+      trn: parsed.data.trn || "",
+      invoice_type: parsed.data.invoiceType,
+    };
+
+    await snapshotInvoiceVersion(supabase, data.id, userId, snapshot);
 
     revalidatePath("/app/invoices");
     revalidatePath(`/app/invoices/${data.id}`);
