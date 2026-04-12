@@ -141,3 +141,29 @@ describe("getSlugAliasRedirect", () => {
     expect(result).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// listInvoiceVersions (AUTO-01, AUTO-02)
+// RED stubs — function does not exist in billing-data yet
+// ---------------------------------------------------------------------------
+
+describe("listInvoiceVersions", () => {
+  it.todo(
+    "returns versions for a given invoice ordered by created_at desc"
+  );
+});
+
+// ---------------------------------------------------------------------------
+// getRecurringSchedule (AUTO-03)
+// RED stubs — function does not exist in billing-data yet
+// ---------------------------------------------------------------------------
+
+describe("getRecurringSchedule", () => {
+  it.todo(
+    "returns active recurring schedule for a given invoice"
+  );
+
+  it.todo(
+    "returns null when no schedule exists"
+  );
+});
