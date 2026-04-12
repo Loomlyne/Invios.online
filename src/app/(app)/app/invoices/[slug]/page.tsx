@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   getInvoiceById,
   getInvoiceBySlug,
+  getRecurringSchedule,
   getSlugAliasRedirect,
   listExpensesForInvoice,
   listInvoiceVersions,
@@ -26,6 +27,7 @@ import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
 import { VersionHistoryPanel } from "@/components/documents/version-history-panel";
 import { ExportButton } from "./export-button";
+import { RecurringButton } from "./recurring-button";
 import { StatusButton } from "./status-button";
 
 export default async function InvoiceDetailPage({
@@ -52,11 +54,12 @@ export default async function InvoiceDetailPage({
     notFound();
   }
 
-  const [context, payments, expenses, versions] = await Promise.all([
+  const [context, payments, expenses, versions, recurringSchedule] = await Promise.all([
     getAppContext(),
     listPaymentsForInvoice(invoice.id),
     listExpensesForInvoice(invoice.id),
     listInvoiceVersions(invoice.id),
+    getRecurringSchedule(invoice.id),
   ]);
 
   const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -103,6 +106,7 @@ export default async function InvoiceDetailPage({
                   Edit
                 </Link>
               </Button>
+              <RecurringButton invoiceId={invoice.id} schedule={recurringSchedule} />
               <StatusButton invoiceId={invoice.id} currentStatus={invoice.status} />
               <ExportButton invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
             </div>

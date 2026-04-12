@@ -14,6 +14,7 @@ import {
 import { requireSession } from "@/lib/require-session";
 import type { ActionState } from "@/lib/types";
 import { snapshotInvoiceVersion, type InvoiceSnapshot } from "@/actions/versions";
+import { createRecurringScheduleAction } from "@/actions/recurring";
 
 function parseInvoicePayload(formData: FormData) {
   const lineItemsResult = z.array(documentLineItemSchema).safeParse(
@@ -149,6 +150,22 @@ export async function createInvoiceAction(
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    // AUTO-03: Create recurring schedule if requested
+    const recurringFrequency = formData.get("recurringFrequency") as string | null;
+    const recurringNextDate = formData.get("recurringNextDate") as string | null;
+    if (
+      recurringFrequency &&
+      recurringNextDate &&
+      ["weekly", "monthly", "quarterly"].includes(recurringFrequency)
+    ) {
+      // Fire and forget — don't fail the invoice creation if schedule creation fails
+      await createRecurringScheduleAction({
+        sourceInvoiceId: data.id as string,
+        frequency: recurringFrequency as "weekly" | "monthly" | "quarterly",
+        nextDueDate: recurringNextDate,
+      }).catch(() => {});
     }
 
     revalidatePath("/app/invoices");

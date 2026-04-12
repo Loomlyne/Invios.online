@@ -16,6 +16,7 @@ import {
 import { quickCreateClientAction } from "@/actions/clients";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
+import { RecurringConfigForm } from "@/components/documents/recurring-config-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   ClientRecord,
@@ -32,6 +34,7 @@ import type {
   InvoiceFormInput,
 } from "@/lib/billing";
 import { createLineItem } from "@/lib/billing-utils";
+import type { RecurringFrequency } from "@/lib/cron-utils";
 import { buildInvoicePreviewData } from "@/lib/preview";
 import type { ActionState, AppContext } from "@/lib/types";
 
@@ -95,6 +98,13 @@ export function DocumentBuilder({
     initialValue?.lineItems?.length ? initialValue.lineItems : [createLineItem({ description: "" })],
   );
   const [localClients, setLocalClients] = useState(clients);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringFrequency, setRecurringFrequency] = useState<RecurringFrequency>("monthly");
+  const [recurringNextDate, setRecurringNextDate] = useState<string>(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    return d.toISOString().split("T")[0];
+  });
 
   const selectedClient = localClients.find((client) => client.id === clientId) ?? localClients[0];
 
@@ -402,6 +412,32 @@ export function DocumentBuilder({
                 <Textarea id="terms" name="terms" value={terms} onChange={(event) => setTerms(event.target.value)} />
               </Field>
             </section>
+
+            {/* Recurring billing (invoices only) */}
+            {kind === "invoice" && (
+              <section className="grid gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="recurring-toggle" className="text-sm">
+                    Repeat this invoice
+                  </Label>
+                  <Switch
+                    id="recurring-toggle"
+                    checked={isRecurring}
+                    onCheckedChange={setIsRecurring}
+                  />
+                </div>
+                {isRecurring && (
+                  <RecurringConfigForm
+                    mode="inline"
+                    issueDate={primaryDate}
+                    selectedFrequency={recurringFrequency}
+                    selectedDate={recurringNextDate}
+                    onFrequencyChange={setRecurringFrequency}
+                    onDateChange={setRecurringNextDate}
+                  />
+                )}
+              </section>
+            )}
 
             {state.message ? (
               <div
