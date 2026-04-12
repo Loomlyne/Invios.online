@@ -111,6 +111,12 @@ All new tests are intentionally `it.todo()` stubs — this is the plan's explici
 - cron-utils.test.ts is clean (no dynamic imports) — safe for static import pattern in GREEN phase
 - billing-data.test.ts uses dynamic imports for existing tests — implementation plans should use static imports for new functions
 
+## Self-Check: PASSED
+
+- SUMMARY.md: FOUND at .planning/phases/05-automation-recovery/05-00-SUMMARY.md
+- cron-utils.test.ts: FOUND at src/lib/cron-utils.test.ts
+- Task 1 commit a38a7fe: FOUND in git log
+- Task 2 commit d569127: FOUND in git log
 ---
 *Phase: 05-automation-recovery*
 *Completed: 2026-04-12*
