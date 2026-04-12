@@ -12,6 +12,7 @@ import {
   getInvoiceBySlug,
   getSlugAliasRedirect,
   listExpensesForInvoice,
+  listInvoiceVersions,
   listPaymentsForInvoice,
 } from "@/lib/billing-data";
 import { isUuid } from "@/lib/billing-utils";
@@ -23,6 +24,7 @@ import { FinancialQuickActions } from "@/components/documents/financial-quick-ac
 import { InvoiceDeleteButton } from "@/components/documents/invoice-delete-button";
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
 import { formatCurrency } from "@/lib/utils";
+import { VersionHistoryPanel } from "@/components/documents/version-history-panel";
 import { ExportButton } from "./export-button";
 import { StatusButton } from "./status-button";
 
@@ -50,10 +52,11 @@ export default async function InvoiceDetailPage({
     notFound();
   }
 
-  const [context, payments, expenses] = await Promise.all([
+  const [context, payments, expenses, versions] = await Promise.all([
     getAppContext(),
     listPaymentsForInvoice(invoice.id),
     listExpensesForInvoice(invoice.id),
+    listInvoiceVersions(invoice.id),
   ]);
 
   const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -150,6 +153,15 @@ export default async function InvoiceDetailPage({
           expenses={expenses}
         />
       </section>
+
+      {/* Version History — AUTO-01, AUTO-02 */}
+      <VersionHistoryPanel
+        invoiceId={invoice.id}
+        currentTotal={invoice.total}
+        currency={invoice.currency}
+        hasPayments={payments.length > 0}
+        versions={versions}
+      />
     </div>
   );
 }
