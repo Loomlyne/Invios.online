@@ -194,7 +194,7 @@ export const paymentFormSchema = z.object({
   datePaid: z.string().min(1, "Enter a date."),
   amount: z.coerce.number().positive("Enter a valid amount."),
   method: z.enum(paymentMethods).default("other"),
-  description: z.string().max(160, "Keep the description under 160 characters.").default(""),
+  description: z.string().max(160, "Keep the description under 160 characters.").trim().default(""),
 });
 
 export const expenseFormSchema = z.object({

@@ -134,6 +134,7 @@ export interface InvoicePreviewData {
   recipientEmail?: string;
   recipientPhone?: string;
   recipientAddress?: string;
+  recipientTrn?: string;
   currency: string;
   language: UserSettings["defaultLanguage"];
   taxRate: number;

@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getClientByPortalToken, getSlugAliasRedirect } from "@/lib/billing-data";
 
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createSupabaseServerClient: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -15,8 +20,6 @@ describe("getClientByPortalToken", () => {
   });
 
   it("returns mapped client for valid portal token", async () => {
-    const { getClientByPortalToken } = await import("@/lib/billing-data");
-
     const mockRow = {
       id: "client-uuid-123",
       user_id: "user-uuid-456",
@@ -52,8 +55,6 @@ describe("getClientByPortalToken", () => {
   });
 
   it("returns null for invalid/unknown portal token", async () => {
-    const { getClientByPortalToken } = await import("@/lib/billing-data");
-
     const mockMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
     const mockIs = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
     const mockEq = vi.fn().mockReturnValue({ is: mockIs });
@@ -67,8 +68,6 @@ describe("getClientByPortalToken", () => {
   });
 
   it("returns null for archived client", async () => {
-    const { getClientByPortalToken } = await import("@/lib/billing-data");
-
     // The .is("archived_at", null) filter excludes archived rows — mock returns null
     const mockMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
     const mockIs = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
@@ -93,8 +92,6 @@ describe("getSlugAliasRedirect", () => {
   });
 
   it("returns current slug when alias exists", async () => {
-    const { getSlugAliasRedirect } = await import("@/lib/billing-data");
-
     // First call: look up alias
     const mockMaybeSingleAlias = vi.fn().mockResolvedValue({
       data: { document_id: "invoice-uuid-123" },
@@ -128,8 +125,6 @@ describe("getSlugAliasRedirect", () => {
   });
 
   it("returns null when no alias exists", async () => {
-    const { getSlugAliasRedirect } = await import("@/lib/billing-data");
-
     const mockMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
     const mockEq = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });

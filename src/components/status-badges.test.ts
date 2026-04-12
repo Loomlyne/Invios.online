@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, expect, it } from "vitest";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
