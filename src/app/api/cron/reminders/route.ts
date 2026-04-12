@@ -14,10 +14,12 @@ export async function GET(request: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const supabase = createSupabaseAdminClient();
-  if (!supabase) {
+  const supabaseRaw = createSupabaseAdminClient();
+  if (!supabaseRaw) {
     return Response.json({ error: "Admin client unavailable" }, { status: 500 });
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = supabaseRaw as any;
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -147,8 +149,9 @@ export async function GET(request: NextRequest) {
 }
 
 /** Helper: sum payments for an invoice to get collected amount */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getCollectedAmount(
-  supabase: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  supabase: any,
   invoiceId: string,
 ): Promise<number> {
   const { data } = await supabase

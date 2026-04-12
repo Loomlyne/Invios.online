@@ -11,19 +11,29 @@ export async function GET(request: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const supabase = createSupabaseAdminClient();
-  if (!supabase) {
+  const supabaseRaw = createSupabaseAdminClient();
+  if (!supabaseRaw) {
     return Response.json({ error: "Admin client unavailable" }, { status: 500 });
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = supabaseRaw as any;
 
   const today = new Date().toISOString().split("T")[0];
+
+  type RecurringScheduleRow = {
+    id: string;
+    user_id: string;
+    source_invoice_id: string;
+    frequency: string;
+    next_due_date: string;
+  };
 
   // 1. Fetch all active schedules where next_due_date <= today
   const { data: schedules, error: scheduleError } = await supabase
     .from("recurring_schedules")
     .select("id, user_id, source_invoice_id, frequency, next_due_date")
     .eq("is_active", true)
-    .lte("next_due_date", today);
+    .lte("next_due_date", today) as { data: RecurringScheduleRow[] | null; error: { message: string } | null };
 
   if (scheduleError) {
     console.error("[cron/recurring] Failed to fetch schedules:", scheduleError);
