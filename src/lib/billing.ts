@@ -208,6 +208,33 @@ export const expenseFormSchema = z.object({
 export type PaymentFormInput = z.infer<typeof paymentFormSchema>;
 export type ExpenseFormInput = z.infer<typeof expenseFormSchema>;
 
+// --- Phase 5: Automation & Recovery ---
+
+/** Max version snapshots kept per invoice. Rolling cap enforced in snapshotInvoiceVersion. */
+export const MAX_VERSIONS = 10;
+
+/** Snapshot shape stored in invoice_versions.snapshot JSONB. */
+export interface InvoiceSnapshot {
+  invoice_number: string;
+  client_id: string;
+  client_name: string;
+  issue_date: string;
+  due_date: string;
+  currency: string;
+  tax_rate: number;
+  discount: number;
+  subtotal: number;
+  discount_amount: number;
+  tax_amount: number;
+  total: number;
+  line_items: unknown[];
+  notes: string;
+  terms: string;
+  language: string;
+  trn: string;
+  invoice_type: string;
+}
+
 export interface PaymentRecord {
   id: string;
   invoiceId: string;

@@ -3,35 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/require-session";
 import { computeAndWriteInvoiceStatus } from "@/lib/billing-data";
+import { MAX_VERSIONS, type InvoiceSnapshot } from "@/lib/billing";
 import type { ActionState } from "@/lib/types";
-
-/** Configurable constant — future subscription tiers can raise this (per D-04). */
-export const MAX_VERSIONS = 10;
-
-/**
- * Snapshot shape stored in invoice_versions.snapshot JSONB.
- * Contains all invoice fields needed for display and restore.
- */
-export interface InvoiceSnapshot {
-  invoice_number: string;
-  client_id: string;
-  client_name: string;
-  issue_date: string;
-  due_date: string;
-  currency: string;
-  tax_rate: number;
-  discount: number;
-  subtotal: number;
-  discount_amount: number;
-  tax_amount: number;
-  total: number;
-  line_items: unknown[];
-  notes: string;
-  terms: string;
-  language: string;
-  trn: string;
-  invoice_type: string;
-}
 
 /**
  * Insert a version snapshot after a successful invoice save.

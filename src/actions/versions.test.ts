@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { requireSession } from "@/lib/require-session";
 import { computeAndWriteInvoiceStatus } from "@/lib/billing-data";
-import { snapshotInvoiceVersion, restoreInvoiceVersionAction, MAX_VERSIONS } from "@/actions/versions";
+import { snapshotInvoiceVersion, restoreInvoiceVersionAction } from "@/actions/versions";
+import { MAX_VERSIONS } from "@/lib/billing";
 
 vi.mock("@/lib/require-session", () => ({
   requireSession: vi.fn(),

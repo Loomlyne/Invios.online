@@ -13,7 +13,8 @@ import {
 } from "@/lib/billing-utils";
 import { requireSession } from "@/lib/require-session";
 import type { ActionState } from "@/lib/types";
-import { snapshotInvoiceVersion, type InvoiceSnapshot } from "@/actions/versions";
+import { snapshotInvoiceVersion } from "@/actions/versions";
+import { type InvoiceSnapshot } from "@/lib/billing";
 import { createRecurringScheduleAction } from "@/actions/recurring";
 
 function parseInvoicePayload(formData: FormData) {

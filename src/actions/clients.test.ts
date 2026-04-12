@@ -82,7 +82,14 @@ describe("clientFormSchema", () => {
 // ---------------------------------------------------------------------------
 
 describe("clientStatuses", () => {
-  it("contains exactly lead and active", () => {
-    expect(clientStatuses).toEqual(["lead", "active"]);
+  it("contains all six expected statuses", () => {
+    expect(clientStatuses).toEqual([
+      "lead",
+      "in_review",
+      "approved",
+      "active",
+      "rejected",
+      "canceled",
+    ]);
   });
 });
