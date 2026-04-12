@@ -15,7 +15,7 @@ Coverage: 100%
 | 2 | 1/6 | In Progress|  |
 | 3 | 4/5 | In Progress|  |
 | 4 | 4/7 | In Progress|  |
-| 5 | 6/7 | In Progress|  |
+| 5 | 7/7 | Complete   | 2026-04-12 |
 
 ## Phase Details
 
@@ -166,7 +166,7 @@ Add safety and automation so users can recover mistakes and reduce repetitive bi
 **Requirements**  
 AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05
 
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans complete
 
 Plans:
 - [x] 05-00-PLAN.md — Wave 0 RED test scaffolds for version, recurring, and reminder logic
@@ -175,7 +175,7 @@ Plans:
 - [x] 05-03-PLAN.md — Version history UI panel + restore dialog on invoice detail page (AUTO-02)
 - [x] 05-04-PLAN.md — Recurring billing actions, config form, builder/detail integration, cron endpoint (AUTO-03)
 - [x] 05-05-PLAN.md — Reminder email sender + reminder cron endpoint with deduplication (AUTO-04, AUTO-05)
-- [ ] 05-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
+- [x] 05-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
 
 **Success Criteria**
 1. Invoice versions are captured on save and can be reviewed later.

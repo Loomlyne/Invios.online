@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 05
-last_updated: "2026-04-12T12:26:14.278Z"
+last_updated: "2026-04-12T14:16:13.384Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 28
-  completed_plans: 27
+  completed_plans: 28
 ---
 
 # STATE
@@ -71,6 +71,8 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 - [Phase 05-automation-recovery]: VersionHistoryPanel returns null when versions.length === 0 — no empty state rendered per D-03 and UI-SPEC
 - [Phase 05-automation-recovery]: sendReminderEmail adapts subject/title/body based on overdue vs upcoming state using new Date(dueDate) < new Date()
 - [Phase 05-automation-recovery]: Outstanding amount shown in reminder email not invoice total — cron sums payments table to calculate
+- [Phase 05-automation-recovery]: use-server files can only export async functions — MAX_VERSIONS and InvoiceSnapshot moved to billing.ts
+- [Phase 05-automation-recovery]: Admin supabase client cast to any in cron routes — new tables not in generated types, runtime behavior correct
 
 ## Session State
 
