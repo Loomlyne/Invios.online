@@ -5,6 +5,7 @@ export const env = {
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailFrom: process.env.EMAIL_FROM ?? "Invios <onboarding@resend.dev>",
+  cronSecret: process.env.CRON_SECRET ?? "",
 };
 
 export function isSupabaseConfigured() {
@@ -17,4 +18,8 @@ export function isSupabaseAdminConfigured() {
 
 export function isEmailConfigured() {
   return Boolean(env.resendApiKey);
+}
+
+export function isCronAuthenticated(authHeader: string | null): boolean {
+  return Boolean(env.cronSecret && authHeader === `Bearer ${env.cronSecret}`);
 }
