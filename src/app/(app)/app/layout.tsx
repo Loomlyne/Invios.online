@@ -5,6 +5,21 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAppContext } from "@/lib/data";
 
+function hexToAccentTokens(hex: string): { accent: string; strong: string; soft: string; glow: string } {
+  const clean = hex.replace("#", "");
+  if (!/^[0-9a-fA-F]{6}$/.test(clean)) {
+    return { accent: hex, strong: hex, soft: `rgba(0,0,0,0.12)`, glow: `rgba(0,0,0,0.24)` };
+  }
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  const toHex = (n: number) => Math.round(n).toString(16).padStart(2, "0");
+  const strong = `#${toHex(r * 0.7)}${toHex(g * 0.7)}${toHex(b * 0.7)}`;
+  const soft = `rgba(${r}, ${g}, ${b}, 0.12)`;
+  const glow = `rgba(${r}, ${g}, ${b}, 0.24)`;
+  return { accent: hex, strong, soft, glow };
+}
+
 export default async function ProtectedLayout({
   children,
 }: {
@@ -35,9 +50,24 @@ export default async function ProtectedLayout({
     );
   }
 
+  const primaryColor = context.userState.branding.primaryColor || "#CA8A04";
+  const { accent, strong, soft, glow } = hexToAccentTokens(primaryColor);
+
   return (
-    <AppShell context={context}>
-      {children}
-    </AppShell>
+    <div
+      style={
+        {
+          display: "contents",
+          "--accent": accent,
+          "--accent-strong": strong,
+          "--accent-soft": soft,
+          "--accent-glow": glow,
+        } as React.CSSProperties
+      }
+    >
+      <AppShell context={context}>
+        {children}
+      </AppShell>
+    </div>
   );
 }
