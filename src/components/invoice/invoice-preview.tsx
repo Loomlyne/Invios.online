@@ -29,10 +29,13 @@ export function InvoicePreview({
     return en;
   }
 
+  const isPrint = mode === "print";
+
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[var(--radius-card)] border border-black/8 bg-white",
+        "overflow-hidden bg-white",
+        !isPrint && "rounded-[var(--radius-card)] border border-black/8",
         isBilingual && "max-w-[1100px]"
       )}
       dir={isRtl ? "rtl" : undefined}
@@ -50,6 +53,13 @@ export function InvoicePreview({
       <div className="px-6 pb-5 pt-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
+            {preview.logoUrl && (
+              <img
+                src={preview.logoUrl}
+                alt={preview.businessName}
+                className="mb-3 h-10 max-w-[180px] object-contain object-left"
+              />
+            )}
             <p className="text-xl font-semibold text-foreground">{preview.businessName}</p>
             <p className="text-sm leading-6 text-[#78716C]">{preview.address}</p>
             <p className="text-sm text-[#78716C]">{preview.businessEmail}</p>

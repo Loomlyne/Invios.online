@@ -284,9 +284,11 @@ export function DocumentBuilder({
                   <Card key={item.id} className="border border-black/7 bg-[#FFF8EE] p-4 shadow-none">
                     <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
                       <Field label="Description" htmlFor={`description-${item.id}`}>
-                        <Input
+                        <Textarea
                           id={`description-${item.id}`}
                           value={item.description}
+                          rows={2}
+                          className="min-h-[72px]"
                           onChange={(event) =>
                             setLineItems((current) =>
                               current.map((line) =>

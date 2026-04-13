@@ -64,7 +64,14 @@ export default async function InvoiceDetailPage({
 
   const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
 
-  const preview = buildInvoicePreviewFromRecord(context, invoice);
+  const preview = buildInvoicePreviewFromRecord(
+    {
+      userState: context.userState,
+      logoUrl: context.previewData.logoUrl,
+      signatureUrl: context.previewData.signatureUrl,
+    },
+    invoice,
+  );
 
   return (
     <div className="grid gap-[var(--space-section)]">

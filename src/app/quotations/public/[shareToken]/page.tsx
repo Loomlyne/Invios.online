@@ -24,18 +24,25 @@ export default async function PublicQuotationPage({
   }
 
   const ownerState = await getOwnerUserState(quotation.userId);
-  const preview = buildQuotationPreviewFromRecord({ userState: ownerState }, quotation);
+
+  const [logoUrl, signatureUrl] = await Promise.all([
+    getPublicLogoUrl(ownerState.branding.logoPath),
+    getPublicLogoUrl(ownerState.branding.signaturePath),
+  ]);
+
+  const preview = buildQuotationPreviewFromRecord(
+    { userState: ownerState, logoUrl, signatureUrl },
+    quotation,
+  );
 
   // Print mode: bare document for PDF generation — no chrome
   if (printMode) {
     return (
-      <main className="mx-auto max-w-5xl px-0 py-0">
+      <main className="w-full">
         <InvoicePreview preview={preview} mode="print" />
       </main>
     );
   }
-
-  const logoUrl = await getPublicLogoUrl(ownerState.branding.logoPath);
 
   return (
     <PublicPageShell

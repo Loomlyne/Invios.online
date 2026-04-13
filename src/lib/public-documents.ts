@@ -30,6 +30,8 @@ type BrandingRow = {
   footer_text: string | null;
   primary_color: string | null;
   secondary_color: string | null;
+  logo_path: string | null;
+  signature_path: string | null;
   signature_mode: "none" | "upload" | "draw" | "typed" | null;
   signature_text: string | null;
   signature_font: string | null;
@@ -59,7 +61,7 @@ export async function getOwnerUserState(userId: string) {
     supabase
       .from("branding")
       .select(
-        "business_name,business_email,phone,website,address,trn,bank_details,footer_text,primary_color,secondary_color,signature_mode,signature_text,signature_font,invoice_prefix,quotation_prefix",
+        "business_name,business_email,phone,website,address,trn,bank_details,footer_text,primary_color,secondary_color,logo_path,signature_path,signature_mode,signature_text,signature_font,invoice_prefix,quotation_prefix",
       )
       .eq("user_id", userId)
       .maybeSingle<BrandingRow>(),
@@ -93,6 +95,8 @@ export async function getOwnerUserState(userId: string) {
     state.profile.footerText = brandingResult.data.footer_text ?? state.profile.footerText;
     state.branding.primaryColor = brandingResult.data.primary_color ?? state.branding.primaryColor;
     state.branding.secondaryColor = brandingResult.data.secondary_color ?? state.branding.secondaryColor;
+    state.branding.logoPath = brandingResult.data.logo_path ?? null;
+    state.branding.signaturePath = brandingResult.data.signature_path ?? null;
     state.branding.signatureMode = brandingResult.data.signature_mode ?? state.branding.signatureMode;
     state.branding.signatureText = brandingResult.data.signature_text ?? "";
     state.branding.signatureFont = brandingResult.data.signature_font ?? "Signature";

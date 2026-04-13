@@ -45,7 +45,14 @@ export default async function QuotationDetailPage({
 
   const [context] = await Promise.all([getAppContext()]);
 
-  const preview = buildQuotationPreviewFromRecord(context, quotation);
+  const preview = buildQuotationPreviewFromRecord(
+    {
+      userState: context.userState,
+      logoUrl: context.previewData.logoUrl,
+      signatureUrl: context.previewData.signatureUrl,
+    },
+    quotation,
+  );
   const isLocked = quotation.convertedToInvoiceId !== null;
 
   return (

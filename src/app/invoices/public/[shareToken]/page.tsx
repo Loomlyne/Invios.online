@@ -24,18 +24,25 @@ export default async function PublicInvoicePage({
   }
 
   const ownerState = await getOwnerUserState(invoice.userId);
-  const preview = buildInvoicePreviewFromRecord({ userState: ownerState }, invoice);
+
+  const [logoUrl, signatureUrl] = await Promise.all([
+    getPublicLogoUrl(ownerState.branding.logoPath),
+    getPublicLogoUrl(ownerState.branding.signaturePath),
+  ]);
+
+  const preview = buildInvoicePreviewFromRecord(
+    { userState: ownerState, logoUrl, signatureUrl },
+    invoice,
+  );
 
   // Print mode: bare document for PDF generation — no chrome
   if (printMode) {
     return (
-      <main className="mx-auto max-w-5xl px-0 py-0">
+      <main className="w-full">
         <InvoicePreview preview={preview} mode="print" />
       </main>
     );
   }
-
-  const logoUrl = await getPublicLogoUrl(ownerState.branding.logoPath);
 
   return (
     <PublicPageShell

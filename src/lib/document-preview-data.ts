@@ -3,7 +3,7 @@ import { buildInvoicePreviewData } from "@/lib/preview";
 import type { AppUserState, InvoicePreviewData } from "@/lib/types";
 
 export function buildInvoicePreviewFromRecord(
-  context: { userState: AppUserState },
+  context: { userState: AppUserState; logoUrl?: string | null; signatureUrl?: string | null },
   invoice: InvoiceRecord,
 ): InvoicePreviewData {
   return buildInvoicePreviewData(context.userState, {
@@ -29,11 +29,13 @@ export function buildInvoicePreviewFromRecord(
     terms: invoice.terms,
     trn: invoice.trn,
     lineItems: invoice.lineItems,
+    logoUrl: context.logoUrl ?? null,
+    signatureUrl: context.signatureUrl ?? null,
   });
 }
 
 export function buildQuotationPreviewFromRecord(
-  context: { userState: AppUserState },
+  context: { userState: AppUserState; logoUrl?: string | null; signatureUrl?: string | null },
   quotation: QuotationRecord,
 ): InvoicePreviewData {
   return buildInvoicePreviewData(context.userState, {
@@ -58,6 +60,8 @@ export function buildQuotationPreviewFromRecord(
     notes: quotation.notes,
     terms: quotation.terms,
     lineItems: quotation.lineItems,
+    logoUrl: context.logoUrl ?? null,
+    signatureUrl: context.signatureUrl ?? null,
   });
 }
 
