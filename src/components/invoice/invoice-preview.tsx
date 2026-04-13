@@ -136,7 +136,7 @@ export function InvoicePreview({
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-sm tabular-nums text-[#A8A29E]">{i + 1}.</span>
-                  <span className="text-sm font-medium text-foreground">{item.description}</span>
+                  <span className="whitespace-pre-wrap text-sm font-medium text-foreground">{item.description}</span>
                 </div>
                 <div className="mt-1 flex gap-4 text-sm tabular-nums text-[#78716C]">
                   <span>Qty: {item.quantity}</span>
@@ -147,7 +147,7 @@ export function InvoicePreview({
               {/* Arabic column */}
               <div dir="rtl" lang="ar" className="mt-2 md:mt-0">
                 <span className="text-sm font-medium text-foreground">{getArabicDescription(item)}</span>
-                {item.notes ? <span className="mt-0.5 block text-xs text-[#A8A29E]">{item.notes}</span> : null}
+                {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-[#A8A29E]">{item.notes}</span> : null}
               </div>
             </div>
           ))}
@@ -169,8 +169,8 @@ export function InvoicePreview({
                 <tr key={item.id} className="border-b border-black/5">
                   <td className="py-4 pr-2 text-sm tabular-nums text-[#A8A29E]">{i + 1}</td>
                   <td className="py-4 pr-4 text-sm text-foreground">
-                    <span className="font-medium">{isArabicOnly ? getArabicDescription(item) : item.description}</span>
-                    {item.notes ? <span className="mt-0.5 block text-xs text-[#A8A29E]">{item.notes}</span> : null}
+                    <span className="whitespace-pre-wrap font-medium">{isArabicOnly ? getArabicDescription(item) : item.description}</span>
+                    {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-[#A8A29E]">{item.notes}</span> : null}
                   </td>
                   <td className="py-4 pr-4 text-right text-sm tabular-nums text-[#78716C]">{item.quantity}</td>
                   <td className="py-4 pr-4 text-right text-sm tabular-nums text-[#78716C]" dir="ltr">
@@ -262,13 +262,13 @@ export function InvoicePreview({
             {preview.terms ? (
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Terms", "الشروط والأحكام")}</p>
-                <p className="mt-2 text-sm leading-7 text-[#78716C]">{preview.terms}</p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#78716C]">{preview.terms}</p>
               </div>
             ) : null}
             {preview.notes ? (
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Notes", "ملاحظات")}</p>
-                <p className="mt-2 text-sm leading-7 text-[#78716C]">{preview.notes}</p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#78716C]">{preview.notes}</p>
               </div>
             ) : null}
           </div>
