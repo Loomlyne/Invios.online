@@ -115,6 +115,8 @@ export interface InvoicePreviewLineItem {
   arabicDescription?: string;
   quantity: number;
   unitPrice: number;
+  durationValue?: number;
+  durationUnit?: "hours" | "days" | "weeks" | "months";
 }
 
 export interface InvoicePreviewData {

@@ -20,6 +20,8 @@ export function createLineItem(partial?: Partial<DocumentLineItem>): DocumentLin
     quantity,
     unitPrice,
     total: partial?.total ?? roundCurrency(quantity * unitPrice),
+    ...(partial?.durationValue !== undefined && { durationValue: partial.durationValue }),
+    ...(partial?.durationUnit !== undefined && { durationUnit: partial.durationUnit }),
   };
 }
 
@@ -92,7 +94,9 @@ export function mapQuotationToInvoiceInput(
     terms: quotation.terms,
     language: quotation.language,
     trn: quotation.trn,
-    lineItems: normalizeLineItems(quotation.lineItems),
+    lineItems: normalizeLineItems(quotation.lineItems).map(
+      ({ durationValue: _dv, durationUnit: _du, ...rest }) => rest,
+    ),
     status: "draft",
     invoiceType: "invoice",
   };

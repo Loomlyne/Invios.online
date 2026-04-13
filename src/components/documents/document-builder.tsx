@@ -365,6 +365,57 @@ export function DocumentBuilder({
                         />
                       </Field>
                     </div>
+                    {kind === "quotation" && (
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <Field label="Duration" htmlFor={`durationValue-${item.id}`}>
+                          <Input
+                            id={`durationValue-${item.id}`}
+                            type="number"
+                            min={1}
+                            step={1}
+                            placeholder="e.g. 3"
+                            value={item.durationValue ?? ""}
+                            onChange={(event) =>
+                              setLineItems((current) =>
+                                current.map((line) =>
+                                  line.id === item.id
+                                    ? {
+                                        ...line,
+                                        durationValue:
+                                          event.target.value === ""
+                                            ? undefined
+                                            : Number(event.target.value),
+                                      }
+                                    : line,
+                                ),
+                              )
+                            }
+                          />
+                        </Field>
+                        <Field label="Unit" htmlFor={`durationUnit-${item.id}`}>
+                          <Select
+                            id={`durationUnit-${item.id}`}
+                            value={item.durationUnit ?? ""}
+                            placeholder="Unit"
+                            onChange={(v) =>
+                              setLineItems((current) =>
+                                current.map((line) =>
+                                  line.id === item.id
+                                    ? { ...line, durationUnit: v as DocumentLineItem["durationUnit"] }
+                                    : line,
+                                ),
+                              )
+                            }
+                            options={[
+                              { value: "hours", label: "Hours" },
+                              { value: "days", label: "Days" },
+                              { value: "weeks", label: "Weeks" },
+                              { value: "months", label: "Months" },
+                            ]}
+                          />
+                        </Field>
+                      </div>
+                    )}
                   </Card>
                 ))}
               </div>

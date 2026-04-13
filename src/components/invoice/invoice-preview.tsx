@@ -17,6 +17,9 @@ export function InvoicePreview({
   const recipientName = preview.recipientCompany || preview.recipientName || "Client";
   const template = getDocumentTemplate(preview.templateId);
   const bankFields = parseBankDetails(preview.bankDetails);
+  const showDurationColumn =
+    preview.kind === "quotation" &&
+    preview.lineItems.some((item) => (item.durationValue ?? 0) > 0);
 
   // Language-aware rendering
   const isArabicOnly = preview.language === "ar";
@@ -153,6 +156,11 @@ export function InvoicePreview({
                   <span dir="ltr">{formatCurrency(item.unitPrice, preview.currency)}</span>
                   <span className="font-medium text-foreground" dir="ltr">{formatCurrency(item.unitPrice * item.quantity, preview.currency)}</span>
                 </div>
+                {item.durationValue && item.durationUnit && (
+                  <span className="mt-0.5 block text-xs text-[#A8A29E]">
+                    {formatDuration(item.durationValue, item.durationUnit)}
+                  </span>
+                )}
               </div>
               {/* Arabic column */}
               <div dir="rtl" lang="ar" className="mt-2 md:mt-0">
@@ -170,6 +178,9 @@ export function InvoicePreview({
                 <th className="w-10 py-3 pr-2 font-medium">#</th>
                 <th className="py-3 pr-4 font-medium">{isArabicOnly ? "الوصف" : "Title / Description"}</th>
                 <th className="py-3 pr-4 text-right font-medium">{isArabicOnly ? "الكمية" : "Qty"}</th>
+                {showDurationColumn && (
+                  <th className="py-3 pr-4 text-right font-medium">{isArabicOnly ? "المدة" : "Duration"}</th>
+                )}
                 <th className="py-3 pr-4 text-right font-medium">{isArabicOnly ? "سعر الوحدة" : "Unit price"}</th>
                 <th className="py-3 text-right font-medium">{isArabicOnly ? "المجموع" : "Subtotal"}</th>
               </tr>
@@ -183,6 +194,13 @@ export function InvoicePreview({
                     {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-[#A8A29E]">{item.notes}</span> : null}
                   </td>
                   <td className="py-4 pr-4 text-right text-sm tabular-nums text-[#78716C]">{item.quantity}</td>
+                  {showDurationColumn && (
+                    <td className="py-4 pr-4 text-right text-sm tabular-nums text-[#78716C]">
+                      {item.durationValue && item.durationUnit
+                        ? formatDuration(item.durationValue, item.durationUnit)
+                        : "—"}
+                    </td>
+                  )}
                   <td className="py-4 pr-4 text-right text-sm tabular-nums text-[#78716C]" dir="ltr">
                     {formatCurrency(item.unitPrice, preview.currency)}
                   </td>
@@ -287,4 +305,10 @@ export function InvoicePreview({
 
     </div>
   );
+}
+
+function formatDuration(value: number, unit: string): string {
+  const label = unit.charAt(0).toUpperCase() + unit.slice(1);
+  const singular = label.endsWith("s") ? label.slice(0, -1) : label;
+  return `${value} ${value === 1 ? singular : label}`;
 }

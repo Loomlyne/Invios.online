@@ -35,6 +35,8 @@ export const documentLineItemSchema = z.object({
   quantity: z.coerce.number().positive("Quantity must be greater than zero."),
   unitPrice: z.coerce.number().min(0, "Unit price cannot be negative."),
   total: z.coerce.number().min(0, "Line item total cannot be negative."),
+  durationValue: z.coerce.number().positive().optional(),
+  durationUnit: z.enum(["hours", "days", "weeks", "months"]).optional(),
 });
 
 export const clientFormSchema = z.object({
