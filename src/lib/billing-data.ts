@@ -265,10 +265,15 @@ export async function listClients({
     .from("clients")
     .select("*")
     .is("archived_at", null)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(200);
 
   if (status && status !== "all") {
     query = query.eq("status", status);
+  }
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,company.ilike.%${search}%,email.ilike.%${search}%`);
   }
 
   const { data, error } = await query.returns<ClientRow[]>();
@@ -277,16 +282,7 @@ export async function listClients({
     throw new Error(error.message);
   }
 
-  const mapped = (data ?? []).map(mapClient);
-
-  if (!search) {
-    return mapped;
-  }
-
-  const term = search.toLowerCase();
-  return mapped.filter((client) =>
-    [client.name, client.company, client.email].some((value) => value.toLowerCase().includes(term)),
-  );
+  return (data ?? []).map(mapClient);
 }
 
 export async function getClientBySlug(slug: string) {
@@ -326,7 +322,8 @@ export async function listInvoices({
   let query = supabase
     .from("invoices")
     .select(invoiceSelect)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(200);
 
   if (status === "open") {
     query = query.in("status", ["sent", "partial_paid", "overdue"]);
@@ -414,7 +411,8 @@ export async function listQuotations({
   let query = supabase
     .from("quotations")
     .select(quotationSelect)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(200);
 
   if (status && status !== "all") {
     query = query.eq("status", status);

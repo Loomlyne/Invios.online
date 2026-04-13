@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { getDocumentTemplate } from "@/lib/document-templates";
 import { getInvoiceTotals } from "@/lib/preview";
 import type { InvoicePreviewData } from "@/lib/types";
@@ -5,7 +6,7 @@ import { formatCurrency, formatDateDisplay, parseBankDetails } from "@/lib/utils
 import { formatTrnDisplay, getArabicDescription } from "@/lib/billing-utils";
 import { cn } from "@/lib/utils";
 
-export function InvoicePreview({
+export const InvoicePreview = memo(function InvoicePreview({
   preview,
   mode = "panel",
 }: {
@@ -305,7 +306,7 @@ export function InvoicePreview({
 
     </div>
   );
-}
+});
 
 function formatDuration(value: number, unit: string): string {
   const label = unit.charAt(0).toUpperCase() + unit.slice(1);

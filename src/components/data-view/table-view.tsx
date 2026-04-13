@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
@@ -30,15 +30,18 @@ export function TableView<TItem, TStatus extends string>({
     }
   }
 
-  const sortedItems = [...items];
-  if (sortKey) {
-    const col = config.tableColumns.find((c) => c.key === sortKey);
-    if (col?.compare) {
-      sortedItems.sort((a, b) =>
-        sortDir === "asc" ? col.compare!(a, b) : col.compare!(b, a),
-      );
+  const sortedItems = useMemo(() => {
+    const arr = [...items];
+    if (sortKey) {
+      const col = config.tableColumns.find((c) => c.key === sortKey);
+      if (col?.compare) {
+        arr.sort((a, b) =>
+          sortDir === "asc" ? col.compare!(a, b) : col.compare!(b, a),
+        );
+      }
     }
-  }
+    return arr;
+  }, [items, sortKey, sortDir, config.tableColumns]);
 
   return (
     <div className="overflow-x-auto rounded-[var(--radius-card)] border border-black/7">

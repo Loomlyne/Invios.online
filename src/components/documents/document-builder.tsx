@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect, useCallback } from "react";
+import { useState, useTransition, useRef, useEffect, useCallback, useMemo } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { ChevronDown, Loader2, Plus, Search, Trash2, UserPlus } from "lucide-react";
 import type { Route } from "next";
@@ -106,36 +106,46 @@ export function DocumentBuilder({
     return d.toISOString().split("T")[0];
   });
 
-  const selectedClient = localClients.find((client) => client.id === clientId) ?? localClients[0];
+  const selectedClient = useMemo(
+    () => localClients.find((client) => client.id === clientId) ?? localClients[0],
+    [localClients, clientId],
+  );
 
-  const preview = buildInvoicePreviewData(context.userState, {
-    kind,
-    title: kind === "invoice" ? "Invoice" : "Quotation",
-    invoiceNumber: numberValue,
-    numberLabel: kind === "invoice" ? "Invoice no." : "Quotation no.",
-    statusLabel: formatStatus(initialValue?.status ?? "draft"),
-    issueDate: primaryDate,
-    dueDate: secondaryDate,
-    issueDateLabel: kind === "invoice" ? "Issue date" : "Quotation date",
-    dueDateLabel: kind === "invoice" ? "Due date" : "Expiry date",
-    currency,
-    language,
-    taxRate: Number(taxRate),
-    discount: Number(discount),
-    terms,
-    notes,
-    trn,
-    recipientName: selectedClient?.name ?? "Client",
-    recipientCompany: selectedClient?.company ?? "",
-    recipientEmail: selectedClient?.email ?? "",
-    recipientPhone: selectedClient?.phone ?? "",
-    recipientAddress: selectedClient?.address ?? "",
-    lineItems,
-    logoUrl: context.previewData.logoUrl,
-    signatureUrl: context.previewData.signatureUrl,
-  });
+  const preview = useMemo(
+    () => buildInvoicePreviewData(context.userState, {
+      kind,
+      title: kind === "invoice" ? "Invoice" : "Quotation",
+      invoiceNumber: numberValue,
+      numberLabel: kind === "invoice" ? "Invoice no." : "Quotation no.",
+      statusLabel: formatStatus(initialValue?.status ?? "draft"),
+      issueDate: primaryDate,
+      dueDate: secondaryDate,
+      issueDateLabel: kind === "invoice" ? "Issue date" : "Quotation date",
+      dueDateLabel: kind === "invoice" ? "Due date" : "Expiry date",
+      currency,
+      language,
+      taxRate: Number(taxRate),
+      discount: Number(discount),
+      terms,
+      notes,
+      trn,
+      recipientName: selectedClient?.name ?? "Client",
+      recipientCompany: selectedClient?.company ?? "",
+      recipientEmail: selectedClient?.email ?? "",
+      recipientPhone: selectedClient?.phone ?? "",
+      recipientAddress: selectedClient?.address ?? "",
+      lineItems,
+      logoUrl: context.previewData.logoUrl,
+      signatureUrl: context.previewData.signatureUrl,
+    }),
+    [
+      kind, numberValue, primaryDate, secondaryDate, currency, language,
+      taxRate, discount, terms, notes, trn, selectedClient, lineItems,
+      context.userState, context.previewData.logoUrl, context.previewData.signatureUrl,
+    ],
+  );
 
-  const previewNode = <InvoicePreview preview={preview} mode="page" />;
+  const previewNode = useMemo(() => <InvoicePreview preview={preview} mode="page" />, [preview]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -285,12 +295,10 @@ export function DocumentBuilder({
                 {lineItems.map((item, index) => (
                   <Card key={item.id} className="border border-black/7 bg-[#FFF8EE] p-4 shadow-none">
                     <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
-                      <Field label="Description" htmlFor={`description-${item.id}`}>
-                        <Textarea
+                      <Field label="Title" htmlFor={`description-${item.id}`}>
+                        <Input
                           id={`description-${item.id}`}
                           value={item.description}
-                          rows={2}
-                          className="min-h-[72px]"
                           onChange={(event) =>
                             setLineItems((current) =>
                               current.map((line) =>
@@ -540,11 +548,14 @@ function ClientSelector({
   const containerRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const selected = clients.find((c) => c.id === value);
-  const filtered = clients.filter((c) => {
+  const selected = useMemo(() => clients.find((c) => c.id === value), [clients, value]);
+  const filtered = useMemo(() => {
+    if (!search) return clients;
     const q = search.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q);
-  });
+    return clients.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q),
+    );
+  }, [clients, search]);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (containerRef.current && !containerRef.current.contains(event.target as Node)) {

@@ -62,7 +62,7 @@ export function KanbanView<TItem, TStatus extends string>({
 
     for (const col of cols) observer.observe(col);
     return () => observer.disconnect();
-  }, [items.length, config.kanbanColumns.length]);
+  }, [items, config.kanbanColumns]);
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {

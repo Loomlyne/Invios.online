@@ -264,8 +264,8 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
   }
 
   const [logoUrl, signatureUrl] = await Promise.all([
-    createSignedAssetUrl(supabase, userState.branding.logoPath),
-    createSignedAssetUrl(supabase, userState.branding.signaturePath),
+    userState.branding.logoPath ? createSignedAssetUrl(supabase, userState.branding.logoPath) : Promise.resolve(null),
+    userState.branding.signaturePath ? createSignedAssetUrl(supabase, userState.branding.signaturePath) : Promise.resolve(null),
   ]);
 
   const previewData = buildInvoicePreviewData(userState, {
