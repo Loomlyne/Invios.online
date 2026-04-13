@@ -131,6 +131,8 @@ export function DocumentBuilder({
     recipientPhone: selectedClient?.phone ?? "",
     recipientAddress: selectedClient?.address ?? "",
     lineItems,
+    logoUrl: context.previewData.logoUrl,
+    signatureUrl: context.previewData.signatureUrl,
   });
 
   const previewNode = <InvoicePreview preview={preview} mode="page" />;
