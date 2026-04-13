@@ -116,7 +116,7 @@ export function RecurringConfigForm({
           });
 
       if (result.status === "error") {
-        setError(result.message);
+        setError(result.message ?? null);
       } else {
         onSaved?.();
       }
@@ -130,7 +130,7 @@ export function RecurringConfigForm({
     startTransition(async () => {
       const result = await cancelRecurringScheduleAction(scheduleId);
       if (result.status === "error") {
-        setError(result.message);
+        setError(result.message ?? null);
       } else {
         onSaved?.();
       }
