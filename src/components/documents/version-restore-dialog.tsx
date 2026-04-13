@@ -114,7 +114,7 @@ export function VersionRestoreDialog({
           </Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={handleRestore}
             disabled={isPending}
             className="min-h-[44px]"
