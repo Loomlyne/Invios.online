@@ -47,7 +47,7 @@ export function TableView<TItem, TStatus extends string>({
     <div className="overflow-x-auto rounded-[var(--radius-card)] border border-black/7">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="bg-[#FFF7EA]">
+          <tr className="bg-surface-subtle">
             {config.tableColumns.map((col) => (
               <th
                 key={col.key}
@@ -83,7 +83,7 @@ export function TableView<TItem, TStatus extends string>({
             <tr>
               <td
                 colSpan={config.tableColumns.length}
-                className="bg-[#FFF8EE] px-4 py-8"
+                className="bg-surface px-4 py-8"
               >
                 {emptyState}
               </td>
@@ -93,7 +93,7 @@ export function TableView<TItem, TStatus extends string>({
               <tr
                 key={config.getId(item)}
                 onClick={() => router.push(config.getHref(item) as Route)}
-                className="cursor-pointer border-t border-black/5 bg-[#FFF8EE] transition hover:bg-[#FFF4E3]"
+                className="cursor-pointer border-t border-black/5 bg-surface transition hover:bg-surface-subtle"
               >
                 {config.tableColumns.map((col) => (
                   <td

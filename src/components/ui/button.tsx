@@ -11,7 +11,7 @@ const buttonVariants = cva(
         primary:
           "bg-foreground text-on-dark shadow-[0_18px_45px_rgba(28,25,23,0.18)] hover:-translate-y-0.5 hover:bg-[#2B2623]",
         secondary:
-          "border border-border bg-surface text-foreground hover:border-[#CAB9A2] hover:bg-[#FFF7EA]",
+          "border border-border bg-surface text-foreground hover:border-border-brand hover:bg-surface-subtle",
         ghost:
           "border border-transparent bg-transparent text-foreground hover:border-black/8 hover:bg-black/5 hover:text-foreground",
         inverse:

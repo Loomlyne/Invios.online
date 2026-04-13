@@ -43,7 +43,7 @@ export function AppShell({
               <div className="flex items-center gap-2">
                 <Link
                   href={"/app/settings" as Route}
-                  className="hidden lg:inline-flex size-10 items-center justify-center rounded-full border border-border bg-white/80 text-muted-strong transition hover:bg-[#FFF8ED]"
+                  className="hidden lg:inline-flex size-10 items-center justify-center rounded-full border border-border bg-white/80 text-muted-strong transition hover:bg-surface-subtle"
                   aria-label="Settings"
                 >
                   <Settings2 className="size-4" />

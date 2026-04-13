@@ -18,7 +18,7 @@ export function DroppableColumn({
       ref={setNodeRef}
       className={cn(
         "transition-colors duration-150",
-        isOver && "[&>div>div:last-child]:border-[#D7C4A7] [&>div>div:last-child]:bg-[#FFF8EE]/50",
+        isOver && "[&>div>div:last-child]:border-border-brand [&>div>div:last-child]:bg-surface-subtle/50",
       )}
     >
       {children}
