@@ -34,6 +34,44 @@ export const bottomNavItems: AppNavItemConfig[] = [
     icon: "users-round",
     description: "Manage the client records tied to every document.",
   },
+];
+
+export const fabMenuItems: AppNavItemConfig[] = [
+  {
+    key: "new-invoice",
+    label: "Invoice",
+    href: "/app/invoices/new",
+    icon: "receipt-text",
+    description: "Create a new invoice.",
+  },
+  {
+    key: "new-quote",
+    label: "Quote",
+    href: "/app/quotations/new",
+    icon: "file-text",
+    description: "Create a new quotation.",
+  },
+  {
+    key: "new-client",
+    label: "Customer",
+    href: "/app/clients",
+    icon: "user-round-plus",
+    description: "Add a new client.",
+  },
+  {
+    key: "branding",
+    label: "Branding",
+    href: "/app/branding",
+    icon: "palette",
+    description: "Logo, colors, fonts, and document identity.",
+  },
+  {
+    key: "notes",
+    label: "Notes",
+    href: "/app/notes",
+    icon: "sticky-note",
+    description: "Quick notes and reminders.",
+  },
   {
     key: "settings",
     label: "Settings",

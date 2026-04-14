@@ -14,7 +14,11 @@ export type AppNavKey =
   | "quotations"
   | "clients"
   | "branding"
-  | "settings";
+  | "settings"
+  | "new-invoice"
+  | "new-quote"
+  | "new-client"
+  | "notes";
 
 export type SetupItemKey = "business-profile" | "branding" | "defaults" | "final-review";
 
@@ -24,7 +28,9 @@ export type AppNavIcon =
   | "file-text"
   | "users-round"
   | "palette"
-  | "settings-2";
+  | "settings-2"
+  | "user-round-plus"
+  | "sticky-note";
 
 export interface AppNavItemConfig {
   key: AppNavKey;
