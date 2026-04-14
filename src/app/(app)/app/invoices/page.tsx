@@ -38,7 +38,7 @@ export default async function InvoicesPage({
   const sentCount = invoices.filter((inv) => inv.status === "sent").length;
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-[var(--space-section)]">
       <PageHeader
         title="Invoices"
         description="Draft, review, share, and export invoices from one surface."

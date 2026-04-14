@@ -13,6 +13,7 @@ export async function renderDocumentUrlToPdf(url: string) {
       colorScheme: "light",
     });
 
+    await page.setViewportSize({ width: 794, height: 1123 }); // A4 at 96 DPI
     await page.emulateMedia({ media: "screen" });
     await page.goto(url, {
       waitUntil: "networkidle",

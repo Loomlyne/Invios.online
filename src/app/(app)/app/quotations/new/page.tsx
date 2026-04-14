@@ -27,7 +27,7 @@ export default async function NewQuotationPage({
             Back to quotations
           </Link>
         </Button>
-        <div className="rounded-[1.6rem] border border-dashed border-black/10 bg-[#FFF8EE] px-6 py-8">
+        <div className="rounded-[var(--radius-card)] border border-dashed border-black/10 bg-[#FFF8EE] px-6 py-8">
           <p className="text-xl font-semibold text-foreground">Create a client before drafting a quotation.</p>
           <p className="mt-2 text-sm leading-7 text-muted-strong">
             Quotations inherit the selected client record so acceptance and later conversion into invoices stay trustworthy.

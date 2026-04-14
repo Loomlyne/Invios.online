@@ -6,6 +6,9 @@ import {
   computePaymentStatus,
   computeProfit,
   formatDocumentNumber,
+  formatTrnDisplay,
+  getArabicDescription,
+  isUuid,
   mapQuotationToInvoiceInput,
   normalizeLineItems,
 } from "./billing-utils";
@@ -251,5 +254,69 @@ describe("computeCollectionRate", () => {
   it("returns 0 when nothing has been collected", () => {
     const result = computeCollectionRate({ totalBilled: 10000, totalCollected: 0 });
     expect(result).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isUuid — Phase 4 Wave 0 (RED: function not yet implemented)
+// ---------------------------------------------------------------------------
+
+describe("isUuid", () => {
+  it("returns true for valid UUID v4", () => {
+    expect(isUuid("a1b2c3d4-e5f6-7890-abcd-ef1234567890")).toBe(true);
+  });
+
+  it("returns false for slug string", () => {
+    expect(isUuid("acme-corp-inv-001")).toBe(false);
+  });
+
+  it("returns false for empty string", () => {
+    expect(isUuid("")).toBe(false);
+  });
+
+  it("returns false for partial UUID", () => {
+    expect(isUuid("a1b2c3d4-e5f6")).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// formatTrnDisplay — Phase 4 Wave 0 (RED: function not yet implemented)
+// ---------------------------------------------------------------------------
+
+describe("formatTrnDisplay", () => {
+  it("formats 15-digit TRN with label", () => {
+    expect(formatTrnDisplay("100123456789012")).toBe("TRN: 100123456789012");
+  });
+
+  it("returns empty string for empty TRN", () => {
+    expect(formatTrnDisplay("")).toBe("");
+  });
+
+  it("returns empty string for null TRN", () => {
+    expect(formatTrnDisplay(null)).toBe("");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getArabicDescription — Phase 4 Wave 0 (RED: function not yet implemented)
+// ---------------------------------------------------------------------------
+
+describe("getArabicDescription", () => {
+  it("returns arabicDescription when present", () => {
+    expect(
+      getArabicDescription({ description: "Web Design", arabicDescription: "تصميم الويب" }),
+    ).toBe("تصميم الويب");
+  });
+
+  it("falls back to description when arabicDescription is empty", () => {
+    expect(
+      getArabicDescription({ description: "Web Design", arabicDescription: "" }),
+    ).toBe("Web Design");
+  });
+
+  it("falls back to description when arabicDescription is undefined", () => {
+    expect(
+      getArabicDescription({ description: "Web Design" }),
+    ).toBe("Web Design");
   });
 });

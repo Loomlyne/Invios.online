@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
@@ -30,21 +30,24 @@ export function TableView<TItem, TStatus extends string>({
     }
   }
 
-  const sortedItems = [...items];
-  if (sortKey) {
-    const col = config.tableColumns.find((c) => c.key === sortKey);
-    if (col?.compare) {
-      sortedItems.sort((a, b) =>
-        sortDir === "asc" ? col.compare!(a, b) : col.compare!(b, a),
-      );
+  const sortedItems = useMemo(() => {
+    const arr = [...items];
+    if (sortKey) {
+      const col = config.tableColumns.find((c) => c.key === sortKey);
+      if (col?.compare) {
+        arr.sort((a, b) =>
+          sortDir === "asc" ? col.compare!(a, b) : col.compare!(b, a),
+        );
+      }
     }
-  }
+    return arr;
+  }, [items, sortKey, sortDir, config.tableColumns]);
 
   return (
-    <div className="overflow-x-auto rounded-[1.25rem] border border-black/7">
+    <div className="overflow-x-auto rounded-[var(--radius-card)] border border-black/7">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="bg-[#FFF7EA]">
+          <tr className="bg-surface-subtle">
             {config.tableColumns.map((col) => (
               <th
                 key={col.key}
@@ -80,7 +83,7 @@ export function TableView<TItem, TStatus extends string>({
             <tr>
               <td
                 colSpan={config.tableColumns.length}
-                className="bg-[#FFF8EE] px-4 py-8"
+                className="bg-surface px-4 py-8"
               >
                 {emptyState}
               </td>
@@ -90,12 +93,12 @@ export function TableView<TItem, TStatus extends string>({
               <tr
                 key={config.getId(item)}
                 onClick={() => router.push(config.getHref(item) as Route)}
-                className="cursor-pointer border-t border-black/5 bg-[#FFF8EE] transition hover:bg-[#FFF4E3]"
+                className="cursor-pointer border-t border-black/5 bg-surface transition hover:bg-surface-subtle"
               >
                 {config.tableColumns.map((col) => (
                   <td
                     key={col.key}
-                    className={cn("px-4 py-3 whitespace-nowrap", col.className)}
+                    className={cn("px-4 py-3", col.className)}
                   >
                     {col.render(item)}
                   </td>

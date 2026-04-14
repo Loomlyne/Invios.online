@@ -1,3 +1,4 @@
+import React from "react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ClientStatus } from "@/lib/billing";

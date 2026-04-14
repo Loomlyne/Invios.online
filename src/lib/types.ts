@@ -115,6 +115,8 @@ export interface InvoicePreviewLineItem {
   arabicDescription?: string;
   quantity: number;
   unitPrice: number;
+  durationValue?: number;
+  durationUnit?: "hours" | "days" | "weeks" | "months";
 }
 
 export interface InvoicePreviewData {
@@ -134,6 +136,7 @@ export interface InvoicePreviewData {
   recipientEmail?: string;
   recipientPhone?: string;
   recipientAddress?: string;
+  recipientTrn?: string;
   currency: string;
   language: UserSettings["defaultLanguage"];
   taxRate: number;
@@ -156,6 +159,11 @@ export interface InvoicePreviewData {
   terms: string;
   notes: string;
   lineItems: InvoicePreviewLineItem[];
+  headingFont?: string | null;
+  bodyFont?: string | null;
+  spacing?: string | null;
+  headerLayout?: string | null;
+  lineItemsStyle?: string | null;
 }
 
 export interface AppUserState {

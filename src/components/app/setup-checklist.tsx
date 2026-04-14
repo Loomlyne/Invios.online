@@ -67,7 +67,7 @@ export function SetupChecklist({ context }: { context: AppContext }) {
   if (dismissed || context.setupChecklistDismissed) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm lg:bottom-6 lg:right-6">
+    <div className="fixed bottom-4 left-4 right-4 z-40 max-w-sm lg:bottom-6 lg:left-auto lg:right-6">
       <div className="overflow-hidden rounded-[1.45rem] border border-black/10 bg-white/96 shadow-[0_24px_60px_rgba(23,18,15,0.18)] backdrop-blur">
         <button
           type="button"

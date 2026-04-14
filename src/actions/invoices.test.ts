@@ -144,12 +144,13 @@ describe("invoiceFormSchema", () => {
 // ---------------------------------------------------------------------------
 
 describe("invoiceStatuses", () => {
-  it("contains the five expected statuses", () => {
+  it("contains the six expected statuses including overpaid", () => {
     expect(invoiceStatuses).toEqual([
       "draft",
       "sent",
       "partial_paid",
       "paid",
+      "overpaid",
       "overdue",
     ]);
   });
@@ -158,4 +159,38 @@ describe("invoiceStatuses", () => {
     expect(invoiceStatuses).not.toContain("accepted");
     expect(invoiceStatuses).not.toContain("rejected");
   });
+});
+
+// ---------------------------------------------------------------------------
+// snapshotInvoiceVersion (AUTO-01)
+// RED stubs — @/actions/versions does not exist yet
+// ---------------------------------------------------------------------------
+
+describe("snapshotInvoiceVersion", () => {
+  it.todo(
+    "creates a version snapshot with correct JSONB shape — calls supabase.from('invoice_versions').insert with invoice_id, user_id, and snapshot fields"
+  );
+
+  it.todo(
+    "enforces rolling 10-cap by deleting oldest versions — when 11 versions exist, deletes the 11th row's id"
+  );
+
+  it.todo(
+    "does not delete when under 10 versions — when 5 versions exist, delete is NOT called"
+  );
+});
+
+// ---------------------------------------------------------------------------
+// restoreInvoiceVersionAction (AUTO-02)
+// RED stubs — @/actions/versions does not exist yet
+// ---------------------------------------------------------------------------
+
+describe("restoreInvoiceVersionAction", () => {
+  it.todo(
+    "applies snapshot fields to invoice and recomputes status — calls supabase.from('invoices').update() with snapshot fields and calls computeAndWriteInvoiceStatus"
+  );
+
+  it.todo(
+    "returns error when version not found — when supabase select returns null, ActionState has status: 'error'"
+  );
 });

@@ -8,7 +8,7 @@ function Card({
   return (
     <div
       className={cn(
-        "rounded-[1.6rem] border border-border bg-white/84 p-6 subtle-shadow",
+        "rounded-[var(--radius-card)] border border-border bg-white/84 p-[var(--space-card)] subtle-shadow",
         className,
       )}
       {...props}

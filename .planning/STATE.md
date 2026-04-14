@@ -2,65 +2,79 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-last_updated: "2026-04-08T02:30:02.372Z"
+status: executing
+last_updated: "2026-04-14T13:26:17.803Z"
+last_activity: 2026-04-14 -- Phase 06 execution started
 progress:
-  total_phases: 5
-  completed_phases: 3
-  total_plans: 14
-  completed_plans: 14
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 3
+  completed_plans: 0
 ---
 
 # STATE
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-05)
+See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Make it dead simple for a service business to send a polished branded quote or invoice and reliably know what has been paid, what is still due, and what profit remains.
-**Current focus:** Phase 04 — public-trust-surfaces
+**Current focus:** Phase 06 — csv-client-import
+
+## Current Position
+
+Phase: 06 (csv-client-import) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 06
+Last activity: 2026-04-14 -- Phase 06 execution started
+
+```
+Progress: [░░░░░░░░░░] 0/2 phases complete (v1.1)
+```
 
 ## Current Status
 
-- Project initialized
-- Research complete
-- Requirements defined
-- Roadmap created
-- Phase 1 context captured
-- Phase 1 UI-SPEC approved (all 6 dimensions passed)
-- Phase 1 Plan 01 complete (app shell, onboarding wizard, settings workspace, mobile nav)
-- Phase 1 Plan 02 complete (D-09 redirect wired, UX-01/SET-01/SET-02 verified)
-- Phase 1 Plan 03 complete (AUTH-03 E2E sign-out test, Vercel deployment human-verified) — Phase 1 DONE
-- Phase 2 context captured (9 decisions: share modal, direct PDF download, contextual status buttons, builder→detail redirect, direct conversion, source lock, simple client cards, billed+quoted totals)
-- Phase 2 Plan 00 complete (Wave 0 Zod schema test scaffolds: clients, quotations, invoices — 49 tests passing)
+- ✅ v1.0 MVP shipped 2026-04-14 — archived in .planning/milestones/
+- ✅ v1.1 roadmap created — Phases 6 and 7 defined
+- Phase 6 (CSV Client Import) ready to plan: CLNT-05
+- Phase 7 (Analytics Dashboard) ready to plan: DASH-05, DASH-06, DASH-07
+- Next: `/gsd:plan-phase 6`
 
-## Decisions
+## Key Decisions (carry-forward from v1.0)
 
-- **D-09 redirect**: `router.push("/app/invoices/new")` on `completeOnboardingAction` success; `setPendingStep("")` only in error branch so wizard unmounts naturally on success
-- **D-16 SUPERSEDED**: mobile nav uses horizontal scroll chips (`overflow-x-auto` + `shrink-0`), no bottom tab bar introduced
-- **Settings action names**: persistence is via `saveBusinessProfileAction`, `saveBrandingStepAction`, `saveDefaultsAction` (not `update*` prefix)
-- [Phase 01-foundation-onboarding]: Sign-out E2E uses createConfirmedUser+signIn to avoid onboarding wizard obscuring the sign-out button
-- [Phase 02-clients-document-engine]: documentLineItemSchema requires id field (z.string().min(1)) — test fixtures must include id
-- [Phase 02-clients-document-engine]: Wave 0 schema tests use pure Zod validation without server action mocking — import from @/lib/billing directly
-- [Phase 02-clients-document-engine]: D-04: builder status is read-only via hidden input, no dropdown exposed
-- [Phase 02-clients-document-engine]: D-06: conversion redirect goes to /edit for review, not detail page
-- [Phase 03-dashboard-cash-flow]: payments and expenses use CHECK constraint (not ENUM) — avoids ALTER TYPE migrations
-- [Phase 03-dashboard-cash-flow]: No UPDATE RLS on payments/expenses — rows are add/delete only
-- [Phase 03-dashboard-cash-flow]: computePaymentStatus injects today string — deterministic testing without mocking Date
-- [Phase 03-dashboard-cash-flow]: computeCollectionRate returns null (not 0) at totalBilled=0 — callers display '—' vs '0%'
-- [Phase 03-dashboard-cash-flow]: Expense actions do not call computeAndWriteInvoiceStatus — expenses affect profit only, not payment status
-- [Phase 03-dashboard-cash-flow]: computeAndWriteInvoiceStatus receives supabase client from caller — avoids double session
-- [Phase 03-dashboard-cash-flow]: Dashboard rebuilt as financial operator console: MetricCard grid replaces StatStrip, live billing metrics wired via getDashboardMetrics, DocumentSummaryRow extended with optional amount prop
-- [Phase 03-dashboard-cash-flow]: DocumentSummaryRow amount prop already added by parallel agent — no redundant edit needed in plan 03-03
-- [Phase 04-public-trust-surfaces]: PUB-05 (Accept/Reject from public page) folded in from v2 — natural fit with public quotation page build
-- [Phase 04-public-trust-surfaces]: Bilingual layout = side-by-side columns (EN left, AR right), full RTL flip for Arabic-only docs
-- [Phase 04-public-trust-surfaces]: Document routes switch from ID-based to slug-based with 301 redirect aliases
-- [Phase 04-public-trust-surfaces]: UX-03 visual pass covers ALL views (public + private), not just client-facing surfaces
+- **use-server rule**: Only async functions may be exported from `"use server"` files
+- **Admin client for new tables**: Cast to `any` until types are regenerated via `supabase gen types`
+- **UTC date arithmetic**: `T00:00:00Z` + `setUTCDate`/`setUTCMonth` for cron date math
+- **git push**: Must be user-initiated — always hangs in Claude's shell
+- **Supabase migration drift**: Resolve with `supabase migration repair` before `db push`
+- **Vitest module isolation**: Static imports + `vi.mock()` hoisting, not `await import()`
+- **`printf '%s'` for Vercel env vars**: `echo` adds trailing newline that breaks HTTP header validation
 
-## Session State
+## Key Decisions (v1.1 additions)
 
-- Stopped at: Phase 4 context gathered — 15 decisions captured across 4 areas (public pages, client portal, UAE compliance, canonical URLs)
-- Resume from: `/gsd:plan-phase 4` — research and plan Phase 4
-- Latest artifacts:
-  - `.planning/phases/04-public-trust-surfaces/04-CONTEXT.md`
-  - `.planning/phases/04-public-trust-surfaces/04-DISCUSSION-LOG.md`
+- **Next.js body size config first**: `proxyClientMaxBodySize` + `serverActions.bodySizeLimit` must be set in `next.config.ts` before any upload action is written — Next.js 15 silently truncates FormData over 1MB
+- **CSV parsed client-side**: PapaParse runs in `"use client"` components; Server Action receives only a clean validated array, never raw CSV bytes
+- **Batch insert, not row-by-row**: Single `supabase.insert([...rows])` call; slug dedup via one pre-fetch + accumulated running Set across the loop
+- **Cap at 200 rows**: Enforced before Server Action to stay well under Vercel Hobby 10-second limit
+- **Application-level duplicate detection**: Fetch existing emails, diff in memory, insert only new rows — avoid Supabase upsert which silently fails when RLS covers only one operation
+- **Chart components via `next/dynamic` with `ssr: false`**: Recharts uses ResizeObserver/DOM internally; prevents hydration mismatch and excludes ~150KB from initial bundle
+- **Month grouping by substring**: Use `issue_date.substring(0, 7)` for month grouping — never `new Date(issue_date)` which drifts by timezone
+- **`today` string threaded through analytics**: All date computations receive `today: string` as parameter; never call `new Date()` inside analytics helpers
+- **Aging uses `outstandingAmount`**: Use `DashboardInvoiceRow.outstandingAmount` (not invoice total) to correctly account for partial payments
+- **MoM delta returns null on zero prior**: When prior period value is zero, return null rather than 0% to avoid division-by-zero display errors
+- **recharts installed via shadcn**: `pnpm dlx shadcn@latest add chart` — not a direct recharts install; scaffolds `src/components/ui/chart.tsx` wired to existing HSL tokens
+
+## Performance Metrics
+
+- v1.0: 5 phases, 28 plans, 168 commits, ~22,900 LOC TypeScript, 9 days
+
+## Accumulated Context
+
+### Blockers
+
+None
+
+### Todos
+
+- [ ] `/gsd:plan-phase 6` — CSV Client Import
+- [ ] `/gsd:plan-phase 7` — Analytics Dashboard

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export default function NotesPage() {
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-[var(--space-section)]">
       <PageHeader
         title="Notes"
         description="Internal reminders, delivery notes, and client context."

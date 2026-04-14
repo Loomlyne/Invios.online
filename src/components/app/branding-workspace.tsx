@@ -228,7 +228,7 @@ export function BrandingWorkspace({
   const previewNode = <InvoicePreview preview={preview} />;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-2">
       <Card className="overflow-hidden p-0">
         <CardHeader className="border-b border-black/8 px-5 py-5 sm:px-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -239,7 +239,7 @@ export function BrandingWorkspace({
                 Customize your invoices and quotations.
               </CardDescription>
             </div>
-            <div className="xl:hidden">
+            <div className="lg:hidden">
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="secondary">Preview</Button>
@@ -638,7 +638,7 @@ export function BrandingWorkspace({
       </Card>
 
       {/* ── Live Preview ─────────────────────────────────── */}
-      <div className="hidden xl:block">
+      <div className="hidden lg:block">
         <div className="sticky top-[7rem]">
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">
             Live Preview

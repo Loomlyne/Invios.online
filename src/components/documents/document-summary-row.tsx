@@ -20,7 +20,7 @@ export function DocumentSummaryRow({
   return (
     <Link
       href={href as Route}
-      className="rounded-[1rem] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
+      className="rounded-[1rem] border border-black/7 bg-surface px-4 py-4 transition hover:border-border-brand hover:bg-surface-subtle"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">

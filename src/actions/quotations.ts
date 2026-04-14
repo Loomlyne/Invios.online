@@ -153,7 +153,7 @@ export async function createQuotationAction(
         accepted_date: acceptedDate,
         rejected_date: rejectedDate,
       })
-      .select("id")
+      .select("id,slug")
       .single();
 
     if (error) {
@@ -164,7 +164,7 @@ export async function createQuotationAction(
     revalidatePath("/app");
     return {
       status: "success",
-      redirectTo: `/app/quotations/${data.id}` as Route,
+      redirectTo: `/app/quotations/${data.slug}` as Route,
     };
   } catch (error) {
     return {
@@ -242,7 +242,7 @@ export async function updateQuotationAction(
       })
       .eq("id", parsed.data.id)
       .eq("user_id", userId)
-      .select("id")
+      .select("id,slug")
       .single();
 
     if (error) {
@@ -250,10 +250,10 @@ export async function updateQuotationAction(
     }
 
     revalidatePath("/app/quotations");
-    revalidatePath(`/app/quotations/${data.id}`);
+    revalidatePath(`/app/quotations/${data.slug}`);
     return {
       status: "success",
-      redirectTo: `/app/quotations/${data.id}` as Route,
+      redirectTo: `/app/quotations/${data.slug}` as Route,
     };
   } catch (error) {
     return {
@@ -280,18 +280,22 @@ export async function setQuotationStatusAction(id: string, status: QuotationStat
     update.accepted_date = null;
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("quotations")
     .update(update)
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("slug")
+    .single();
 
   if (error) {
     throw new Error(error.message);
   }
 
   revalidatePath("/app/quotations");
-  revalidatePath(`/app/quotations/${id}`);
+  if (data?.slug) {
+    revalidatePath(`/app/quotations/${data.slug}`);
+  }
 }
 
 export async function convertQuotationToInvoiceAction(quotationId: string) {
@@ -389,7 +393,7 @@ export async function convertQuotationToInvoiceAction(quotationId: string) {
       trn: invoiceInput.trn || null,
       share_token: createShareToken(),
     })
-    .select("id")
+    .select("id,slug")
     .single();
 
   if (invoiceError) {
@@ -411,9 +415,8 @@ export async function convertQuotationToInvoiceAction(quotationId: string) {
   }
 
   revalidatePath("/app/quotations");
-  revalidatePath(`/app/quotations/${quotationId}`);
   revalidatePath("/app/invoices");
-  redirect(`/app/invoices/${invoiceData.id}/edit` as Route);
+  redirect(`/app/invoices/${invoiceData.slug}/edit` as Route);
 }
 
 export async function deleteQuotationAction(id: string): Promise<ActionState> {

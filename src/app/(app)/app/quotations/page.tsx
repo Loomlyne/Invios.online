@@ -32,7 +32,7 @@ export default async function QuotationsPage({
   const sentCount = quotations.filter((q) => q.status === "sent").length;
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-[var(--space-section)]">
       <PageHeader
         title="Quotations"
         description="Scope work, share quotations, and convert accepted ones into invoices."

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { env, isSupabaseConfigured } from "@/lib/env";
+import { createClient } from "@supabase/supabase-js";
+import { env, isSupabaseConfigured, isSupabaseAdminConfigured } from "@/lib/env";
 
 export async function createSupabaseServerClient() {
   if (!isSupabaseConfigured()) {
@@ -24,5 +25,15 @@ export async function createSupabaseServerClient() {
         }
       },
     },
+  });
+}
+
+export function createSupabaseAdminClient() {
+  if (!isSupabaseAdminConfigured()) {
+    return null;
+  }
+
+  return createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 }

@@ -11,6 +11,11 @@
   --accent: #ca8a04;
   --accent-strong: #8f6510;
   --accent-soft: rgba(202, 138, 4, 0.12);
+  --accent-glow: rgba(202, 138, 4, 0.24);
+  --bg-light: #fdfbf8;
+  --bg-dark: #f2ede4;
+  --surface-subtle: #fdf9f4;
+  --border-brand: #d7c4a7;
   --success: #24583a;
   --danger: #8d3d2e;
   --on-dark: #fff9f0;
@@ -19,6 +24,13 @@
   --radius-lg: 1.75rem;
   --radius-md: 1.1rem;
   --radius-sm: 0.85rem;
+
+  /* Fluid tokens — scale linearly between 320px and 1280px */
+  --space-section: clamp(1rem, 0.5rem + 1.25vw, 1.5rem);
+  --space-card: clamp(1rem, 0.625rem + 0.9375vw, 1.5rem);
+  --space-grid: clamp(0.75rem, 0.5rem + 0.625vw, 1rem);
+  --radius-card: clamp(1rem, 0.6rem + 1vw, 1.6rem);
+  --radius-inner: clamp(0.75rem, 0.45rem + 0.75vw, 1.1rem);
 }
 
 @theme inline {
@@ -32,6 +44,8 @@
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-border-brand: var(--border-brand);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-on-dark: var(--on-dark);
@@ -46,20 +60,23 @@
 html,
 body {
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
   font-family: var(--font-sans), sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(202, 138, 4, 0.16), transparent 28%),
+    radial-gradient(circle at top left, var(--accent-soft), transparent 28%),
     radial-gradient(circle at top right, rgba(28, 25, 23, 0.1), transparent 22%),
-    linear-gradient(180deg, #fdfbf8 0%, #f8f4ee 48%, #f4eee3 100%);
+    linear-gradient(180deg, var(--bg-light) 0%, var(--background) 48%, var(--bg-dark) 100%);
   color: var(--foreground);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 button,
@@ -73,7 +90,7 @@ img {
 }
 
 ::selection {
-  background: rgba(202, 138, 4, 0.18);
+  background: var(--accent-soft);
 }
 
 .bg-grid {
@@ -176,7 +193,7 @@ img {
 @media (max-width: 768px) {
   body {
     background:
-      radial-gradient(circle at top center, rgba(202, 138, 4, 0.14), transparent 24%),
-      linear-gradient(180deg, #fdfbf8 0%, #f4eee3 100%);
+      radial-gradient(circle at top center, var(--accent-soft), transparent 24%),
+      linear-gradient(180deg, var(--bg-light) 0%, var(--bg-dark) 100%);
   }
 }

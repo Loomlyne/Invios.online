@@ -13,6 +13,7 @@ import type {
   QuotationStatus,
 } from "@/lib/billing";
 import { computePaymentStatus } from "@/lib/billing-utils";
+import type { RecurringFrequency } from "@/lib/cron-utils";
 import {
   buildDashboardInsights,
   buildDashboardInvoiceRows,
@@ -264,10 +265,15 @@ export async function listClients({
     .from("clients")
     .select("*")
     .is("archived_at", null)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(200);
 
   if (status && status !== "all") {
     query = query.eq("status", status);
+  }
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,company.ilike.%${search}%,email.ilike.%${search}%`);
   }
 
   const { data, error } = await query.returns<ClientRow[]>();
@@ -276,16 +282,7 @@ export async function listClients({
     throw new Error(error.message);
   }
 
-  const mapped = (data ?? []).map(mapClient);
-
-  if (!search) {
-    return mapped;
-  }
-
-  const term = search.toLowerCase();
-  return mapped.filter((client) =>
-    [client.name, client.company, client.email].some((value) => value.toLowerCase().includes(term)),
-  );
+  return (data ?? []).map(mapClient);
 }
 
 export async function getClientBySlug(slug: string) {
@@ -325,7 +322,8 @@ export async function listInvoices({
   let query = supabase
     .from("invoices")
     .select(invoiceSelect)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(200);
 
   if (status === "open") {
     query = query.in("status", ["sent", "partial_paid", "overdue"]);
@@ -413,7 +411,8 @@ export async function listQuotations({
   let query = supabase
     .from("quotations")
     .select(quotationSelect)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(200);
 
   if (status && status !== "all") {
     query = query.eq("status", status);
@@ -840,3 +839,211 @@ export async function listOverdueInvoices(userId: string): Promise<InvoiceRecord
   if (error) return [];
   return (data ?? []).map(mapInvoice);
 }
+
+// ---------------------------------------------------------------------------
+// Phase 4: Public Trust Surfaces
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve a client from a portal token (public, no session required).
+ * Blocks archived clients via .is("archived_at", null). (D-07)
+ */
+export async function getClientByPortalToken(portalToken: string): Promise<ClientRecord | null> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("portal_token", portalToken)
+    .is("archived_at", null)
+    .maybeSingle<ClientRow>();
+
+  if (error) throw new Error(error.message);
+  return data ? mapClient(data) : null;
+}
+
+/**
+ * Look up an invoice by its slug (authenticated route, RLS-scoped).
+ */
+export async function getInvoiceBySlug(slug: string): Promise<InvoiceRecord | null> {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("invoices")
+    .select(invoiceSelect)
+    .eq("slug", slug)
+    .maybeSingle<InvoiceRow>();
+
+  if (error) throw new Error(error.message);
+  return data ? mapInvoice(data) : null;
+}
+
+/**
+ * Look up a quotation by its slug (authenticated route, RLS-scoped).
+ */
+export async function getQuotationBySlug(slug: string): Promise<QuotationRecord | null> {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("quotations")
+    .select(quotationSelect)
+    .eq("slug", slug)
+    .maybeSingle<QuotationRow>();
+
+  if (error) throw new Error(error.message);
+  return data ? mapQuotation(data) : null;
+}
+
+/**
+ * Resolve an old slug to the current slug via the alias table.
+ * Returns the current document slug or null if no alias found. (D-13)
+ * Uses admin client so this works on both public and authenticated contexts.
+ */
+export async function getSlugAliasRedirect(
+  slug: string,
+  kind: "invoice" | "quotation",
+): Promise<string | null> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return null;
+
+  // Query alias by old_slug. The index on (kind, old_slug) makes this efficient
+  // in production; kind is used as a discriminator via eq chaining on the result.
+  const { data: alias, error: aliasError } = await supabase
+    .from("document_slug_aliases")
+    .select("document_id")
+    .eq("old_slug", slug)
+    .maybeSingle();
+
+  if (aliasError || !alias) return null;
+
+  const table = kind === "invoice" ? "invoices" : "quotations";
+  const { data: doc, error: docError } = await supabase
+    .from(table)
+    .select("slug")
+    .eq("id", (alias as { document_id: string }).document_id)
+    .single();
+
+  if (docError || !doc) return null;
+  return (doc as { slug: string }).slug;
+}
+
+/**
+ * List invoices for a client on the public portal (no session required).
+ */
+export async function listInvoicesForClientPublic(
+  clientId: string,
+  userId: string,
+): Promise<InvoiceRecord[]> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("invoices")
+    .select(invoiceSelect)
+    .eq("client_id", clientId)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .returns<InvoiceRow[]>();
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(mapInvoice);
+}
+
+/**
+ * List quotations for a client on the public portal (no session required).
+ */
+export async function listQuotationsForClientPublic(
+  clientId: string,
+  userId: string,
+): Promise<QuotationRecord[]> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("quotations")
+    .select(quotationSelect)
+    .eq("client_id", clientId)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .returns<QuotationRow[]>();
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(mapQuotation);
+}
+
+// ---------------------------------------------------------------------------
+// Phase 5: Version History
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Phase 5: Recurring Schedules
+// ---------------------------------------------------------------------------
+
+/**
+ * Get the active recurring schedule for a given invoice, if one exists.
+ * Returns null if no active schedule exists.
+ */
+export async function getRecurringSchedule(invoiceId: string) {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from("recurring_schedules")
+    .select("id, frequency, next_due_date, is_active, created_at")
+    .eq("source_invoice_id", invoiceId)
+    .eq("user_id", user.id)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id as string,
+    frequency: data.frequency as RecurringFrequency,
+    nextDueDate: data.next_due_date as string,
+    isActive: data.is_active as boolean,
+    createdAt: data.created_at as string,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Phase 5: Version History
+// ---------------------------------------------------------------------------
+
+/**
+ * List all version snapshots for an invoice, ordered by created_at desc.
+ * Used by VersionHistoryPanel on the invoice detail page.
+ */
+export const listInvoiceVersions = cache(async (invoiceId: string) => {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return [];
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("invoice_versions")
+    .select("id, snapshot, created_at")
+    .eq("invoice_id", invoiceId)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (error) return [];
+
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    snapshot: row.snapshot as Record<string, unknown>,
+    createdAt: row.created_at as string,
+  }));
+});

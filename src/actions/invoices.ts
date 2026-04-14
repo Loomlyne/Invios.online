@@ -13,6 +13,9 @@ import {
 } from "@/lib/billing-utils";
 import { requireSession } from "@/lib/require-session";
 import type { ActionState } from "@/lib/types";
+import { snapshotInvoiceVersion } from "@/actions/versions";
+import { type InvoiceSnapshot } from "@/lib/billing";
+import { createRecurringScheduleAction } from "@/actions/recurring";
 
 function parseInvoicePayload(formData: FormData) {
   const lineItemsResult = z.array(documentLineItemSchema).safeParse(
@@ -143,18 +146,34 @@ export async function createInvoiceAction(
         trn: parsed.data.trn || null,
         share_token: shareToken,
       })
-      .select("id")
+      .select("id,slug")
       .single();
 
     if (error) {
       throw new Error(error.message);
     }
 
+    // AUTO-03: Create recurring schedule if requested
+    const recurringFrequency = formData.get("recurringFrequency") as string | null;
+    const recurringNextDate = formData.get("recurringNextDate") as string | null;
+    if (
+      recurringFrequency &&
+      recurringNextDate &&
+      ["weekly", "monthly", "quarterly"].includes(recurringFrequency)
+    ) {
+      // Fire and forget — don't fail the invoice creation if schedule creation fails
+      await createRecurringScheduleAction({
+        sourceInvoiceId: data.id as string,
+        frequency: recurringFrequency as "weekly" | "monthly" | "quarterly",
+        nextDueDate: recurringNextDate,
+      }).catch(() => {});
+    }
+
     revalidatePath("/app/invoices");
     revalidatePath("/app");
     return {
       status: "success",
-      redirectTo: `/app/invoices/${data.id}` as Route,
+      redirectTo: `/app/invoices/${data.slug}` as Route,
     };
   } catch (error) {
     return {
@@ -220,18 +239,49 @@ export async function updateInvoiceAction(
       })
       .eq("id", parsed.data.id)
       .eq("user_id", userId)
-      .select("id")
+      .select("id,slug")
       .single();
 
     if (error) {
       throw new Error(error.message);
     }
 
+    // AUTO-01: Snapshot version after successful save (per D-01)
+    // Fetch client name for denormalized snapshot display
+    const { data: clientRow } = await supabase
+      .from("clients")
+      .select("name")
+      .eq("id", parsed.data.clientId)
+      .single();
+
+    const snapshot: InvoiceSnapshot = {
+      invoice_number: existingInvoice.invoice_number,
+      client_id: parsed.data.clientId,
+      client_name: clientRow?.name ?? "Unknown",
+      issue_date: parsed.data.issueDate,
+      due_date: parsed.data.dueDate,
+      currency: parsed.data.currency,
+      tax_rate: parsed.data.taxRate,
+      discount: parsed.data.discount,
+      subtotal: totals.subtotal,
+      discount_amount: totals.discountAmount,
+      tax_amount: totals.taxAmount,
+      total: totals.total,
+      line_items: parsed.data.lineItems,
+      notes: parsed.data.notes || "",
+      terms: parsed.data.terms || "",
+      language: parsed.data.language,
+      trn: parsed.data.trn || "",
+      invoice_type: parsed.data.invoiceType,
+    };
+
+    await snapshotInvoiceVersion(supabase, data.id, userId, snapshot);
+
     revalidatePath("/app/invoices");
-    revalidatePath(`/app/invoices/${data.id}`);
+    revalidatePath(`/app/invoices/${data.slug}`);
     return {
       status: "success",
-      redirectTo: `/app/invoices/${data.id}` as Route,
+      redirectTo: `/app/invoices/${data.slug}` as Route,
     };
   } catch (error) {
     return {
@@ -243,18 +293,22 @@ export async function updateInvoiceAction(
 
 export async function setInvoiceStatusAction(id: string, status: InvoiceStatus) {
   const { supabase, user } = await requireSession();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("invoices")
     .update({ status })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("slug")
+    .single();
 
   if (error) {
     throw new Error(error.message);
   }
 
   revalidatePath("/app/invoices");
-  revalidatePath(`/app/invoices/${id}`);
+  if (data?.slug) {
+    revalidatePath(`/app/invoices/${data.slug}`);
+  }
 }
 
 export async function deleteInvoiceAction(id: string): Promise<ActionState> {

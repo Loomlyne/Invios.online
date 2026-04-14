@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect, useCallback } from "react";
+import { useState, useTransition, useRef, useEffect, useCallback, useMemo } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { ChevronDown, Loader2, Plus, Search, Trash2, UserPlus } from "lucide-react";
 import type { Route } from "next";
@@ -16,6 +16,7 @@ import {
 import { quickCreateClientAction } from "@/actions/clients";
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
+import { RecurringConfigForm } from "@/components/documents/recurring-config-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   ClientRecord,
@@ -32,6 +34,7 @@ import type {
   InvoiceFormInput,
 } from "@/lib/billing";
 import { createLineItem } from "@/lib/billing-utils";
+import type { RecurringFrequency } from "@/lib/cron-utils";
 import { buildInvoicePreviewData } from "@/lib/preview";
 import type { ActionState, AppContext } from "@/lib/types";
 
@@ -95,35 +98,54 @@ export function DocumentBuilder({
     initialValue?.lineItems?.length ? initialValue.lineItems : [createLineItem({ description: "" })],
   );
   const [localClients, setLocalClients] = useState(clients);
-
-  const selectedClient = localClients.find((client) => client.id === clientId) ?? localClients[0];
-
-  const preview = buildInvoicePreviewData(context.userState, {
-    kind,
-    title: kind === "invoice" ? "Invoice" : "Quotation",
-    invoiceNumber: numberValue,
-    numberLabel: kind === "invoice" ? "Invoice no." : "Quotation no.",
-    statusLabel: formatStatus(initialValue?.status ?? "draft"),
-    issueDate: primaryDate,
-    dueDate: secondaryDate,
-    issueDateLabel: kind === "invoice" ? "Issue date" : "Quotation date",
-    dueDateLabel: kind === "invoice" ? "Due date" : "Expiry date",
-    currency,
-    language,
-    taxRate: Number(taxRate),
-    discount: Number(discount),
-    terms,
-    notes,
-    trn,
-    recipientName: selectedClient?.name ?? "Client",
-    recipientCompany: selectedClient?.company ?? "",
-    recipientEmail: selectedClient?.email ?? "",
-    recipientPhone: selectedClient?.phone ?? "",
-    recipientAddress: selectedClient?.address ?? "",
-    lineItems,
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringFrequency, setRecurringFrequency] = useState<RecurringFrequency>("monthly");
+  const [recurringNextDate, setRecurringNextDate] = useState<string>(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    return d.toISOString().split("T")[0];
   });
 
-  const previewNode = <InvoicePreview preview={preview} mode="page" />;
+  const selectedClient = useMemo(
+    () => localClients.find((client) => client.id === clientId) ?? localClients[0],
+    [localClients, clientId],
+  );
+
+  const preview = useMemo(
+    () => buildInvoicePreviewData(context.userState, {
+      kind,
+      title: kind === "invoice" ? "Invoice" : "Quotation",
+      invoiceNumber: numberValue,
+      numberLabel: kind === "invoice" ? "Invoice no." : "Quotation no.",
+      statusLabel: formatStatus(initialValue?.status ?? "draft"),
+      issueDate: primaryDate,
+      dueDate: secondaryDate,
+      issueDateLabel: kind === "invoice" ? "Issue date" : "Quotation date",
+      dueDateLabel: kind === "invoice" ? "Due date" : "Expiry date",
+      currency,
+      language,
+      taxRate: Number(taxRate),
+      discount: Number(discount),
+      terms,
+      notes,
+      trn,
+      recipientName: selectedClient?.name ?? "Client",
+      recipientCompany: selectedClient?.company ?? "",
+      recipientEmail: selectedClient?.email ?? "",
+      recipientPhone: selectedClient?.phone ?? "",
+      recipientAddress: selectedClient?.address ?? "",
+      lineItems,
+      logoUrl: context.previewData.logoUrl,
+      signatureUrl: context.previewData.signatureUrl,
+    }),
+    [
+      kind, numberValue, primaryDate, secondaryDate, currency, language,
+      taxRate, discount, terms, notes, trn, selectedClient, lineItems,
+      context.userState, context.previewData.logoUrl, context.previewData.signatureUrl,
+    ],
+  );
+
+  const previewNode = useMemo(() => <InvoicePreview preview={preview} mode="page" />, [preview]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -147,7 +169,7 @@ export function DocumentBuilder({
   };
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+    <div className="grid gap-[var(--space-section)] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <Card className="p-0">
         <CardHeader className="border-b border-black/8 px-5 py-4 sm:px-6">
           <div className="flex items-center justify-between gap-4">
@@ -155,7 +177,7 @@ export function DocumentBuilder({
               <Badge variant="accent">{kind === "invoice" ? "Invoice builder" : "Quotation builder"}</Badge>
               <DocumentStatusBadge status={initialValue?.status ?? "draft"} />
             </div>
-            <div className="xl:hidden">
+            <div className="lg:hidden">
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="secondary" size="sm">Preview</Button>
@@ -272,8 +294,8 @@ export function DocumentBuilder({
               <div className="grid gap-3">
                 {lineItems.map((item, index) => (
                   <Card key={item.id} className="border border-black/7 bg-[#FFF8EE] p-4 shadow-none">
-                    <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
-                      <Field label="Description" htmlFor={`description-${item.id}`}>
+                    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
+                      <Field label="Title" htmlFor={`description-${item.id}`}>
                         <Input
                           id={`description-${item.id}`}
                           value={item.description}
@@ -353,6 +375,57 @@ export function DocumentBuilder({
                         />
                       </Field>
                     </div>
+                    {kind === "quotation" && (
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <Field label="Duration" htmlFor={`durationValue-${item.id}`}>
+                          <Input
+                            id={`durationValue-${item.id}`}
+                            type="number"
+                            min={1}
+                            step={1}
+                            placeholder="e.g. 3"
+                            value={item.durationValue ?? ""}
+                            onChange={(event) =>
+                              setLineItems((current) =>
+                                current.map((line) =>
+                                  line.id === item.id
+                                    ? {
+                                        ...line,
+                                        durationValue:
+                                          event.target.value === ""
+                                            ? undefined
+                                            : Number(event.target.value),
+                                      }
+                                    : line,
+                                ),
+                              )
+                            }
+                          />
+                        </Field>
+                        <Field label="Unit" htmlFor={`durationUnit-${item.id}`}>
+                          <Select
+                            id={`durationUnit-${item.id}`}
+                            value={item.durationUnit ?? ""}
+                            placeholder="Unit"
+                            onChange={(v) =>
+                              setLineItems((current) =>
+                                current.map((line) =>
+                                  line.id === item.id
+                                    ? { ...line, durationUnit: v as DocumentLineItem["durationUnit"] }
+                                    : line,
+                                ),
+                              )
+                            }
+                            options={[
+                              { value: "hours", label: "Hours" },
+                              { value: "days", label: "Days" },
+                              { value: "weeks", label: "Weeks" },
+                              { value: "months", label: "Months" },
+                            ]}
+                          />
+                        </Field>
+                      </div>
+                    )}
                   </Card>
                 ))}
               </div>
@@ -403,9 +476,35 @@ export function DocumentBuilder({
               </Field>
             </section>
 
+            {/* Recurring billing (invoices only) */}
+            {kind === "invoice" && (
+              <section className="grid gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="recurring-toggle" className="text-sm">
+                    Repeat this invoice
+                  </Label>
+                  <Switch
+                    id="recurring-toggle"
+                    checked={isRecurring}
+                    onCheckedChange={setIsRecurring}
+                  />
+                </div>
+                {isRecurring && (
+                  <RecurringConfigForm
+                    mode="inline"
+                    issueDate={primaryDate}
+                    selectedFrequency={recurringFrequency}
+                    selectedDate={recurringNextDate}
+                    onFrequencyChange={setRecurringFrequency}
+                    onDateChange={setRecurringNextDate}
+                  />
+                )}
+              </section>
+            )}
+
             {state.message ? (
               <div
-                className={`rounded-[1rem] border px-4 py-3 text-sm ${
+                className={`rounded-[var(--radius-inner)] border px-4 py-3 text-sm ${
                   state.status === "error"
                     ? "border-[#E7B1A8] bg-[#FFF3F1] text-[#8D3D2E]"
                     : "border-emerald-900/10 bg-emerald-50 text-success"
@@ -423,7 +522,7 @@ export function DocumentBuilder({
         </CardContent>
       </Card>
 
-      <div className="hidden xl:block">
+      <div className="hidden lg:block">
         <div className="sticky top-[7rem]">{previewNode}</div>
       </div>
     </div>
@@ -449,11 +548,14 @@ function ClientSelector({
   const containerRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const selected = clients.find((c) => c.id === value);
-  const filtered = clients.filter((c) => {
+  const selected = useMemo(() => clients.find((c) => c.id === value), [clients, value]);
+  const filtered = useMemo(() => {
+    if (!search) return clients;
     const q = search.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q);
-  });
+    return clients.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q),
+    );
+  }, [clients, search]);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -492,7 +594,7 @@ function ClientSelector({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex h-12 w-full items-center justify-between rounded-[1rem] border border-border bg-white px-4 text-left text-sm transition hover:border-[#CAB9A2]"
+        className="flex h-12 w-full items-center justify-between rounded-[var(--radius-inner)] border border-border bg-white px-4 text-left text-sm transition hover:border-[#CAB9A2]"
       >
         <span className="flex items-center gap-2 truncate">
           <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#FFF1D6] text-xs font-semibold text-[#92700C]">
@@ -509,7 +611,7 @@ function ClientSelector({
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-full rounded-[1rem] border border-border bg-white shadow-[0_16px_48px_rgba(19,15,11,0.12)]">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-full rounded-[var(--radius-inner)] border border-border bg-white shadow-[0_16px_48px_rgba(19,15,11,0.12)]">
           <div className="border-b border-black/6 p-2">
             <div className="flex items-center gap-2 rounded-[0.6rem] bg-[#FAFAF8] px-3">
               <Search className="size-3.5 shrink-0 text-muted" />
@@ -597,7 +699,7 @@ function ClientSelector({
             </div>
             <input type="hidden" name="status" value="active" />
             {createError ? (
-              <div className="rounded-[1rem] border border-[#E7B1A8] bg-[#FFF3F1] px-4 py-3 text-sm text-[#8D3D2E]">
+              <div className="rounded-[var(--radius-inner)] border border-[#E7B1A8] bg-[#FFF3F1] px-4 py-3 text-sm text-[#8D3D2E]">
                 {createError}
               </div>
             ) : null}

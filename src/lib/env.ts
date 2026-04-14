@@ -3,6 +3,9 @@ export const env = {
   supabasePublishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  emailFrom: process.env.EMAIL_FROM ?? "Invios <onboarding@resend.dev>",
+  cronSecret: process.env.CRON_SECRET ?? "",
 };
 
 export function isSupabaseConfigured() {
@@ -11,4 +14,12 @@ export function isSupabaseConfigured() {
 
 export function isSupabaseAdminConfigured() {
   return Boolean(env.supabaseUrl && env.supabaseServiceRoleKey);
+}
+
+export function isEmailConfigured() {
+  return Boolean(env.resendApiKey);
+}
+
+export function isCronAuthenticated(authHeader: string | null): boolean {
+  return Boolean(env.cronSecret && authHeader === `Bearer ${env.cronSecret}`);
 }

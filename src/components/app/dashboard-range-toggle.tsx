@@ -37,10 +37,10 @@ export function DashboardRangeToggle({
           onClick={() => navigate(range)}
           aria-pressed={range === currentRange}
           className={cn(
-            "min-h-11 rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CA8A04]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFCF7]",
+            "min-h-11 rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2",
             range === currentRange
-              ? "border-[#D7C4A7] bg-[#FFF4E3] text-foreground"
-              : "border-border bg-white/80 text-muted-strong hover:border-[#D7C4A7] hover:bg-[#FFF8ED]",
+              ? "border-border-brand bg-surface-subtle text-foreground"
+              : "border-border bg-white/80 text-muted-strong hover:border-border-brand hover:bg-surface-subtle",
           )}
         >
           {rangeLabels[range]}

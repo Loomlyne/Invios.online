@@ -93,6 +93,11 @@ export function buildInvoicePreviewData(
     terms: userState.settings.defaultTerms || defaultSettings.defaultTerms,
     notes: userState.settings.defaultNotes || defaultSettings.defaultNotes,
     lineItems: sampleLineItems,
+    headingFont: userState.branding.headingFont || defaultBranding.headingFont,
+    bodyFont: userState.branding.bodyFont || defaultBranding.bodyFont,
+    spacing: userState.branding.spacing || defaultBranding.spacing,
+    headerLayout: userState.branding.headerLayout || defaultBranding.headerLayout,
+    lineItemsStyle: userState.branding.lineItemsStyle || defaultBranding.lineItemsStyle,
   };
 
   return { ...base, ...overrides };

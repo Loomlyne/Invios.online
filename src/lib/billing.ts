@@ -35,6 +35,8 @@ export const documentLineItemSchema = z.object({
   quantity: z.coerce.number().positive("Quantity must be greater than zero."),
   unitPrice: z.coerce.number().min(0, "Unit price cannot be negative."),
   total: z.coerce.number().min(0, "Line item total cannot be negative."),
+  durationValue: z.coerce.number().positive().optional(),
+  durationUnit: z.enum(["hours", "days", "weeks", "months"]).optional(),
 });
 
 export const clientFormSchema = z.object({
@@ -194,7 +196,7 @@ export const paymentFormSchema = z.object({
   datePaid: z.string().min(1, "Enter a date."),
   amount: z.coerce.number().positive("Enter a valid amount."),
   method: z.enum(paymentMethods).default("other"),
-  description: z.string().max(160, "Keep the description under 160 characters.").default(""),
+  description: z.string().max(160, "Keep the description under 160 characters.").trim().default(""),
 });
 
 export const expenseFormSchema = z.object({
@@ -207,6 +209,33 @@ export const expenseFormSchema = z.object({
 
 export type PaymentFormInput = z.infer<typeof paymentFormSchema>;
 export type ExpenseFormInput = z.infer<typeof expenseFormSchema>;
+
+// --- Phase 5: Automation & Recovery ---
+
+/** Max version snapshots kept per invoice. Rolling cap enforced in snapshotInvoiceVersion. */
+export const MAX_VERSIONS = 10;
+
+/** Snapshot shape stored in invoice_versions.snapshot JSONB. */
+export interface InvoiceSnapshot {
+  invoice_number: string;
+  client_id: string;
+  client_name: string;
+  issue_date: string;
+  due_date: string;
+  currency: string;
+  tax_rate: number;
+  discount: number;
+  subtotal: number;
+  discount_amount: number;
+  tax_amount: number;
+  total: number;
+  line_items: unknown[];
+  notes: string;
+  terms: string;
+  language: string;
+  trn: string;
+  invoice_type: string;
+}
 
 export interface PaymentRecord {
   id: string;

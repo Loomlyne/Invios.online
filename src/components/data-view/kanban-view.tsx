@@ -62,7 +62,7 @@ export function KanbanView<TItem, TStatus extends string>({
 
     for (const col of cols) observer.observe(col);
     return () => observer.disconnect();
-  }, [items.length, config.kanbanColumns.length]);
+  }, [items, config.kanbanColumns]);
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -171,7 +171,7 @@ export function KanbanView<TItem, TStatus extends string>({
                         <DraggableCard key={config.getId(item)} id={config.getId(item)}>
                           <Link
                             href={config.getHref(item) as Route}
-                            className="block cursor-pointer rounded-[1rem] border border-black/7 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:border-[#D7C4A7] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                            className="block cursor-pointer rounded-[1rem] border border-black/7 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:border-border-brand hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                             onClick={(e) => {
                               if (activeItem) e.preventDefault();
                             }}

@@ -62,13 +62,13 @@ export function PaymentsTable({
       <h3 className="text-xs uppercase tracking-[0.24em] text-muted font-medium mb-2">
         Payments
       </h3>
-      <div className="rounded-[1rem] border border-border bg-surface overflow-visible">
+      <div className="rounded-[var(--radius-inner)] border border-border bg-surface overflow-visible">
         {/* Header row */}
-        <div className="px-4 py-2 bg-surface-strong border-b border-border hidden md:flex items-center gap-3 rounded-t-[1rem]">
+        <div className="px-4 py-2 bg-surface-strong border-b border-border hidden md:flex items-center gap-3 rounded-t-[var(--radius-inner)]">
           <span className="text-xs text-muted uppercase tracking-[0.18em] w-24 shrink-0">
             Date paid
           </span>
-          <span className="text-xs text-muted uppercase tracking-[0.18em] w-[100px] text-right">
+          <span className="text-xs text-muted uppercase tracking-[0.18em] w-24 shrink-0 text-right">
             Amount
           </span>
           <span className="text-xs text-muted uppercase tracking-[0.18em] flex-1">
@@ -119,7 +119,7 @@ export function PaymentsTable({
             {/* Desktop table row */}
             <div className="hidden items-center gap-3 px-4 py-3 md:flex">
               <span className="w-24 shrink-0 text-sm text-muted">{p.datePaid}</span>
-              <span className="w-[100px] text-right text-sm font-semibold text-foreground">
+              <span className="w-24 text-right text-sm font-semibold text-foreground">
                 {formatCurrency(p.amount, currency)}
               </span>
               <div className="flex-1">
@@ -149,10 +149,10 @@ export function PaymentsTable({
         <form
           ref={formRef}
           action={formAction}
-          className="flex flex-wrap items-end gap-3 rounded-b-[1rem] border-t border-dashed border-border/60 bg-[#FFFCF7] px-4 py-3"
+          className="flex flex-wrap items-end gap-3 rounded-b-[var(--radius-inner)] border-t border-dashed border-border/60 bg-[#FFFCF7] px-4 py-3"
         >
           <input type="hidden" name="invoiceId" value={invoiceId} />
-          <div className="w-[120px] shrink-0">
+          <div className="w-28 shrink-0">
             <DatePicker
               value={datePaid}
               onChange={setDatePaid}
@@ -166,7 +166,7 @@ export function PaymentsTable({
             step="0.01"
             min="0.01"
             placeholder="0.00"
-            className="h-9 w-[100px]"
+            className="h-9 w-24"
             required
           />
           <Select
@@ -175,7 +175,7 @@ export function PaymentsTable({
             onChange={(value) => setMethod(value as PaymentMethod)}
             options={paymentMethodOptions}
             placeholder="Select method"
-            className="h-9 flex-1 min-w-[120px]"
+            className="h-9 flex-1 min-w-28"
           />
           <Input
             name="description"

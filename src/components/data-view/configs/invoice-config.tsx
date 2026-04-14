@@ -6,7 +6,7 @@ import type { DataViewConfig } from "../types";
 
 export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
   getId: (inv) => inv.id,
-  getHref: (inv) => `/app/invoices/${inv.id}`,
+  getHref: (inv) => `/app/invoices/${inv.slug}`,
   getStatus: (inv) => inv.status,
 
   statusOptions: [
