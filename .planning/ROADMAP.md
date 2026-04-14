@@ -41,7 +41,7 @@ See archive: `.planning/milestones/v1.0-ROADMAP.md`
 
 Plans:
 - [x] 06-01-PLAN.md — Config, types, schema, helpers, and importClientsAction server action
-- [ ] 06-02-PLAN.md — Unit tests and wizard shell with Upload + Map steps
+- [x] 06-02-PLAN.md — Unit tests and wizard shell with Upload + Map steps
 - [ ] 06-03-PLAN.md — Preview + Result steps, page wiring, and end-to-end verification
 
 **UI hint**: yes
@@ -67,5 +67,5 @@ Plans:
 | 3. Dashboard & Cash Flow | v1.0 | 5/5 | ✅ Complete | 2026-04-10 |
 | 4. Public Trust Surfaces | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 5. Automation & Recovery | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
-| 6. CSV Client Import | v1.1 | 1/3 | In Progress|  |
+| 6. CSV Client Import | v1.1 | 2/3 | In Progress|  |
 | 7. Analytics Dashboard | v1.1 | 0/? | Not started | — |
