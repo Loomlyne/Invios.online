@@ -4,9 +4,13 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { MobileSheet, MobileSheetContent, MobileSheetHeader } from "@/components/ui/mobile-sheet";
 import { cn } from "@/lib/utils";
+import { csvRowSchema, CSV_FIELDS } from "@/lib/csv-import";
 import type { CsvField, CsvRowValid, ImportResult } from "@/lib/csv-import";
+import { fetchExistingClientEmailsAction, importClientsAction } from "@/actions/clients";
 import { StepUpload } from "./step-upload";
 import { StepMap } from "./step-map";
+import { StepPreview } from "./step-preview";
+import { StepResult } from "./step-result";
 
 // ---------------------------------------------------------------------------
 // StepIndicator — inline, not worth a separate file
@@ -65,7 +69,7 @@ const STEP_HEADERS: Record<
 };
 
 // ---------------------------------------------------------------------------
-// Validated row type (Plan 03 will use this fully)
+// ValidatedRow type (exported for step-preview)
 // ---------------------------------------------------------------------------
 
 export type ValidatedRow = {
@@ -91,6 +95,7 @@ export function CsvImportWizard({ open, onOpenChange }: CsvImportWizardProps) {
   const [mapping, setMapping] = useState<Partial<Record<CsvField, string>>>({});
   const [validatedRows, setValidatedRows] = useState<ValidatedRow[]>([]);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function reset() {
     setStep(1);
@@ -99,11 +104,94 @@ export function CsvImportWizard({ open, onOpenChange }: CsvImportWizardProps) {
     setMapping({});
     setValidatedRows([]);
     setResult(null);
+    setIsSubmitting(false);
   }
 
   function handleOpenChange(next: boolean) {
     onOpenChange(next);
     if (!next) reset();
+  }
+
+  async function preparePreview() {
+    // Apply mapping to transform raw CSV rows into typed row inputs
+    const mapped = rawRows.map((raw) => {
+      const row: Record<string, string> = {};
+      for (const field of CSV_FIELDS) {
+        const csvHeader = mapping[field];
+        row[field] = csvHeader ? (raw[csvHeader] ?? "").trim() : "";
+      }
+      return row;
+    });
+
+    // Fetch existing emails for duplicate detection (per D-05)
+    const existingEmails = new Set(await fetchExistingClientEmailsAction());
+
+    // Validate each row
+    const rows = mapped.map((raw) => {
+      const parseResult = csvRowSchema.safeParse(raw);
+      const hasError = !parseResult.success;
+      const validRow = parseResult.success
+        ? parseResult.data
+        : {
+            name: raw.name || "",
+            company: raw.company || "",
+            email: raw.email || "",
+            phone: raw.phone || "",
+            address: raw.address || "",
+            trn: raw.trn || "",
+          };
+      const isDuplicate =
+        !hasError && !!validRow.email && existingEmails.has(validRow.email.toLowerCase());
+
+      return {
+        row: validRow as CsvRowValid,
+        errors: hasError ? parseResult.error.issues.map((i) => i.message) : [],
+        isDuplicate,
+        checked: !hasError, // invalid rows unchecked by default; duplicates checked but flagged
+      };
+    });
+
+    setValidatedRows(rows);
+    setStep(3);
+  }
+
+  async function handleConfirmImport() {
+    setIsSubmitting(true);
+    try {
+      const checkedRows = validatedRows
+        .filter((r) => r.checked && r.errors.length === 0)
+        .map((r) => r.row);
+      const importResult = await importClientsAction(checkedRows);
+      setResult(importResult);
+      setStep(4);
+    } catch {
+      setResult({
+        status: "error",
+        inserted: 0,
+        skipped: 0,
+        failed: 0,
+        message: "Import failed unexpectedly.",
+      });
+      setStep(4);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleToggleRow(index: number) {
+    setValidatedRows((prev) =>
+      prev.map((r, i) => (i === index ? { ...r, checked: !r.checked } : r)),
+    );
+  }
+
+  function handleToggleAll(checked: boolean) {
+    setValidatedRows((prev) =>
+      prev.map((r) => ({
+        ...r,
+        // Only toggle rows that have no errors (error rows stay unchecked)
+        checked: r.errors.length === 0 ? checked : false,
+      })),
+    );
   }
 
   const header = STEP_HEADERS[step];
@@ -144,22 +232,27 @@ export function CsvImportWizard({ open, onOpenChange }: CsvImportWizardProps) {
             headers={rawHeaders}
             mapping={mapping}
             onMappingChange={setMapping}
-            onNext={() => setStep(3)}
+            onNext={preparePreview}
             onBack={() => setStep(1)}
           />
         )}
 
-        {/* Steps 3 and 4 are implemented in Plan 03 */}
         {step === 3 && (
-          <div className="py-8 text-center text-sm text-muted">
-            Step 3: Preview import (Plan 03)
-          </div>
+          <StepPreview
+            rows={validatedRows}
+            onToggleRow={handleToggleRow}
+            onToggleAll={handleToggleAll}
+            onConfirm={handleConfirmImport}
+            onBack={() => setStep(2)}
+            isSubmitting={isSubmitting}
+          />
         )}
 
-        {step === 4 && (
-          <div className="py-8 text-center text-sm text-muted">
-            Step 4: Import complete (Plan 03)
-          </div>
+        {step === 4 && result && (
+          <StepResult
+            result={result}
+            onDone={() => handleOpenChange(false)}
+          />
         )}
       </MobileSheetContent>
     </MobileSheet>

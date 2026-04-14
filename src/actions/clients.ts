@@ -236,6 +236,16 @@ export async function archiveClientAction(id: string) {
   redirect("/app/clients");
 }
 
+export async function fetchExistingClientEmailsAction(): Promise<string[]> {
+  const { supabase, user } = await requireSession();
+  const { data } = await supabase
+    .from("clients")
+    .select("email")
+    .eq("user_id", user.id)
+    .not("email", "is", null);
+  return (data ?? []).map((c) => (c.email as string).toLowerCase());
+}
+
 export async function importClientsAction(
   rows: CsvRowValid[],
 ): Promise<ImportResult> {
