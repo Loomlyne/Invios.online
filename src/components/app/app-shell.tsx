@@ -1,12 +1,10 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import type { Route } from "next";
-import { Settings2 } from "lucide-react";
 import { AppSidebarNav } from "@/components/app/app-sidebar-nav";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { InviosLogo } from "@/components/app/invios-logo";
 import { PageTransition } from "@/components/app/page-transition";
-import { SignOutButton } from "@/components/app/sign-out-button";
+import { UserAvatarMenu } from "@/components/app/user-avatar-menu";
 import type { AppContext } from "@/lib/types";
 
 export function AppShell({
@@ -40,16 +38,10 @@ export function AppShell({
                 <span className="display-text text-base font-semibold leading-none">Invios</span>
               </Link>
 
-              <div className="flex items-center gap-2">
-                <Link
-                  href={"/app/settings" as Route}
-                  className="hidden lg:inline-flex size-10 items-center justify-center rounded-full border border-border bg-white/80 text-muted-strong transition hover:bg-surface-subtle"
-                  aria-label="Settings"
-                >
-                  <Settings2 className="size-4" />
-                </Link>
-                <SignOutButton />
-              </div>
+              <UserAvatarMenu
+                fullName={context.userState.profile.fullName}
+                email={context.email ?? ""}
+              />
             </div>
           </header>
 
