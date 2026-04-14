@@ -1,193 +1,37 @@
-# ROADMAP
+# Roadmap: Invios
 
-## Summary
+## Milestones
 
-Project: Invios  
-Phases: 5  
-Mapped requirements: 56 / 56  
-Coverage: 100%
+- ✅ **v1.0 MVP** — Phases 1–5 (shipped 2026-04-14)
+- 📋 **v1.1** — Phases 6+ (planned)
 
-## Phase Overview
+## Phases
 
-| # | Phase | Goal | Requirements |
-|---|-------|------|--------------|
-| 1 | Foundation & Onboarding | Get a new user signed in, branded, and ready to work from an installable app shell | AUTH-01..04, ONB-01..05, SET-01..02, UX-01 |
-| 2 | 1/6 | In Progress|  |
-| 3 | 4/5 | In Progress|  |
-| 4 | 4/7 | In Progress|  |
-| 5 | 7/7 | Complete   | 2026-04-12 |
+<details>
+<summary>✅ v1.0 MVP (Phases 1–5) — SHIPPED 2026-04-14</summary>
 
-## Phase Details
+- [x] Phase 1: Foundation & Onboarding (3/3 plans) — app shell, onboarding wizard, auth, mobile nav, settings
+- [x] Phase 2: Clients & Document Engine (6/6 plans) — client CRUD, quotation/invoice builders, PDF export, share, conversion
+- [x] Phase 3: Dashboard & Cash Flow (5/5 plans) — payments, expenses, profit/margin, MetricCard dashboard
+- [x] Phase 4: Public Trust Surfaces (7/7 plans) — public pages, client portal, bilingual/RTL, TRN, slug URLs, visual polish
+- [x] Phase 5: Automation & Recovery (7/7 plans) — version history, recurring billing, reminder emails, cron infrastructure
 
-### Phase 1: Foundation & Onboarding
+See archive: `.planning/milestones/v1.0-ROADMAP.md`
 
-**Goal**  
-Get a user from zero to a branded, configured workspace that feels installable and mobile-ready.
+</details>
 
-**Requirements**  
-AUTH-01, AUTH-02, AUTH-03, AUTH-04  
-ONB-01, ONB-02, ONB-03, ONB-04, ONB-05  
-SET-01, SET-02  
-UX-01
+### 📋 v1.1 (Planned)
 
-**Plans:** 3 plans
+- [ ] Phase 6: TBD — auto-send recurring invoices (AUTO-06), online payment collection (OPS-06)
+- [ ] Phase 7: TBD — OAuth login (AUTH-05), client import (CLNT-05), richer analytics (DASH-05)
 
-Plans:
-- [x] 01-01-PLAN.md — Wave 0 unit test infrastructure (middleware route protection, setup progress derivation, auth schema validation)
-- [x] 01-02-PLAN.md — D-09 post-onboarding redirect to /app/invoices/new + mobile nav UX-01 verification
-- [x] 01-03-PLAN.md — Sign-out E2E test (AUTH-03) + Vercel deploy verification checkpoint
+## Progress
 
-**Success Criteria**
-1. A new user can sign up, sign in, and get redirected into onboarding without touching broken routes.
-2. The user can complete branding and defaults setup and see a live branded invoice preview before entering the main app.
-3. The app shell feels usable on small mobile widths and can be prepared for installability.
-4. Core business profile and default document settings persist correctly.
-
-**Design prerequisite**
-- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
-
-**Infra / deploy prerequisite**
-- While planning and executing this phase, check Supabase and Vercel implications in parallel.
-- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
-
-**UI hint**: yes
-
-### Phase 2: Clients & Document Engine
-
-**Goal**  
-Enable the primary product loop: create a client, build a quotation or invoice, preview it live, export it, and share it.
-
-**Requirements**  
-CLNT-01, CLNT-02, CLNT-03, CLNT-04  
-QUOT-01, QUOT-02, QUOT-03, QUOT-04, QUOT-05, QUOT-06, QUOT-07  
-INV-01, INV-02, INV-03, INV-04, INV-05, INV-06, INV-07, INV-08
-
-**Plans:** 1/6 plans executed
-
-Plans:
-- [x] 02-00-PLAN.md — Wave 0 behavioral test scaffolds (client/quotation/invoice schema validation)
-- [x] 02-01-PLAN.md — Build ShareModal, DocumentStatusActions, and DocumentSummaryRow components
-- [x] 02-02-PLAN.md — Builder D-04 status dropdown removal + D-06 conversion redirect fix + PDF maxDuration
-- [x] 02-03-PLAN.md — Wire invoice and quotation detail pages with new components + D-07 lock
-- [x] 02-04-PLAN.md — Client detail page DocumentSummaryRow integration (D-08)
-- [x] 02-05-PLAN.md — Full product loop verification + Vercel production deploy
-
-**Success Criteria**
-1. A user can create a client and immediately generate a quotation or invoice for that client.
-2. Quotation and invoice builders support structured line items, dates, tax, discount, notes, and terms.
-3. Preview, public share, and PDF export all show the same branded document structure.
-4. An accepted quotation can be converted into an invoice without retyping everything.
-
-**Design prerequisite**
-- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
-
-**Infra / deploy prerequisite**
-- While planning and executing this phase, check Supabase and Vercel implications in parallel.
-- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
-
-**UI hint**: yes
-
-### Phase 3: Dashboard & Cash Flow
-
-**Goal**  
-Turn Invios into an operator console that exposes cash flow, follow-up urgency, and invoice profitability.
-
-**Requirements**  
-DASH-01, DASH-02, DASH-03, DASH-04  
-OPS-01, OPS-02, OPS-03, OPS-04, OPS-05  
-UX-02
-
-**Plans:** 4/5 plans executed
-
-Plans:
-- [x] 03-01-PLAN.md — DB migration (payments + expenses tables), Zod schemas, pure computation functions + tests
-- [x] 03-02-PLAN.md — Server actions (payment/expense CRUD), data loaders, status computation, dashboard metrics
-- [x] 03-03-PLAN.md — Invoice detail page extensions (ProfitSummary, PaymentsTable, ExpensesTable)
-- [x] 03-04-PLAN.md — Dashboard rebuild (MetricCard, quick actions, recent docs, overdue section)
-- [x] 03-05-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
-
-**Success Criteria**
-1. The dashboard clearly shows billed, collected, due, collection rate, and overdue work.
-2. Users can record multiple payments and expenses against a single invoice.
-3. Invoice status updates automatically based on payment records and due date.
-4. Profit amount and margin are visible per invoice and reflect expense changes correctly.
-
-**Design prerequisite**
-- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
-
-**Infra / deploy prerequisite**
-- While planning and executing this phase, check Supabase and Vercel implications in parallel.
-- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
-
-**UI hint**: yes
-
-### Phase 4: Public Trust Surfaces
-
-**Goal**  
-Make client-facing links, compliance details, and localization feel good enough to send to real clients.
-
-**Requirements**  
-PUB-01, PUB-02, PUB-03, PUB-04, PUB-05  
-SET-03, SET-04  
-UX-03, UX-04
-
-**Plans:** 5/7 plans executed
-
-Plans:
-- [x] 04-00-PLAN.md — Wave 0 test scaffolds (portal token, slug alias, accept/reject guards, UUID detection, TRN, bilingual helpers)
-- [x] 04-01-PLAN.md — DB migration (slug aliases), data layer functions, public quotation accept/reject actions, utility helpers
-- [x] 04-02-PLAN.md — Slug route migration ([id] to [slug]) with UUID fallback and alias redirects, all callsite updates
-- [x] 04-03-PLAN.md — Public page components (PublicPageShell, AcceptRejectForm, PortalDocumentRow) + branded public pages + client portal [VERIFIED]
-- [x] 04-04-PLAN.md — InvoicePreview bilingual/RTL rendering, TRN display, Arabic font loading (SET-03, SET-04)
-- [x] 04-05-PLAN.md — UX-03 visual quality pass across all views (dashboard, lists, details, public pages)
-- [x] 04-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
-
-**Success Criteria**
-1. Public invoice and quotation links work without authentication and look professional.
-2. Client portal links show the correct document set for a client without leaking unrelated data.
-3. UAE-friendly tax invoice fields and AED support are rendered correctly.
-4. English/Arabic bilingual rendering and RTL-safe layout work for core document surfaces.
-5. Canonical slugs and alias redirects preserve working links when names change.
-
-**Design prerequisite**
-- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
-
-**Infra / deploy prerequisite**
-- While planning and executing this phase, check Supabase and Vercel implications in parallel.
-- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
-
-**UI hint**: yes
-
-### Phase 5: Automation & Recovery
-
-**Goal**  
-Add safety and automation so users can recover mistakes and reduce repetitive billing work.
-
-**Requirements**  
-AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05
-
-**Plans:** 7/7 plans complete
-
-Plans:
-- [x] 05-00-PLAN.md — Wave 0 RED test scaffolds for version, recurring, and reminder logic
-- [x] 05-01-PLAN.md — DB migration (3 tables), cron utilities, env config, vercel.json cron schedule
-- [x] 05-02-PLAN.md — Version snapshot on save + restore action + data fetcher (AUTO-01, AUTO-02)
-- [x] 05-03-PLAN.md — Version history UI panel + restore dialog on invoice detail page (AUTO-02)
-- [x] 05-04-PLAN.md — Recurring billing actions, config form, builder/detail integration, cron endpoint (AUTO-03)
-- [x] 05-05-PLAN.md — Reminder email sender + reminder cron endpoint with deduplication (AUTO-04, AUTO-05)
-- [x] 05-06-PLAN.md — Supabase migration + full test suite + Vercel production deploy + human verification
-
-**Success Criteria**
-1. Invoice versions are captured on save and can be reviewed later.
-2. Restoring an older version is safe and does not silently corrupt financial state.
-3. Users can configure recurring billing schedules for repeat invoice generation.
-4. Reminder timing rules can be configured and reminder sends are logged to prevent duplicates.
-
-**Design prerequisite**
-- Before any frontend design or implementation starts for this phase, invoke `aidesigner-frontend`, then `ui-ux-pro-max`.
-
-**Infra / deploy prerequisite**
-- While planning and executing this phase, check Supabase and Vercel implications in parallel.
-- If the phase ends with working code, deploy to Vercel and verify the live result before calling the phase done.
-
-**UI hint**: yes
+| Phase | Milestone | Plans | Status | Completed |
+|-------|-----------|-------|--------|-----------|
+| 1. Foundation & Onboarding | v1.0 | 3/3 | ✅ Complete | 2026-04-07 |
+| 2. Clients & Document Engine | v1.0 | 6/6 | ✅ Complete | 2026-04-09 |
+| 3. Dashboard & Cash Flow | v1.0 | 5/5 | ✅ Complete | 2026-04-10 |
+| 4. Public Trust Surfaces | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
+| 5. Automation & Recovery | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
+| 6. TBD | v1.1 | 0/? | 📋 Planned | — |
