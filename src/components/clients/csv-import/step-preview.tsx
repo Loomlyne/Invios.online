@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,9 +91,8 @@ export function StepPreview({
                   : "border-l-2 border-success bg-surface";
 
               return (
-                <>
+                <Fragment key={i}>
                   <tr
-                    key={`row-${i}`}
                     className={`${rowClass} ${!r.checked ? "opacity-50" : ""} transition-opacity`}
                   >
                     <td className="w-11 px-2 py-1 text-center">
@@ -122,13 +122,13 @@ export function StepPreview({
                     </td>
                   </tr>
                   {hasError && (
-                    <tr key={`row-${i}-error`} className={`${rowClass} ${!r.checked ? "opacity-50" : ""}`}>
+                    <tr className={`${rowClass} ${!r.checked ? "opacity-50" : ""}`}>
                       <td colSpan={5} className="text-sm text-danger px-4 pb-2">
                         {r.errors.join("; ")}
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </tbody>
