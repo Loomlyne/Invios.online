@@ -4,7 +4,7 @@
 
 ### Clients
 
-- [ ] **CLNT-05**: User can upload a CSV file, map columns to client fields (name, company, email, phone, address, trn), preview validated rows with per-row error display, and import clients in batch — with duplicate detection by email and an import summary showing inserted, skipped, and errored rows.
+- [x] **CLNT-05**: User can upload a CSV file, map columns to client fields (name, company, email, phone, address, trn), preview validated rows with per-row error display, and import clients in batch — with duplicate detection by email and an import summary showing inserted, skipped, and errored rows.
 
 ### Dashboard & Analytics
 
@@ -31,7 +31,7 @@
 
 | Requirement ID | Planned Phase | Status |
 |----------------|---------------|--------|
-| CLNT-05 | Phase 6 | Pending |
+| CLNT-05 | Phase 6 | Complete |
 | DASH-05 | Phase 7 | Pending |
 | DASH-06 | Phase 7 | Pending |
 | DASH-07 | Phase 7 | Pending |
