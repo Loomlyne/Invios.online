@@ -82,7 +82,13 @@ Plans:
   3. User on mobile can open a section picker and switch sections without losing scroll position or triggering a full page reload
   4. User can navigate all sidebar items using keyboard arrow keys with a visible focus ring on each item
   5. Every settings form field has an associated label; each section has its own independent Save button (no global save across sections)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — SETTINGS_SECTIONS const, SettingsSection type, Section/Field primitives, SaveButton
+- [ ] 08-02-PLAN.md — Settings sidebar with keyboard nav, shell layout, page.tsx swap
+- [ ] 08-03-PLAN.md — Mobile section picker, 7 placeholder panels, branding nav update
+
 **UI hint**: yes
 
 ### Phase 9: Branding & Business Info
@@ -146,7 +152,7 @@ Plans:
 | 5. Automation & Recovery | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 6. CSV Client Import | v1.1 | 3/3 | Complete | 2026-04-14 |
 | 7. Analytics Dashboard | v1.1 | 0/? | Not started | — |
-| 8. Settings Foundation | v1.2 | 0/? | Not started | — |
+| 8. Settings Foundation | v1.2 | 0/3 | Planned | — |
 | 9. Branding & Business Info | v1.2 | 0/? | Not started | — |
 | 10. Profile Tab | v1.2 | 0/? | Not started | — |
 | 11. General & Emails | v1.2 | 0/? | Not started | — |
