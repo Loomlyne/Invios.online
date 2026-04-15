@@ -35,13 +35,6 @@ export const bottomNavItems: AppNavItemConfig[] = [
     description: "Manage the client records tied to every document.",
   },
   {
-    key: "branding",
-    label: "Branding",
-    href: "/app/branding" as unknown as import("next").Route,
-    icon: "palette",
-    description: "Logo, colors, fonts, and document identity.",
-  },
-  {
     key: "settings",
     label: "Settings",
     href: "/app/settings",
@@ -123,13 +116,6 @@ export const appNavItems: AppNavItemConfig[] = [
     href: "/app/clients",
     icon: "users-round",
     description: "Manage the client records tied to every document.",
-  },
-  {
-    key: "branding",
-    label: "Branding",
-    href: "/app/branding" as unknown as import("next").Route,
-    icon: "palette",
-    description: "Logo, colors, fonts, and document identity.",
   },
   {
     key: "settings",
