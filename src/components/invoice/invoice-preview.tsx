@@ -2,7 +2,7 @@ import { memo } from "react";
 import { getDocumentTemplate } from "@/lib/document-templates";
 import type { DocumentTemplateConfig } from "@/lib/document-templates";
 import { getInvoiceTotals } from "@/lib/preview";
-import type { InvoicePreviewData, InvoicePreviewLineItem } from "@/lib/types";
+import type { InvoicePreviewData } from "@/lib/types";
 import { formatCurrency, formatDateDisplay, parseBankDetails } from "@/lib/utils";
 import { formatTrnDisplay, getArabicDescription } from "@/lib/billing-utils";
 import { cn } from "@/lib/utils";
@@ -470,13 +470,43 @@ function GridMeta({ preview, template, recipientName, totals, px, py, bilingualL
   );
 }
 
-/** Minimal — Two-column sender / client contact grid with "Description" heading */
+/** Minimal — Dates + amount row, then "Description" heading */
 function ContactGridMeta({ preview, template, recipientName, totals, px, py, bilingualLabel }: MetaProps) {
   return (
     <div className={cn(px, py)}>
+      {/* Client details row */}
+      <div className="grid gap-6 sm:grid-cols-[1fr_auto_auto] text-sm">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Billed to", "الفاتورة إلى")}</p>
+          <p className="mt-2 font-semibold text-foreground">{recipientName}</p>
+          {preview.recipientAddress ? <p className="text-[#78716C]">{preview.recipientAddress}</p> : null}
+          {preview.recipientPhone ? <p className="text-[#78716C]">{preview.recipientPhone}</p> : null}
+        </div>
+        <div className="space-y-3">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+              {preview.issueDateLabel || bilingualLabel("Invoice date", "تاريخ الفاتورة")}
+            </p>
+            <p className="mt-1 font-medium tabular-nums text-foreground">{formatDateDisplay(preview.issueDate)}</p>
+          </div>
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+              {preview.dueDateLabel || bilingualLabel("Due date", "تاريخ الاستحقاق")}
+            </p>
+            <p className="mt-1 font-medium tabular-nums text-foreground">{formatDateDisplay(preview.dueDate)}</p>
+          </div>
+        </div>
+        <div className="text-right sm:min-w-[120px]">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Amount due", "المبلغ المستحق")}</p>
+          <p className="mt-2 text-lg font-semibold" style={{ color: preview.accentColor }} dir="ltr">
+            {totals.totalLabel}
+          </p>
+        </div>
+      </div>
+
       {/* Description heading */}
       <p
-        className="mt-2 text-lg font-semibold text-foreground"
+        className="mt-6 text-lg font-semibold text-foreground"
         style={preview.headingFont ? { fontFamily: `${preview.headingFont}, serif` } : undefined}
       >
         {bilingualLabel("Description", "الوصف")}
