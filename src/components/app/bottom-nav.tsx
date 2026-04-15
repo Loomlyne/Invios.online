@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CreditCard,
   FileText,
+  FolderOpen,
   LayoutDashboard,
+  NotebookPen,
   Palette,
   Plus,
   ReceiptText,
   Settings2,
-  StickyNote,
   UserRoundPlus,
   UsersRound,
 } from "lucide-react";
@@ -25,7 +27,10 @@ const iconMap = {
   "settings-2": Settings2,
   "user-round-plus": UserRoundPlus,
   palette: Palette,
-  "sticky-note": StickyNote,
+  "sticky-note": NotebookPen,
+  "credit-card": CreditCard,
+  "folder-open": FolderOpen,
+  "notebook-pen": NotebookPen,
 } as const;
 
 function isActivePath(pathname: string, href: string) {
@@ -35,8 +40,8 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const leftItems = bottomNavItems.slice(0, 2);
-const rightItems = bottomNavItems.slice(2);
+const leftItems = bottomNavItems.slice(0, 3);
+const rightItems = bottomNavItems.slice(3);
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -61,23 +66,27 @@ export function BottomNav() {
         />
       )}
 
-      {/* Popup menu */}
+      {/* Action palette popup */}
       {isOpen && (
-        <div className="animate-fab-popup relative z-40 mx-4 mb-3">
-          <div className="glass-panel rounded-[var(--radius-card)] border border-black/8 p-4 subtle-shadow">
-            <div className="grid grid-cols-3 gap-3">
-              {fabMenuItems.map((item, i) => {
+        <div className="animate-fab-popup relative z-40 mx-6 mb-3">
+          <div className="rounded-[2.5rem] border border-white/70 bg-surface/90 p-4 shadow-[0_24px_48px_rgba(23,18,15,0.12),0_8px_16px_rgba(23,18,15,0.04)] backdrop-blur-2xl">
+            <div className="grid grid-cols-3 gap-2">
+              {fabMenuItems.map((item) => {
                 const Icon = iconMap[item.icon as keyof typeof iconMap];
                 return (
                   <Link
                     key={item.key}
                     href={item.href}
                     onClick={() => setIsOpen(false)}
-                    className="flex flex-col items-center gap-1.5 rounded-[var(--radius-inner)] px-2 py-3 transition-colors hover:bg-surface-strong"
-                    style={{ animationDelay: `${i * 30}ms` }}
+                    className="group flex flex-col items-center justify-center gap-2.5 rounded-3xl p-4 transition-colors hover:bg-[#f8f4ee]"
                   >
-                    <Icon className="size-6 text-muted-strong" />
-                    <span className="text-xs font-medium text-foreground">
+                    <div className="flex size-[52px] items-center justify-center rounded-[18px] border border-black/[0.03] bg-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-accent/20 group-hover:shadow-md">
+                      <Icon
+                        className="size-6 text-foreground transition-colors group-hover:text-accent"
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-foreground">
                       {item.label}
                     </span>
                   </Link>
@@ -88,117 +97,97 @@ export function BottomNav() {
         </div>
       )}
 
-      {/* Bottom bar */}
-      <div className="relative z-40 glass-panel border-t border-black/8 px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] subtle-shadow">
-        <div className="flex items-stretch">
+      {/* Bottom bar — inset floating pill */}
+      <div className="relative z-40 mx-6 mb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div className="flex h-[76px] items-center justify-between rounded-[2.5rem] border border-white/70 bg-surface/60 px-3 shadow-[0_8px_32px_rgba(23,18,15,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl">
           {/* Left nav items */}
-          {leftItems.map((item) => {
-            const Icon = iconMap[item.icon as keyof typeof iconMap];
-            const active = isActivePath(pathname, item.href);
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                aria-label={item.label}
-                className={cn(
-                  "flex flex-1 flex-col items-center justify-center gap-0.5 rounded-[0.85rem] py-2 transition-colors duration-150",
-                  "min-h-[44px] min-w-[44px]",
-                  active
-                    ? "text-foreground"
-                    : "text-muted hover:text-muted-strong",
-                )}
-              >
-                <div className="relative flex items-center justify-center">
-                  {active && (
-                    <span className="absolute -top-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-accent" />
+          <div className="flex w-[40%] items-center justify-between">
+            {leftItems.map((item) => {
+              const Icon = iconMap[item.icon as keyof typeof iconMap];
+              const active = isActivePath(pathname, item.href);
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  aria-label={item.label}
+                  className={cn(
+                    "relative flex size-11 items-center justify-center rounded-full transition-all duration-300",
+                    isOpen && "opacity-40",
+                    !isOpen && "hover:bg-white/40",
+                  )}
+                >
+                  {active && !isOpen && (
+                    <span className="absolute top-0.5 h-[5px] w-[5px] rounded-full bg-accent shadow-[0_0_8px_rgba(202,138,4,0.6)]" />
                   )}
                   <Icon
                     className={cn(
-                      "size-5",
-                      active ? "text-accent-strong" : "text-muted",
+                      "size-[26px] transition-colors duration-300",
+                      active && !isOpen ? "text-foreground" : "text-muted",
                     )}
+                    strokeWidth={1.5}
                   />
-                </div>
-                <span
-                  className={cn(
-                    "text-[10px] leading-none",
-                    active
-                      ? "font-semibold text-foreground"
-                      : "font-medium text-muted",
-                  )}
-                >
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-
-          {/* Center FAB */}
-          <div className="flex flex-1 items-center justify-center">
-            <button
-              onClick={() => setIsOpen((o) => !o)}
-              aria-expanded={isOpen}
-              aria-label="Quick actions"
-              className={cn(
-                "relative -mt-7 flex size-14 items-center justify-center rounded-full shadow-lg transition-all duration-300",
-                isOpen
-                  ? "bg-foreground"
-                  : "bg-accent-strong",
-              )}
-            >
-              <Plus
-                className={cn(
-                  "size-7 text-white transition-transform duration-300",
-                  isOpen && "rotate-45",
-                )}
-              />
-            </button>
+                </Link>
+              );
+            })}
           </div>
 
+          {/* Center void for FAB */}
+          <div className="w-16" />
+
           {/* Right nav items */}
-          {rightItems.map((item) => {
-            const Icon = iconMap[item.icon as keyof typeof iconMap];
-            const active = isActivePath(pathname, item.href);
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                aria-label={item.label}
-                className={cn(
-                  "flex flex-1 flex-col items-center justify-center gap-0.5 rounded-[0.85rem] py-2 transition-colors duration-150",
-                  "min-h-[44px] min-w-[44px]",
-                  active
-                    ? "text-foreground"
-                    : "text-muted hover:text-muted-strong",
-                )}
-              >
-                <div className="relative flex items-center justify-center">
-                  {active && (
-                    <span className="absolute -top-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-accent" />
+          <div className="flex w-[40%] items-center justify-between">
+            {rightItems.map((item) => {
+              const Icon = iconMap[item.icon as keyof typeof iconMap];
+              const active = isActivePath(pathname, item.href);
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  aria-label={item.label}
+                  className={cn(
+                    "relative flex size-11 items-center justify-center rounded-full transition-all duration-300",
+                    isOpen && "opacity-40",
+                    !isOpen && "hover:bg-white/40",
+                  )}
+                >
+                  {active && !isOpen && (
+                    <span className="absolute top-0.5 h-[5px] w-[5px] rounded-full bg-accent shadow-[0_0_8px_rgba(202,138,4,0.6)]" />
                   )}
                   <Icon
                     className={cn(
-                      "size-5",
-                      active ? "text-accent-strong" : "text-muted",
+                      "size-[26px] transition-colors duration-300",
+                      active && !isOpen ? "text-foreground" : "text-muted",
                     )}
+                    strokeWidth={1.5}
                   />
-                </div>
-                <span
-                  className={cn(
-                    "text-[10px] leading-none",
-                    active
-                      ? "font-semibold text-foreground"
-                      : "font-medium text-muted",
-                  )}
-                >
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+                </Link>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Center FAB — positioned over the bar */}
+        <button
+          onClick={() => setIsOpen((o) => !o)}
+          aria-expanded={isOpen}
+          aria-label="Quick actions"
+          className={cn(
+            "absolute bottom-[6px] left-1/2 flex size-16 -translate-x-1/2 items-center justify-center rounded-full transition-all duration-300 hover:scale-105",
+            isOpen
+              ? "bg-foreground shadow-[0_16px_32px_-4px_rgba(23,18,15,0.5)] ring-4 ring-surface/40"
+              : "bg-accent-strong shadow-[0_12px_24px_-4px_rgba(202,138,4,0.4)]",
+          )}
+        >
+          <Plus
+            className={cn(
+              "size-7 text-white transition-transform duration-300",
+              isOpen && "rotate-45",
+            )}
+            strokeWidth={1.5}
+          />
+        </button>
       </div>
     </nav>
   );

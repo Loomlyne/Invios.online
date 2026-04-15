@@ -8,7 +8,7 @@ import type {
 export const bottomNavItems: AppNavItemConfig[] = [
   {
     key: "dashboard",
-    label: "Home",
+    label: "Dashboard",
     href: "/app",
     icon: "layout-dashboard",
     description: "Workspace summary and setup readiness.",
@@ -34,6 +34,20 @@ export const bottomNavItems: AppNavItemConfig[] = [
     icon: "users-round",
     description: "Manage the client records tied to every document.",
   },
+  {
+    key: "branding",
+    label: "Branding",
+    href: "/app/branding" as unknown as import("next").Route,
+    icon: "palette",
+    description: "Logo, colors, fonts, and document identity.",
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    href: "/app/settings",
+    icon: "settings-2",
+    description: "Preferences, invoice defaults, and notifications.",
+  },
 ];
 
 export const fabMenuItems: AppNavItemConfig[] = [
@@ -53,31 +67,31 @@ export const fabMenuItems: AppNavItemConfig[] = [
   },
   {
     key: "new-client",
-    label: "Customer",
+    label: "Client",
     href: "/app/clients",
     icon: "user-round-plus",
     description: "Add a new client.",
   },
   {
-    key: "branding",
-    label: "Branding",
-    href: "/app/branding",
-    icon: "palette",
-    description: "Logo, colors, fonts, and document identity.",
+    key: "expense",
+    label: "Expense",
+    href: "/app/expenses" as unknown as import("next").Route,
+    icon: "credit-card",
+    description: "Record an expense.",
+  },
+  {
+    key: "project",
+    label: "Project",
+    href: "/app/projects" as unknown as import("next").Route,
+    icon: "folder-open",
+    description: "Start a new project.",
   },
   {
     key: "notes",
     label: "Notes",
     href: "/app/notes",
-    icon: "sticky-note",
+    icon: "notebook-pen",
     description: "Quick notes and reminders.",
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    href: "/app/settings",
-    icon: "settings-2",
-    description: "Preferences, invoice defaults, and notifications.",
   },
 ];
 

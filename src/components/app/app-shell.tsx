@@ -32,7 +32,7 @@ export function AppShell({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-[var(--space-grid)] pb-28 lg:pb-8">
+        <div className="flex min-w-0 flex-1 flex-col gap-[var(--space-grid)] pb-32 lg:pb-8">
           <header className="glass-panel sticky top-4 z-20 rounded-[var(--radius-card)] border border-black/8 px-4 py-3 subtle-shadow">
             <div className="flex items-center justify-between gap-4">
               <Link href="/app" className="inline-flex items-center gap-2">
