@@ -85,11 +85,11 @@ export function SettingsShell({
         </div>
 
         {/* Panel rendering */}
-        {activeSection === "profile" && <ProfilePanel />}
-        {activeSection === "branding" && <BrandingPanel />}
-        {activeSection === "business" && <BusinessInfoPanel />}
-        {activeSection === "general" && <GeneralPanel />}
-        {activeSection === "emails" && <EmailsPanel />}
+        {activeSection === "profile" && <ProfilePanel context={context} />}
+        {activeSection === "branding" && <BrandingPanel context={context} />}
+        {activeSection === "business" && <BusinessInfoPanel context={context} />}
+        {activeSection === "general" && <GeneralPanel context={context} />}
+        {activeSection === "emails" && <EmailsPanel context={context} />}
         {activeSection === "integrations" && <IntegrationsPanel />}
         {activeSection === "billing" && <BillingPanel />}
       </main>
