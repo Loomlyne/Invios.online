@@ -92,8 +92,8 @@ export function BrandingPanel({ context }: { context: AppContext }) {
           headingFont: b.headingFont ?? "DM Sans",
           bodyFont: b.bodyFont ?? "DM Sans",
           spacing: (b.spacing ?? "normal") as "compact" | "normal" | "spacious",
-          headerLayout: (b.headerLayout ?? "left") as "left" | "center" | "right",
-          lineItemsStyle: (b.lineItemsStyle ?? "table") as "table" | "cards" | "minimal",
+          headerLayout: (b.headerLayout ?? "left") as "left" | "centered" | "split",
+          lineItemsStyle: (b.lineItemsStyle ?? "table") as "table" | "cards",
         });
 
         setLogoFile(null);
