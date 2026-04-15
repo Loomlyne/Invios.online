@@ -30,7 +30,7 @@ export function useSettingsForm<T extends Record<string, unknown>>(
     setValues((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const save = useCallback(() => {
+  const save = useCallback(async () => {
     setSaveState("saving");
     setMessage("");
     startTransition(async () => {
