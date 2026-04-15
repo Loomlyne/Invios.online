@@ -50,19 +50,26 @@ export function DocumentTemplatePicker({
                 <div
                   className={cn(
                     "h-3 rounded-full",
-                    template.id === "classic" && "bg-[linear-gradient(90deg,#FCF8F1_0%,#CA8A04_100%)]",
-                    template.id === "executive" && "bg-[linear-gradient(90deg,#17120F_0%,#F2D088_100%)]",
-                    template.id === "minimal" && "bg-[linear-gradient(90deg,#F5F1EA_0%,#17120F_100%)]",
+                    template.id === "classic" && "bg-[linear-gradient(90deg,#f8f8f6_0%,#CA8A04_100%)]",
+                    template.id === "executive" && "bg-[linear-gradient(90deg,#ffffff_0%,#78716C_100%)]",
+                    template.id === "minimal" && "bg-[linear-gradient(90deg,#ffffff_0%,#e5e5e5_100%)]",
                   )}
                 />
                 <div className="grid grid-cols-[1.1fr_0.9fr] gap-2">
-                  <div className="h-16 rounded-[0.9rem] border border-black/6 bg-[#FAF7F2]" />
+                  <div
+                    className={cn(
+                      "h-16 rounded-[0.9rem] border border-black/6",
+                      template.id === "classic" && "bg-[#f8f8f6]",
+                      template.id === "executive" && "bg-white border-b-2 border-b-black/12",
+                      template.id === "minimal" && "bg-white",
+                    )}
+                  />
                   <div
                     className={cn(
                       "h-16 rounded-[0.9rem]",
-                      template.id === "classic" && "bg-[#1C1917]",
-                      template.id === "executive" && "bg-[#120E0C]",
-                      template.id === "minimal" && "bg-[#17120F]",
+                      template.id === "classic" && "bg-[#f5f5f3]",
+                      template.id === "executive" && "bg-white border border-black/8",
+                      template.id === "minimal" && "bg-[#fafafa] border border-black/4",
                     )}
                   />
                 </div>
