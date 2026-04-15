@@ -5,8 +5,25 @@ export type OnboardingStep = "business-profile" | "branding" | "defaults" | "pre
 export type SignatureMode = "none" | "upload" | "draw" | "typed";
 export type DocumentTemplateId = "classic" | "executive" | "minimal";
 
-export type SettingsSection = "general" | "invoices" | "notifications" | "account";
+export const SETTINGS_SECTIONS = [
+  "profile",
+  "branding",
+  "business",
+  "general",
+  "emails",
+  "integrations",
+  "billing",
+] as const;
+
+export type SettingsSection = typeof SETTINGS_SECTIONS[number];
 export type BrandingSection = "identity" | "business" | "template" | "documents";
+
+export interface SettingsSectionConfig {
+  key: SettingsSection;
+  label: string;
+  icon: string;
+  description: string;
+}
 
 export type AppNavKey =
   | "dashboard"

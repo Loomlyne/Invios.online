@@ -127,7 +127,7 @@ export const appNavItems: AppNavItemConfig[] = [
   {
     key: "branding",
     label: "Branding",
-    href: "/app/branding" as unknown as import("next").Route,
+    href: "/app/settings?section=branding" as unknown as import("next").Route,
     icon: "palette",
     description: "Logo, colors, fonts, and document identity.",
   },
