@@ -91,9 +91,9 @@ export function BrandingPanel({ context }: { context: AppContext }) {
         await saveTemplateAction({
           headingFont: b.headingFont ?? "DM Sans",
           bodyFont: b.bodyFont ?? "DM Sans",
-          spacing: b.spacing ?? "normal",
-          headerLayout: b.headerLayout ?? "left",
-          lineItemsStyle: b.lineItemsStyle ?? "table",
+          spacing: (b.spacing ?? "normal") as "compact" | "normal" | "spacious",
+          headerLayout: (b.headerLayout ?? "left") as "left" | "center" | "right",
+          lineItemsStyle: (b.lineItemsStyle ?? "table") as "table" | "cards" | "minimal",
         });
 
         setLogoFile(null);
