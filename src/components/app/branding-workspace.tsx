@@ -369,21 +369,36 @@ export function BrandingWorkspace({
                   </div>
 
                   {/* Colors */}
-                  <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
-                    <Field label="Brand Color">
-                      <ColorPicker
-                        name="primaryColor"
-                        value={primaryColor}
-                        onChange={setPrimaryColor}
-                      />
-                    </Field>
-                    <Field label="Secondary Color">
-                      <ColorPicker
-                        name="secondaryColor"
-                        value={secondaryColor}
-                        onChange={setSecondaryColor}
-                      />
-                    </Field>
+                  <div className="border-t border-border pt-4">
+                    <div className="mb-4">
+                      <p className="text-sm font-medium">Brand Colors</p>
+                      <p className="text-sm text-muted">
+                        Choose colors that represent your brand on invoices and
+                        quotations.
+                      </p>
+                    </div>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-widest text-muted">
+                          Primary
+                        </Label>
+                        <ColorPicker
+                          name="primaryColor"
+                          value={primaryColor}
+                          onChange={setPrimaryColor}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-widest text-muted">
+                          Secondary
+                        </Label>
+                        <ColorPicker
+                          name="secondaryColor"
+                          value={secondaryColor}
+                          onChange={setSecondaryColor}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Base Font */}
