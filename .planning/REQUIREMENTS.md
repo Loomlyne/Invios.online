@@ -18,9 +18,9 @@
 
 - [x] **NAV-01**: User can navigate settings via a vertical sidebar with labeled section links and icons
 - [x] **NAV-02**: User can see the active section highlighted in the sidebar with visual focus indicator
-- [ ] **NAV-03**: User can switch sections via URL-synced routing (browser back/forward works correctly)
+- [x] **NAV-03**: User can switch sections via URL-synced routing (browser back/forward works correctly)
 - [ ] **NAV-04**: User can switch sections on mobile via a dropdown/sheet section picker
-- [ ] **NAV-05**: User can navigate sidebar items with keyboard arrow keys and focus ring indicators
+- [x] **NAV-05**: User can navigate sidebar items with keyboard arrow keys and focus ring indicators
 
 ### Profile
 
@@ -118,9 +118,9 @@
 | DASH-07 | Phase 7 | Deferred |
 | NAV-01 | Phase 8 | Complete |
 | NAV-02 | Phase 8 | Complete |
-| NAV-03 | Phase 8 | Pending |
+| NAV-03 | Phase 8 | Complete |
 | NAV-04 | Phase 8 | Pending |
-| NAV-05 | Phase 8 | Pending |
+| NAV-05 | Phase 8 | Complete |
 | A11Y-01 | Phase 8 | Complete |
 | A11Y-02 | Phase 8 | Complete |
 | A11Y-03 | Phase 8 | Complete |

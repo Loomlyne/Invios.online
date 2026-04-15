@@ -86,7 +86,7 @@ Plans:
 
 Plans:
 - [x] 08-01-PLAN.md — SETTINGS_SECTIONS const, SettingsSection type, Section/Field primitives, SaveButton
-- [ ] 08-02-PLAN.md — Settings sidebar with keyboard nav, shell layout, page.tsx swap
+- [x] 08-02-PLAN.md — Settings sidebar with keyboard nav, shell layout, page.tsx swap
 - [ ] 08-03-PLAN.md — Mobile section picker, 7 placeholder panels, branding nav update
 
 **UI hint**: yes
@@ -152,7 +152,7 @@ Plans:
 | 5. Automation & Recovery | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 6. CSV Client Import | v1.1 | 3/3 | Complete | 2026-04-14 |
 | 7. Analytics Dashboard | v1.1 | 0/? | Not started | — |
-| 8. Settings Foundation | v1.2 | 1/3 | In Progress|  |
+| 8. Settings Foundation | v1.2 | 2/3 | In Progress|  |
 | 9. Branding & Business Info | v1.2 | 0/? | Not started | — |
 | 10. Profile Tab | v1.2 | 0/? | Not started | — |
 | 11. General & Emails | v1.2 | 0/? | Not started | — |
