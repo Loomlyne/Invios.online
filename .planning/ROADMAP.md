@@ -33,7 +33,7 @@ See archive: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Convert the monolithic settings workspace into a sidebar-based hub with eight dedicated sections, per-section independent save, full keyboard accessibility, and a mobile-responsive section picker.
 
-- [ ] **Phase 8: Settings Foundation** — Shell, sidebar, URL-synced routing, mobile nav, and shared primitives replace the monolith skeleton
+- [x] **Phase 8: Settings Foundation** — Shell, sidebar, URL-synced routing, mobile nav, and shared primitives replace the monolith skeleton (completed 2026-04-15)
 - [ ] **Phase 9: Branding & Business Info** — Branding panel migrated from `/app/branding` into settings; Business Info panel with bank/payment details added; old route redirected
 - [ ] **Phase 10: Profile Tab** — Personal info, avatar upload with initials fallback, hourly rate, password change, and danger zone
 - [ ] **Phase 11: General & Emails** — Document preferences, date format, doc numbering, notification toggles; Supabase schema migration for email preference columns
@@ -87,7 +87,7 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md — SETTINGS_SECTIONS const, SettingsSection type, Section/Field primitives, SaveButton
 - [x] 08-02-PLAN.md — Settings sidebar with keyboard nav, shell layout, page.tsx swap
-- [ ] 08-03-PLAN.md — Mobile section picker, 7 placeholder panels, branding nav update
+- [x] 08-03-PLAN.md — Mobile section picker, 7 placeholder panels, branding nav update
 
 **UI hint**: yes
 
@@ -152,7 +152,7 @@ Plans:
 | 5. Automation & Recovery | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 6. CSV Client Import | v1.1 | 3/3 | Complete | 2026-04-14 |
 | 7. Analytics Dashboard | v1.1 | 0/? | Not started | — |
-| 8. Settings Foundation | v1.2 | 2/3 | In Progress|  |
+| 8. Settings Foundation | v1.2 | 3/3 | Complete   | 2026-04-15 |
 | 9. Branding & Business Info | v1.2 | 0/? | Not started | — |
 | 10. Profile Tab | v1.2 | 0/? | Not started | — |
 | 11. General & Emails | v1.2 | 0/? | Not started | — |
