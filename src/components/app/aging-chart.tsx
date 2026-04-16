@@ -87,18 +87,23 @@ export function AgingChart({
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4">
         {buckets.map((bucket, idx) => (
-          <div key={bucket.label} className="flex items-center gap-2 text-xs">
-            <span
-              className="inline-block size-2.5 shrink-0 rounded-sm"
-              style={{ backgroundColor: AGING_FILLS[idx] }}
-            />
-            <span className="text-muted">{bucket.label}</span>
-            <span className="font-semibold tabular-nums text-foreground">
-              {formatCurrency(bucket.amount, currency)}
-            </span>
-            <span className="text-muted">({bucket.count})</span>
+          <div key={bucket.label} className="min-w-0 text-xs">
+            <div className="flex items-center gap-1.5">
+              <span
+                aria-hidden="true"
+                className="inline-block size-2.5 shrink-0 rounded-sm"
+                style={{ backgroundColor: AGING_FILLS[idx] }}
+              />
+              <span className="truncate text-muted">{bucket.label}</span>
+            </div>
+            <div className="mt-1 flex items-baseline gap-1.5">
+              <span className="truncate font-semibold tabular-nums text-foreground">
+                {formatCurrency(bucket.amount, currency)}
+              </span>
+              <span className="shrink-0 text-muted">({bucket.count})</span>
+            </div>
           </div>
         ))}
       </div>
