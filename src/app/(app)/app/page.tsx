@@ -1,13 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Route } from "next";
-import dynamic from "next/dynamic";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { MetricCard } from "@/components/app/metric-card";
 import { DashboardRangeToggle } from "@/components/app/dashboard-range-toggle";
 import { PageHeader } from "@/components/app/page-header";
 import { SetupChecklist } from "@/components/app/setup-checklist";
 import { EmptyState } from "@/components/app/empty-state";
+import { RevenueChartCard, AgingChartCard } from "@/components/app/analytics-row";
 import { DocumentSummaryRow } from "@/components/documents/document-summary-row";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
 import { Button } from "@/components/ui/button";
@@ -33,26 +33,6 @@ import {
   getDashboardRecentQuotations,
   getDashboardAnalyticsData,
 } from "@/lib/billing-data";
-
-const RevenueChart = dynamic(
-  () => import("@/components/app/revenue-chart").then((m) => m.RevenueChart),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[260px] animate-pulse rounded-[var(--radius-inner)] bg-surface-strong" />
-    ),
-  },
-);
-
-const AgingChart = dynamic(
-  () => import("@/components/app/aging-chart").then((m) => m.AgingChart),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[120px] animate-pulse rounded-[var(--radius-inner)] bg-surface-strong" />
-    ),
-  },
-);
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -218,6 +198,7 @@ export default async function AppHomePage({
       </div>
 
       {/* Analytics row — Revenue trend + Aging breakdown (per D-01, D-02) */}
+      {/* Client wrappers hold next/dynamic ssr:false — not allowed in Server Components in Next.js 15 */}
       <div className="grid gap-[var(--space-grid)] md:grid-cols-[3fr_2fr]">
         <Card>
           <CardHeader>
@@ -225,14 +206,11 @@ export default async function AppHomePage({
             <CardDescription>Billed vs. collected over the last 12 months.</CardDescription>
           </CardHeader>
           <CardContent className="min-h-[240px] md:min-h-[280px]">
-            {hasChartData ? (
-              <RevenueChart data={revenueTrend} currency={currency} />
-            ) : (
-              <EmptyState
-                title="No revenue data yet."
-                description="Issue your first invoice to start tracking trends."
-              />
-            )}
+            <RevenueChartCard
+              data={revenueTrend}
+              currency={currency}
+              hasChartData={hasChartData}
+            />
           </CardContent>
         </Card>
         <Card>
@@ -241,14 +219,11 @@ export default async function AppHomePage({
             <CardDescription>Outstanding amounts by how overdue they are.</CardDescription>
           </CardHeader>
           <CardContent className="min-h-[240px] md:min-h-[280px]">
-            {hasChartData ? (
-              <AgingChart buckets={agingBuckets} currency={currency} />
-            ) : (
-              <EmptyState
-                title="No outstanding receivables."
-                description="All invoices are either paid or in draft."
-              />
-            )}
+            <AgingChartCard
+              buckets={agingBuckets}
+              currency={currency}
+              hasChartData={hasChartData}
+            />
           </CardContent>
         </Card>
       </div>
