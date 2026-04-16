@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
-import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown } from "lucide-react";
+import { cn, formatCurrency } from "@/lib/utils";
 
 export function MetricCard({
   label,
@@ -11,6 +12,8 @@ export function MetricCard({
   interactive = false,
   active = false,
   href,
+  momBadge,
+  currency,
 }: {
   label: string;
   value: string;
@@ -18,6 +21,11 @@ export function MetricCard({
   interactive?: boolean;
   active?: boolean;
   href?: string;
+  momBadge?: {
+    delta: number | null;
+    unit: "currency" | "percent" | "pp";
+  };
+  currency?: string;
 }) {
   const router = useRouter();
   const classes = cn(
@@ -50,6 +58,28 @@ export function MetricCard({
       >
         {value}
       </p>
+      {momBadge && momBadge.delta !== null ? (
+        <div
+          className={cn(
+            "mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums",
+            momBadge.delta >= 0
+              ? "bg-[rgba(36,88,58,0.10)] text-success"
+              : "bg-[rgba(141,61,46,0.10)] text-danger",
+          )}
+        >
+          {momBadge.delta >= 0 ? (
+            <TrendingUp className="size-3" aria-hidden="true" />
+          ) : (
+            <TrendingDown className="size-3" aria-hidden="true" />
+          )}
+          {momBadge.delta >= 0 ? "+" : ""}
+          {momBadge.unit === "pp"
+            ? `${momBadge.delta.toFixed(1)}pp`
+            : momBadge.unit === "percent"
+              ? `${momBadge.delta.toFixed(1)}%`
+              : formatCurrency(Math.abs(momBadge.delta), currency ?? "AED")}
+        </div>
+      ) : null}
       {interactive ? (
         <p className="mt-3 text-xs font-medium text-muted-strong">
           {active ? "Showing drilldown" : "Click to inspect"}
