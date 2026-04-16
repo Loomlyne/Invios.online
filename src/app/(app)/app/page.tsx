@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Route } from "next";
+import dynamic from "next/dynamic";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { MetricCard } from "@/components/app/metric-card";
 import { DashboardRangeToggle } from "@/components/app/dashboard-range-toggle";
@@ -20,12 +21,38 @@ import {
 import { getAppContext } from "@/lib/data";
 import { formatDateDisplay, formatCurrency } from "@/lib/utils";
 import {
+  buildRevenueTrend,
+  buildAgingBuckets,
+  buildMomDeltas,
+} from "@/lib/dashboard";
+import {
   getDashboardDrilldown,
   getDashboardInsights,
   getDashboardMetrics,
   getDashboardRecentInvoices,
   getDashboardRecentQuotations,
+  getDashboardAnalyticsData,
 } from "@/lib/billing-data";
+
+const RevenueChart = dynamic(
+  () => import("@/components/app/revenue-chart").then((m) => m.RevenueChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[260px] animate-pulse rounded-[var(--radius-inner)] bg-surface-strong" />
+    ),
+  },
+);
+
+const AgingChart = dynamic(
+  () => import("@/components/app/aging-chart").then((m) => m.AgingChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[120px] animate-pulse rounded-[var(--radius-inner)] bg-surface-strong" />
+    ),
+  },
+);
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -87,13 +114,20 @@ export default async function AppHomePage({
   const currentMetric = parseMetric(typeof params.metric === "string" ? params.metric : undefined);
   const context = await getAppContext();
   const userId = context.userId ?? "";
-  const [metrics, drilldownRows, insights, recentInvoices, recentQuotations] = await Promise.all([
+  const [metrics, drilldownRows, insights, recentInvoices, recentQuotations, analyticsData] = await Promise.all([
     getDashboardMetrics(userId, currentRange),
     getDashboardDrilldown(userId, currentMetric, currentRange),
     getDashboardInsights(userId, currentRange),
     getDashboardRecentInvoices(userId, currentRange),
     getDashboardRecentQuotations(userId, currentRange),
+    getDashboardAnalyticsData(userId, currentRange),
   ]);
+
+  const today = new Date().toISOString().split("T")[0];
+  const revenueTrend = buildRevenueTrend(analyticsData.rows, analyticsData.payments, today);
+  const agingBuckets = buildAgingBuckets(analyticsData.rows, today);
+  const momDeltas = buildMomDeltas(analyticsData.rows, currentRange, today);
+  const hasChartData = analyticsData.rows.some((r) => r.status !== "draft");
 
   const currency = context.userState.settings.defaultCurrency;
   const hasData = recentInvoices.length > 0 || recentQuotations.length > 0;
@@ -133,6 +167,8 @@ export default async function AppHomePage({
           interactive
           active={currentMetric === "total-billed"}
           href={buildDashboardHref("total-billed", currentRange)}
+          currency={currency}
+          momBadge={momDeltas.totalBilled !== null ? { delta: momDeltas.totalBilled, unit: "percent" } : undefined}
         />
         <MetricCard
           label="Collected"
@@ -140,6 +176,8 @@ export default async function AppHomePage({
           interactive
           active={currentMetric === "collected"}
           href={buildDashboardHref("collected", currentRange)}
+          currency={currency}
+          momBadge={momDeltas.totalCollected !== null ? { delta: momDeltas.totalCollected, unit: "percent" } : undefined}
         />
         <MetricCard
           label="Outstanding"
@@ -147,6 +185,8 @@ export default async function AppHomePage({
           interactive
           active={currentMetric === "outstanding"}
           href={buildDashboardHref("outstanding", currentRange)}
+          currency={currency}
+          momBadge={momDeltas.outstanding !== null ? { delta: momDeltas.outstanding, unit: "percent" } : undefined}
         />
         <MetricCard
           label="Collection rate"
@@ -155,6 +195,8 @@ export default async function AppHomePage({
           interactive
           active={currentMetric === "collection-rate"}
           href={buildDashboardHref("collection-rate", currentRange)}
+          currency={currency}
+          momBadge={momDeltas.collectionRate !== null ? { delta: momDeltas.collectionRate, unit: "pp" } : undefined}
         />
       </div>
 
@@ -173,6 +215,42 @@ export default async function AppHomePage({
             <p className="mt-2 text-base font-semibold text-foreground">{item.value}</p>
           </div>
         ))}
+      </div>
+
+      {/* Analytics row — Revenue trend + Aging breakdown (per D-01, D-02) */}
+      <div className="grid gap-[var(--space-grid)] md:grid-cols-[3fr_2fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Revenue trend</CardTitle>
+            <CardDescription>Billed vs. collected over the last 12 months.</CardDescription>
+          </CardHeader>
+          <CardContent className="min-h-[240px] md:min-h-[280px]">
+            {hasChartData ? (
+              <RevenueChart data={revenueTrend} currency={currency} />
+            ) : (
+              <EmptyState
+                title="No revenue data yet."
+                description="Issue your first invoice to start tracking trends."
+              />
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Receivables aging</CardTitle>
+            <CardDescription>Outstanding amounts by how overdue they are.</CardDescription>
+          </CardHeader>
+          <CardContent className="min-h-[240px] md:min-h-[280px]">
+            {hasChartData ? (
+              <AgingChart buckets={agingBuckets} currency={currency} />
+            ) : (
+              <EmptyState
+                title="No outstanding receivables."
+                description="All invoices are either paid or in draft."
+              />
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Drilldown — selected metric detail */}

@@ -800,6 +800,14 @@ export async function getDashboardRecentQuotations(
   return (await getDashboardDataset(userId, range)).recentQuotations;
 }
 
+export async function getDashboardAnalyticsData(
+  userId: string,
+  range: DashboardRangeKey = "all",
+) {
+  const dataset = await getDashboardDataset(userId, range);
+  return { rows: dataset.rows, payments: dataset.payments };
+}
+
 export async function listRecentInvoices(userId: string, limit = 5): Promise<InvoiceRecord[]> {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return [];
