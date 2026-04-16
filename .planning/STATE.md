@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: "Completed 07-02-PLAN.md — awaiting checkpoint:human-verify"
-last_updated: "2026-04-16T21:52:10.309Z"
+stopped_at: "Completed 07-02-PLAN.md — awaiting checkpoint:human-verify at https://invios.online/app"
+last_updated: "2026-04-16T22:06:25.969Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 2
@@ -29,7 +29,7 @@ Phase: 7 (analytics-dashboard) — EXECUTING
 Plan: 2 of 2
 Status: Phase complete — ready for verification
 Last activity: 2026-04-16
-Stopped at: Completed 07-02-PLAN.md — awaiting checkpoint:human-verify
+Stopped at: Completed 07-02-PLAN.md — awaiting checkpoint:human-verify at https://invios.online/app
 
 ```
 Progress: [███████░░░] 67% — 2/3 plans complete in Phase 06
