@@ -55,7 +55,12 @@ Plans:
   2. User can see a receivables aging breakdown with outstanding amounts grouped into 0–30, 31–60, 61–90, and 90+ day buckets — excluding paid invoices and reflecting partial payments correctly
   3. User can see month-over-month change indicators (e.g. +12%, -8%) on the billed, collected, and outstanding metric cards on the dashboard
   4. All three analytics surfaces show a deliberate empty state when no non-draft invoices exist — no broken or blank charts
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Scaffold shadcn chart, computation functions (trend/aging/MoM), unit tests
+- [ ] 07-02-PLAN.md — Chart components, MetricCard MoM badge, dashboard page wiring
+
 **UI hint**: yes
 
 ## Progress
@@ -68,4 +73,4 @@ Plans:
 | 4. Public Trust Surfaces | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 5. Automation & Recovery | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 6. CSV Client Import | v1.1 | 3/3 | Complete   | 2026-04-14 |
-| 7. Analytics Dashboard | v1.1 | 0/? | Not started | — |
+| 7. Analytics Dashboard | v1.1 | 0/2 | Not started | — |
