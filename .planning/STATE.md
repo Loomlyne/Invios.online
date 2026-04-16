@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 7 UI-SPEC approved
-last_updated: "2026-04-16T12:23:42.479Z"
-last_activity: 2026-04-16 -- Phase 7 planning complete
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-04-16T21:38:45.219Z"
+last_activity: 2026-04-16
 progress:
   total_phases: 2
-  completed_phases: 0
-  total_plans: 2
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 4
+  percent: 80
 ---
 
 # STATE
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Make it dead simple for a service business to send a polished branded quote or invoice and reliably know what has been paid, what is still due, and what profit remains.
-**Current focus:** Phase 06 — csv-client-import
+**Current focus:** Phase 7 — analytics-dashboard
 
 ## Current Position
 
-Phase: 7
-Plan: Not started
+Phase: 7 (analytics-dashboard) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-04-16 -- Phase 7 planning complete
-Stopped at: Phase 7 UI-SPEC approved
+Last activity: 2026-04-16
+Stopped at: Completed 07-01-PLAN.md
 
 ```
 Progress: [███████░░░] 67% — 2/3 plans complete in Phase 06
@@ -72,6 +72,14 @@ Progress: [███████░░░] 67% — 2/3 plans complete in Phase 0
 - v1.0: 5 phases, 28 plans, 168 commits, ~22,900 LOC TypeScript, 9 days
 - 06-01: 3 tasks, 4 files, 12 min — CSV data layer (csv-import.ts, importClientsAction, body size config)
 - 06-02: 2 tasks, 4 files, 13 min — Unit tests (16 passing) + wizard shell + StepUpload + StepMap
+- 07-01: 2 tasks, 4 files, 37 min — shadcn chart scaffold + buildRevenueTrend/buildAgingBuckets/buildMomDeltas + 19 unit tests
+
+## Key Decisions (07 additions)
+
+- **buildRevenueTrend uses raw PaymentRecord[]**: Receives payments array directly for per-calendar-month collected totals — collectedInRangeAmount is range-filtered, not calendar-month accurate
+- **buildMomDeltas null on all/zero**: Returns null for all fields when range is 'all'; null per-metric when prior period value is zero (avoids division-by-zero)
+- **collectionRate MoM is pp-difference**: Percentage-point difference (current% minus prior%), not percent-of-percent — per D-09
+- **shadcn overwrites card.tsx**: Running `pnpm dlx shadcn@latest add chart` also overwrites existing card.tsx — always revert after scaffold
 
 ## Accumulated Context
 

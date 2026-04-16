@@ -8,9 +8,9 @@
 
 ### Dashboard & Analytics
 
-- [ ] **DASH-05**: User can view a 12-month revenue trend chart showing total billed vs total collected per month.
-- [ ] **DASH-06**: User can view a receivables aging breakdown showing outstanding invoice amounts bucketed by how overdue they are (0–30, 31–60, 61–90, and 90+ days).
-- [ ] **DASH-07**: User can see period-over-period (month-over-month) change indicators on key dashboard metrics (billed, collected, outstanding).
+- [x] **DASH-05**: User can view a 12-month revenue trend chart showing total billed vs total collected per month.
+- [x] **DASH-06**: User can view a receivables aging breakdown showing outstanding invoice amounts bucketed by how overdue they are (0–30, 31–60, 61–90, and 90+ days).
+- [x] **DASH-07**: User can see period-over-period (month-over-month) change indicators on key dashboard metrics (billed, collected, outstanding).
 
 ## Future Requirements
 
@@ -32,6 +32,6 @@
 | Requirement ID | Planned Phase | Status |
 |----------------|---------------|--------|
 | CLNT-05 | Phase 6 | Complete |
-| DASH-05 | Phase 7 | Pending |
-| DASH-06 | Phase 7 | Pending |
-| DASH-07 | Phase 7 | Pending |
+| DASH-05 | Phase 7 | Complete |
+| DASH-06 | Phase 7 | Complete |
+| DASH-07 | Phase 7 | Complete |

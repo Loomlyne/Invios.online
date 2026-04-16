@@ -58,7 +58,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Scaffold shadcn chart, computation functions (trend/aging/MoM), unit tests
+- [x] 07-01-PLAN.md — Scaffold shadcn chart, computation functions (trend/aging/MoM), unit tests
 - [ ] 07-02-PLAN.md — Chart components, MetricCard MoM badge, dashboard page wiring
 
 **UI hint**: yes
@@ -73,4 +73,4 @@ Plans:
 | 4. Public Trust Surfaces | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 5. Automation & Recovery | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 6. CSV Client Import | v1.1 | 3/3 | Complete   | 2026-04-14 |
-| 7. Analytics Dashboard | v1.1 | 0/2 | Not started | — |
+| 7. Analytics Dashboard | v1.1 | 1/2 | In Progress|  |
