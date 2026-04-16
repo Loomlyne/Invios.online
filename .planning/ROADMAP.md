@@ -23,7 +23,7 @@ See archive: `.planning/milestones/v1.0-ROADMAP.md`
 ### 📋 v1.1 (Planned)
 
 - [x] **Phase 6: CSV Client Import** — User can import clients in bulk from a CSV file with field mapping, validation, and duplicate detection (completed 2026-04-14)
-- [ ] **Phase 7: Analytics Dashboard** — User can view revenue trends, receivables aging, and period-over-period metric changes on the dashboard
+- [x] **Phase 7: Analytics Dashboard** — User can view revenue trends, receivables aging, and period-over-period metric changes on the dashboard (completed 2026-04-16)
 
 ## Phase Details
 
@@ -59,7 +59,7 @@ Plans:
 
 Plans:
 - [x] 07-01-PLAN.md — Scaffold shadcn chart, computation functions (trend/aging/MoM), unit tests
-- [ ] 07-02-PLAN.md — Chart components, MetricCard MoM badge, dashboard page wiring
+- [x] 07-02-PLAN.md — Chart components, MetricCard MoM badge, dashboard page wiring
 
 **UI hint**: yes
 
@@ -73,4 +73,4 @@ Plans:
 | 4. Public Trust Surfaces | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 5. Automation & Recovery | v1.0 | 7/7 | ✅ Complete | 2026-04-12 |
 | 6. CSV Client Import | v1.1 | 3/3 | Complete   | 2026-04-14 |
-| 7. Analytics Dashboard | v1.1 | 1/2 | In Progress|  |
+| 7. Analytics Dashboard | v1.1 | 2/2 | Complete   | 2026-04-16 |
