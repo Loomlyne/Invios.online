@@ -84,6 +84,8 @@ Extended `src/components/app/metric-card.tsx` with two new optional props: `momB
 |------|--------|---------|
 | Task 1 | 1ac406a | feat(07-02): create RevenueChart and AgingChart components, extend MetricCard with MoM badge |
 | Task 2 | 17ccb22 | feat(07-02): wire analytics row and MoM badges into dashboard page |
+| Fix | c34b442 | fix(07-02): move next/dynamic ssr:false into client component wrapper (Next.js 15.5 restriction) |
+| Metadata | 43521a1 | docs(07-02): complete analytics UI plan — RevenueChart, AgingChart, MoM badges |
 
 ## Deviations from Plan
 
@@ -96,7 +98,14 @@ Extended `src/components/app/metric-card.tsx` with two new optional props: `momB
 - **Files modified:** src/components/app/aging-chart.tsx
 - **Commit:** 1ac406a
 
-**2. [Rule 3 - Blocking] Git index corruption on settings/page.tsx**
+**2. [Rule 1 - Bug] Next.js 15.5 disallows `ssr: false` in Server Components**
+- **Found during:** Task 2 Vercel production build
+- **Issue:** Next.js 15.5.14 added a compile-time restriction: `next/dynamic` with `ssr: false` cannot be called at module scope in a Server Component file. The plan placed `dynamic()` calls directly in `page.tsx` which is a Server Component — valid in Next.js 14/15.0–15.4 but now a hard error.
+- **Fix:** Created `src/components/app/analytics-row.tsx` as a `"use client"` wrapper that owns the `dynamic()` calls and exports `RevenueChartCard` and `AgingChartCard`. The Server Component (`page.tsx`) imports these named wrappers instead.
+- **Files modified:** src/components/app/analytics-row.tsx (created), src/app/(app)/app/page.tsx (updated)
+- **Commit:** c34b442
+
+**3. [Rule 3 - Blocking] Git index corruption on settings/page.tsx**
 - **Found during:** Task 2 commit
 - **Issue:** `src/app/(app)/app/settings/page.tsx` had a corrupt blob reference in the git index (object hash referenced but missing from object store). Commit failed with "invalid object" error.
 - **Fix:** `git hash-object -w src/app/(app)/app/settings/page.tsx` to write the blob into the object store, then `git add` to refresh the index entry. File on disk was intact.
