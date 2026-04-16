@@ -684,6 +684,7 @@ const getDashboardDataset = cache(async (userId: string, range: DashboardRangeKe
   if (!supabase) {
     return {
       rows: emptyRows,
+      payments: [] as PaymentRecord[],
       metrics: buildDashboardMetrics([]),
       insights: emptyInsights,
       recentInvoices: [] as InvoiceRecord[],
@@ -748,6 +749,7 @@ const getDashboardDataset = cache(async (userId: string, range: DashboardRangeKe
 
   return {
     rows,
+    payments,
     metrics: buildDashboardMetrics(rows),
     insights: buildDashboardInsights({
       rows,

@@ -402,3 +402,192 @@ export function buildDashboardInsights(params: {
     recentActivity,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Analytics computation functions (Plan 07-01)
+// ---------------------------------------------------------------------------
+
+export interface RevenueTrendMonth {
+  month: string;    // "Jan", "Feb", ... display label
+  monthKey: string; // "YYYY-MM" for data joining
+  billed: number;
+  collected: number;
+}
+
+const MONTH_LABELS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+] as const;
+
+export function buildRevenueTrend(
+  rows: DashboardInvoiceRow[],
+  payments: PaymentRecord[],
+  today: string,
+): RevenueTrendMonth[] {
+  const base = new Date(`${today}T00:00:00`);
+
+  const slots: RevenueTrendMonth[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(base);
+    d.setMonth(d.getMonth() - i);
+    const monthKey = d.toISOString().slice(0, 7); // "YYYY-MM"
+    const monthIndex = parseInt(monthKey.slice(5, 7), 10) - 1;
+    const month = MONTH_LABELS[monthIndex] ?? monthKey;
+
+    const billed = roundCurrency(
+      rows
+        .filter((row) => toDateOnly(row.issueDate)?.slice(0, 7) === monthKey)
+        .reduce((acc, row) => acc + row.total, 0),
+    );
+
+    const collected = roundCurrency(
+      payments
+        .filter((payment) => payment.datePaid.slice(0, 7) === monthKey)
+        .reduce((acc, payment) => acc + payment.amount, 0),
+    );
+
+    slots.push({ month, monthKey, billed, collected });
+  }
+
+  return slots;
+}
+
+export interface AgingBucket {
+  label: string;  // "0-30d", "31-60d", "61-90d", "90+d"
+  amount: number;
+  count: number;
+}
+
+export function buildAgingBuckets(
+  rows: DashboardInvoiceRow[],
+  today: string,
+): AgingBucket[] {
+  const buckets: AgingBucket[] = [
+    { label: "0-30d", amount: 0, count: 0 },
+    { label: "31-60d", amount: 0, count: 0 },
+    { label: "61-90d", amount: 0, count: 0 },
+    { label: "90+d", amount: 0, count: 0 },
+  ];
+
+  for (const row of rows) {
+    if (row.outstandingAmount <= 0) continue;
+
+    const daysRaw = dayDifference(row.dueDate, today);
+    if (daysRaw === null) continue;
+
+    const days = Math.max(0, daysRaw);
+
+    let bucketIndex: number;
+    if (days <= 30) {
+      bucketIndex = 0;
+    } else if (days <= 60) {
+      bucketIndex = 1;
+    } else if (days <= 90) {
+      bucketIndex = 2;
+    } else {
+      bucketIndex = 3;
+    }
+
+    const bucket = buckets[bucketIndex];
+    if (bucket) {
+      bucket.amount = roundCurrency(bucket.amount + row.outstandingAmount);
+      bucket.count += 1;
+    }
+  }
+
+  return buckets;
+}
+
+export interface MomDeltas {
+  totalBilled: number | null;
+  totalCollected: number | null;
+  outstanding: number | null;
+  collectionRate: number | null; // percentage-point change
+}
+
+function filterRowsByPeriod(
+  rows: DashboardInvoiceRow[],
+  periodStart: string,
+  periodEnd: string,
+): DashboardInvoiceRow[] {
+  return rows.filter((row) => {
+    const issued = toDateOnly(row.issueDate);
+    return issued !== null && issued >= periodStart && issued <= periodEnd;
+  });
+}
+
+function computePeriodMetrics(filteredRows: DashboardInvoiceRow[]) {
+  const totalBilled = roundCurrency(filteredRows.reduce((acc, r) => acc + r.total, 0));
+  const totalCollected = roundCurrency(filteredRows.reduce((acc, r) => acc + r.collectedAmount, 0));
+  const outstanding = roundCurrency(filteredRows.reduce((acc, r) => acc + r.outstandingAmount, 0));
+  const collectionRate = computeCollectionRate({ totalBilled, totalCollected });
+  return { totalBilled, totalCollected, outstanding, collectionRate };
+}
+
+export function buildMomDeltas(
+  rows: DashboardInvoiceRow[],
+  range: DashboardRangeKey,
+  today: string,
+): MomDeltas {
+  if (range === "all") {
+    return { totalBilled: null, totalCollected: null, outstanding: null, collectionRate: null };
+  }
+
+  // Compute current period window
+  const currentEnd = today;
+  const currentStart = buildRangeStart(range, today);
+  if (!currentStart) {
+    return { totalBilled: null, totalCollected: null, outstanding: null, collectionRate: null };
+  }
+
+  // Compute prior period window (same length, immediately before current)
+  let priorEnd: string;
+  let priorStart: string;
+
+  if (range === "30d") {
+    const priorEndDate = new Date(`${currentStart}T00:00:00`);
+    priorEndDate.setDate(priorEndDate.getDate() - 1);
+    priorEnd = priorEndDate.toISOString().slice(0, 10);
+    const priorStartDate = new Date(`${priorEnd}T00:00:00`);
+    priorStartDate.setDate(priorStartDate.getDate() - 29);
+    priorStart = priorStartDate.toISOString().slice(0, 10);
+  } else if (range === "90d") {
+    const priorEndDate = new Date(`${currentStart}T00:00:00`);
+    priorEndDate.setDate(priorEndDate.getDate() - 1);
+    priorEnd = priorEndDate.toISOString().slice(0, 10);
+    const priorStartDate = new Date(`${priorEnd}T00:00:00`);
+    priorStartDate.setDate(priorStartDate.getDate() - 89);
+    priorStart = priorStartDate.toISOString().slice(0, 10);
+  } else {
+    // "12m"
+    const priorEndDate = new Date(`${currentStart}T00:00:00`);
+    priorEndDate.setDate(priorEndDate.getDate() - 1);
+    priorEnd = priorEndDate.toISOString().slice(0, 10);
+    const priorStartDate = new Date(`${priorEnd}T00:00:00`);
+    priorStartDate.setMonth(priorStartDate.getMonth() - 11);
+    priorStart = priorStartDate.toISOString().slice(0, 10);
+  }
+
+  const currentRows = filterRowsByPeriod(rows, currentStart, currentEnd);
+  const priorRows = filterRowsByPeriod(rows, priorStart, priorEnd);
+
+  const current = computePeriodMetrics(currentRows);
+  const prior = computePeriodMetrics(priorRows);
+
+  const calcDelta = (curr: number, prev: number): number | null => {
+    if (prev === 0) return null;
+    return Math.round(((curr - prev) / Math.abs(prev)) * 100 * 10) / 10;
+  };
+
+  const collectionRateDelta: number | null =
+    current.collectionRate !== null && prior.collectionRate !== null
+      ? Math.round((current.collectionRate - prior.collectionRate) * 10) / 10
+      : null;
+
+  return {
+    totalBilled: calcDelta(current.totalBilled, prior.totalBilled),
+    totalCollected: calcDelta(current.totalCollected, prior.totalCollected),
+    outstanding: calcDelta(current.outstanding, prior.outstanding),
+    collectionRate: collectionRateDelta,
+  };
+}
