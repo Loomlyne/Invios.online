@@ -69,7 +69,7 @@ export function BottomNav() {
       {/* Action palette popup */}
       {isOpen && (
         <div className="animate-fab-popup relative z-40 mx-6 mb-3">
-          <div className="rounded-[2.5rem] border border-white/70 bg-surface/90 p-4 shadow-[0_24px_48px_rgba(23,18,15,0.12),0_8px_16px_rgba(23,18,15,0.04)] backdrop-blur-2xl">
+          <div className="rounded-[2.5rem] border border-[--border-brand]/60 bg-surface p-4 shadow-[0_24px_48px_rgba(23,18,15,0.14),0_8px_16px_rgba(23,18,15,0.06)]">
             <div className="grid grid-cols-3 gap-2">
               {fabMenuItems.map((item) => {
                 const Icon = iconMap[item.icon as keyof typeof iconMap];
@@ -99,12 +99,13 @@ export function BottomNav() {
 
       {/* Bottom bar — inset floating pill */}
       <div className="relative z-40 mx-6 mb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        <div className="flex h-[76px] items-center justify-between rounded-[2.5rem] border border-white/70 bg-surface/60 px-3 shadow-[0_8px_32px_rgba(23,18,15,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl">
+        <div className="flex h-[76px] items-center justify-between rounded-[2.5rem] border border-[--border-brand]/60 bg-surface px-3 shadow-[0_16px_40px_-12px_rgba(23,18,15,0.18),0_4px_12px_rgba(23,18,15,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
           {/* Left nav items */}
           <div className="flex w-[40%] items-center justify-between">
             {leftItems.map((item) => {
               const Icon = iconMap[item.icon as keyof typeof iconMap];
               const active = isActivePath(pathname, item.href);
+              const activeTile = active && !isOpen;
               return (
                 <Link
                   key={item.key}
@@ -112,18 +113,18 @@ export function BottomNav() {
                   aria-current={active ? "page" : undefined}
                   aria-label={item.label}
                   className={cn(
-                    "relative flex size-11 items-center justify-center rounded-full transition-all duration-300",
+                    "flex items-center justify-center transition-all duration-300",
+                    activeTile
+                      ? "size-12 rounded-2xl border border-black/[0.04] bg-white shadow-sm"
+                      : "size-11 rounded-full",
                     isOpen && "opacity-40",
-                    !isOpen && "hover:bg-white/40",
+                    !activeTile && !isOpen && "hover:bg-white/60",
                   )}
                 >
-                  {active && !isOpen && (
-                    <span className="absolute top-0.5 h-[5px] w-[5px] rounded-full bg-accent shadow-[0_0_8px_rgba(202,138,4,0.6)]" />
-                  )}
                   <Icon
                     className={cn(
                       "size-[26px] transition-colors duration-300",
-                      active && !isOpen ? "text-foreground" : "text-muted",
+                      activeTile ? "text-accent-strong" : "text-muted-strong",
                     )}
                     strokeWidth={1.5}
                   />
@@ -140,6 +141,7 @@ export function BottomNav() {
             {rightItems.map((item) => {
               const Icon = iconMap[item.icon as keyof typeof iconMap];
               const active = isActivePath(pathname, item.href);
+              const activeTile = active && !isOpen;
               return (
                 <Link
                   key={item.key}
@@ -147,18 +149,18 @@ export function BottomNav() {
                   aria-current={active ? "page" : undefined}
                   aria-label={item.label}
                   className={cn(
-                    "relative flex size-11 items-center justify-center rounded-full transition-all duration-300",
+                    "flex items-center justify-center transition-all duration-300",
+                    activeTile
+                      ? "size-12 rounded-2xl border border-black/[0.04] bg-white shadow-sm"
+                      : "size-11 rounded-full",
                     isOpen && "opacity-40",
-                    !isOpen && "hover:bg-white/40",
+                    !activeTile && !isOpen && "hover:bg-white/60",
                   )}
                 >
-                  {active && !isOpen && (
-                    <span className="absolute top-0.5 h-[5px] w-[5px] rounded-full bg-accent shadow-[0_0_8px_rgba(202,138,4,0.6)]" />
-                  )}
                   <Icon
                     className={cn(
                       "size-[26px] transition-colors duration-300",
-                      active && !isOpen ? "text-foreground" : "text-muted",
+                      activeTile ? "text-accent-strong" : "text-muted-strong",
                     )}
                     strokeWidth={1.5}
                   />
@@ -176,8 +178,8 @@ export function BottomNav() {
           className={cn(
             "absolute bottom-[6px] left-1/2 flex size-16 -translate-x-1/2 items-center justify-center rounded-full transition-all duration-300 hover:scale-105",
             isOpen
-              ? "bg-foreground shadow-[0_16px_32px_-4px_rgba(23,18,15,0.5)] ring-4 ring-surface/40"
-              : "bg-accent-strong shadow-[0_12px_24px_-4px_rgba(202,138,4,0.4)]",
+              ? "bg-foreground shadow-[0_16px_32px_-4px_rgba(23,18,15,0.5)] ring-4 ring-surface"
+              : "bg-accent shadow-[0_12px_24px_-4px_rgba(202,138,4,0.45)]",
           )}
         >
           <Plus
