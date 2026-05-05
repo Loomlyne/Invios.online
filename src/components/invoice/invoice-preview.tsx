@@ -820,21 +820,24 @@ function SideBySideFooter({
 
   return (
     <div className={cn("border-t border-black/5", px, py, template.footerSurfaceClassName)}>
-      <div className="grid gap-6 sm:grid-cols-2">
-        {hasBankDetails ? (
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Bank Details", "تفاصيل البنك")}</p>
-            <div className="mt-3 space-y-2">
-              {bankFields.map((f, i) => (
-                <div key={i}>
-                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#A8A29E]">{f.label}</p>
-                  <p className="mt-0.5 text-sm font-medium text-foreground">{f.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
+      {/* Bank details — horizontal row */}
+      {hasBankDetails ? (
         <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Bank Details", "تفاصيل البنك")}</p>
+          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-3">
+            {bankFields.map((f, i) => (
+              <div key={i}>
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#A8A29E]">{f.label}</p>
+                <p className="mt-0.5 text-sm font-medium text-foreground">{f.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Terms & Notes — side by side */}
+      {hasTerms || hasNotes ? (
+        <div className={cn("grid gap-6 sm:grid-cols-2", hasBankDetails && "mt-6")}>
           {hasTerms ? (
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Terms", "الشروط والأحكام")}</p>
@@ -842,13 +845,13 @@ function SideBySideFooter({
             </div>
           ) : null}
           {hasNotes ? (
-            <div className={hasTerms ? "mt-4" : ""}>
+            <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Notes", "ملاحظات")}</p>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#78716C]">{preview.notes}</p>
             </div>
           ) : null}
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
