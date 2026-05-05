@@ -169,7 +169,7 @@ export function DocumentBuilder({
   };
 
   return (
-    <div className="grid gap-[var(--space-section)] xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+    <div className="grid gap-[var(--space-section)] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <Card className="p-0">
         <CardHeader className="border-b border-black/8 px-5 py-4 sm:px-6">
           <div className="flex items-center justify-between gap-4">
@@ -177,7 +177,7 @@ export function DocumentBuilder({
               <Badge variant="accent">{kind === "invoice" ? "Invoice builder" : "Quotation builder"}</Badge>
               <DocumentStatusBadge status={initialValue?.status ?? "draft"} />
             </div>
-            <div className="xl:hidden">
+            <div className="lg:hidden">
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="secondary" size="sm">Preview</Button>
@@ -294,7 +294,7 @@ export function DocumentBuilder({
               <div className="grid gap-3">
                 {lineItems.map((item, index) => (
                   <Card key={item.id} className="border border-black/7 bg-[#FFF8EE] p-4 shadow-none">
-                    <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
+                    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
                       <Field label="Title" htmlFor={`description-${item.id}`}>
                         <Input
                           id={`description-${item.id}`}
@@ -376,7 +376,7 @@ export function DocumentBuilder({
                       </Field>
                     </div>
                     {kind === "quotation" && (
-                      <div className="mt-3 grid grid-cols-2 gap-2">
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
                         <Field label="Duration" htmlFor={`durationValue-${item.id}`}>
                           <Input
                             id={`durationValue-${item.id}`}
@@ -522,7 +522,7 @@ export function DocumentBuilder({
         </CardContent>
       </Card>
 
-      <div className="hidden xl:block">
+      <div className="hidden lg:block">
         <div className="sticky top-[7rem]">{previewNode}</div>
       </div>
     </div>

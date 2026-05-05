@@ -42,13 +42,13 @@ export function ExpensesTable({ invoiceId, currency, expenses }: ExpensesTablePr
           <span className="text-xs text-muted uppercase tracking-[0.18em] w-24 shrink-0">
             Date
           </span>
-          <span className="text-xs text-muted uppercase tracking-[0.18em] w-[100px] text-right">
+          <span className="text-xs text-muted uppercase tracking-[0.18em] w-24 shrink-0 text-right">
             Amount
           </span>
           <span className="text-xs text-muted uppercase tracking-[0.18em] flex-1">
             Description
           </span>
-          <span className="text-xs text-muted uppercase tracking-[0.18em] w-[120px]">
+          <span className="text-xs text-muted uppercase tracking-[0.18em] w-28 shrink-0">
             Vendor
           </span>
           <span className="w-8" />
@@ -94,11 +94,11 @@ export function ExpensesTable({ invoiceId, currency, expenses }: ExpensesTablePr
             {/* Desktop table row */}
             <div className="hidden items-center gap-3 px-4 py-3 md:flex">
               <span className="w-24 shrink-0 text-sm text-muted">{e.date}</span>
-              <span className="w-[100px] text-right text-sm font-semibold text-foreground">
+              <span className="w-24 text-right text-sm font-semibold text-foreground">
                 {formatCurrency(e.amount, currency)}
               </span>
               <span className="flex-1 text-sm text-foreground">{e.description}</span>
-              <span className="w-[120px] text-sm text-muted">{e.vendor}</span>
+              <span className="w-28 text-sm text-muted">{e.vendor}</span>
               <form
                 action={async () => {
                   await deleteExpenseAction(e.id, invoiceId);
@@ -123,7 +123,7 @@ export function ExpensesTable({ invoiceId, currency, expenses }: ExpensesTablePr
           className="px-4 py-3 bg-[#FFFCF7] border-t border-dashed border-border/60 flex flex-wrap items-end gap-3 rounded-b-[var(--radius-inner)]"
         >
           <input type="hidden" name="invoiceId" value={invoiceId} />
-          <div className="w-[120px] shrink-0">
+          <div className="w-28 shrink-0">
             <DatePicker
               value={expenseDate}
               onChange={setExpenseDate}
@@ -137,21 +137,21 @@ export function ExpensesTable({ invoiceId, currency, expenses }: ExpensesTablePr
             step="0.01"
             min="0.01"
             placeholder="0.00"
-            className="h-9 w-[100px]"
+            className="h-9 w-24"
             required
           />
           <Input
             name="description"
             type="text"
             placeholder="What was this for?"
-            className="h-9 flex-1 min-w-[120px]"
+            className="h-9 flex-1 min-w-28"
             required
           />
           <Input
             name="vendor"
             type="text"
             placeholder="Supplier name"
-            className="h-9 w-[120px]"
+            className="h-9 w-28"
           />
           <Button type="submit" variant="ghost" size="sm" disabled={isPending}>
             {isPending ? "Saving..." : "Add expense"}

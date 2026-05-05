@@ -228,7 +228,7 @@ export function BrandingWorkspace({
   const previewNode = <InvoicePreview preview={preview} />;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-2">
       <Card className="overflow-hidden p-0">
         <CardHeader className="border-b border-black/8 px-5 py-5 sm:px-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -239,7 +239,7 @@ export function BrandingWorkspace({
                 Customize your invoices and quotations.
               </CardDescription>
             </div>
-            <div className="xl:hidden">
+            <div className="lg:hidden">
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="secondary">Preview</Button>
@@ -369,21 +369,36 @@ export function BrandingWorkspace({
                   </div>
 
                   {/* Colors */}
-                  <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
-                    <Field label="Brand Color">
-                      <ColorPicker
-                        name="primaryColor"
-                        value={primaryColor}
-                        onChange={setPrimaryColor}
-                      />
-                    </Field>
-                    <Field label="Secondary Color">
-                      <ColorPicker
-                        name="secondaryColor"
-                        value={secondaryColor}
-                        onChange={setSecondaryColor}
-                      />
-                    </Field>
+                  <div className="border-t border-border pt-4">
+                    <div className="mb-4">
+                      <p className="text-sm font-medium">Brand Colors</p>
+                      <p className="text-sm text-muted">
+                        Choose colors that represent your brand on invoices and
+                        quotations.
+                      </p>
+                    </div>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-widest text-muted">
+                          Primary
+                        </Label>
+                        <ColorPicker
+                          name="primaryColor"
+                          value={primaryColor}
+                          onChange={setPrimaryColor}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-widest text-muted">
+                          Secondary
+                        </Label>
+                        <ColorPicker
+                          name="secondaryColor"
+                          value={secondaryColor}
+                          onChange={setSecondaryColor}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Base Font */}
@@ -638,7 +653,7 @@ export function BrandingWorkspace({
       </Card>
 
       {/* ── Live Preview ─────────────────────────────────── */}
-      <div className="hidden xl:block">
+      <div className="hidden lg:block">
         <div className="sticky top-[7rem]">
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">
             Live Preview

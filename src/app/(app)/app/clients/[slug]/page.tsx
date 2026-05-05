@@ -44,7 +44,7 @@ export default async function ClientDetailPage({
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[#E9E0D5]">
               {client.company || "Independent client"} • {client.email || "No email yet"} • {client.phone || "No phone yet"}
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
               <Button asChild variant="accent">
                 <Link href={`/app/quotations/new?clientId=${client.id}` as Route}>
                   New quotation
@@ -62,7 +62,7 @@ export default async function ClientDetailPage({
           </div>
         </Card>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="grid gap-4">
           <MetricCard label="Invoices" value={String(invoices.length)} detail={formatCurrency(billedTotal)} />
           <MetricCard label="Quotations" value={String(quotations.length)} detail={formatCurrency(quotedTotal)} />
         </div>

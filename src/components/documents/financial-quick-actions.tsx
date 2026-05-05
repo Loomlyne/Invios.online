@@ -25,7 +25,7 @@ export function FinancialQuickActions({
   invoiceId: string;
 }) {
   return (
-    <div className="flex flex-nowrap gap-2">
+    <div className="flex flex-wrap gap-2">
       <AddPaymentSheet invoiceId={invoiceId} />
       <AddExpenseSheet invoiceId={invoiceId} />
     </div>
@@ -170,7 +170,7 @@ function AddExpenseSheet({ invoiceId }: { invoiceId: string }) {
           <form ref={formRef} action={formAction} className="grid gap-4">
             <input type="hidden" name="invoiceId" value={invoiceId} />
 
-            <div className="grid gap-4 sm:grid-cols-[180px_140px_minmax(0,1fr)]">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[180px_140px_minmax(0,1fr)]">
               <Field label="Date">
                 <DatePicker value={date} onChange={setDate} name="date" />
               </Field>

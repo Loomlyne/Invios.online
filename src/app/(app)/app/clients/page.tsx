@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Plus } from "lucide-react";
 import { createClientAction } from "@/actions/clients";
+import { ImportCsvButton } from "@/components/clients/csv-import/import-csv-button";
 import { ClientForm } from "@/components/clients/client-form";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageHeader } from "@/components/app/page-header";
@@ -48,12 +49,15 @@ export default async function ClientsPage({
         title="Clients"
         description="Manage the client records that anchor every quotation and invoice."
         actions={
-          <Button asChild variant="accent">
-            <Link href={"?create=1" as Route}>
-              Add client
-              <Plus className="size-4" />
-            </Link>
-          </Button>
+          <>
+            <ImportCsvButton />
+            <Button asChild variant="accent">
+              <Link href={"?create=1" as Route}>
+                Add client
+                <Plus className="size-4" />
+              </Link>
+            </Button>
+          </>
         }
       >
         <StatStrip

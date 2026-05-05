@@ -7,6 +7,7 @@ import { clientFormSchema } from "@/lib/billing";
 import { buildUniqueSlug } from "@/lib/billing-utils";
 import { requireSession } from "@/lib/require-session";
 import type { ActionState } from "@/lib/types";
+import type { CsvRowValid, ImportResult } from "@/lib/csv-import";
 
 function parseClientForm(formData: FormData) {
   return clientFormSchema.safeParse({
@@ -233,4 +234,102 @@ export async function archiveClientAction(id: string) {
 
   revalidatePath("/app/clients");
   redirect("/app/clients");
+}
+
+export async function fetchExistingClientEmailsAction(): Promise<string[]> {
+  const { supabase, user } = await requireSession();
+  const { data } = await supabase
+    .from("clients")
+    .select("email")
+    .eq("user_id", user.id)
+    .not("email", "is", null);
+  return (data ?? []).map((c) => (c.email as string).toLowerCase());
+}
+
+export async function importClientsAction(
+  rows: CsvRowValid[],
+): Promise<ImportResult> {
+  try {
+    const { supabase, user } = await requireSession();
+
+    // 1. Fetch existing client emails for duplicate detection (per D-05)
+    const { data: existingClients } = await supabase
+      .from("clients")
+      .select("email")
+      .eq("user_id", user.id)
+      .not("email", "is", null);
+
+    const existingEmails = new Set(
+      (existingClients ?? []).map((c) => (c.email as string).toLowerCase()),
+    );
+
+    // 2. Split rows into new vs duplicate
+    const newRows = rows.filter(
+      (r) => !r.email || !existingEmails.has(r.email.toLowerCase()),
+    );
+    const skippedCount = rows.length - newRows.length;
+
+    if (newRows.length === 0) {
+      revalidatePath("/app/clients");
+      return {
+        status: "success",
+        inserted: 0,
+        skipped: skippedCount,
+        failed: 0,
+        message: "All rows were duplicates — no new clients imported.",
+      };
+    }
+
+    // 3. Fetch existing slugs once, accumulate in Set during loop
+    const existingSlugs = await getExistingClientSlugs(user.id);
+    const takenSlugs = new Set(existingSlugs);
+
+    const insertRows = newRows.map((row) => {
+      const slugBase = row.company || row.name;
+      const slug = buildUniqueSlug(slugBase, [...takenSlugs]);
+      takenSlugs.add(slug); // accumulate — critical for same-name rows
+      return {
+        user_id: user.id,
+        name: row.name,
+        company: row.company || null,
+        email: row.email || null,
+        phone: row.phone || null,
+        address: row.address || null,
+        trn: row.trn || null,
+        tax_code: null,
+        status: "lead" as const,
+        slug,
+      };
+    });
+
+    // 4. Single batch insert
+    const { error } = await supabase.from("clients").insert(insertRows);
+
+    if (error) {
+      return {
+        status: "error",
+        inserted: 0,
+        skipped: skippedCount,
+        failed: newRows.length,
+        message: error.message,
+      };
+    }
+
+    revalidatePath("/app/clients");
+
+    return {
+      status: "success",
+      inserted: newRows.length,
+      skipped: skippedCount,
+      failed: 0,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      inserted: 0,
+      skipped: 0,
+      failed: rows.length,
+      message: error instanceof Error ? error.message : "Could not import clients.",
+    };
+  }
 }

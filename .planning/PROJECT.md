@@ -8,6 +8,20 @@ Invios is a premium, installable web invoicing SaaS for freelancers, solo operat
 
 Make it dead simple for a service business to send a polished branded quote or invoice and reliably know what has been paid, what is still due, and what profit remains.
 
+## Current Milestone: v1.2 Settings UX Redesign
+
+**Goal:** Redesign and restructure the Settings experience — break the monolithic workspace into dedicated sections with a vertical sidebar, improve accessibility, and make every tab easy to interact with and visually polished.
+
+**Target features:**
+- Vertical sidebar navigation replacing horizontal tabs across all settings
+- Profile tab — personal info, avatar upload, hourly rate, password change, danger zone
+- Branding tab — consolidate branding into settings (logo, header cover, invoice layouts, colors, page background)
+- Business Info tab — business details + payment details (bank name, account, IBAN, SWIFT)
+- General tab — language, currency, tax, document numbering per doc type, payment terms, date format, default notes, auto-receipt, revoke-public-link
+- Emails tab — notification preference toggles for all event types
+- Integrations tab — third-party connection management (new)
+- Billing tab — subscription/plan management (new)
+
 ## Requirements
 
 ### Validated
@@ -24,11 +38,24 @@ Make it dead simple for a service business to send a polished branded quote or i
 
 ### Active
 
-- [ ] User can sign in with OAuth providers (AUTH-05).
-- [ ] Recurring invoices can auto-send on schedule without manual review (AUTO-06).
-- [ ] User can collect invoice payment online via integrated payment links (OPS-06).
-- [ ] User can import clients from CSV or external sources (CLNT-05).
-- [ ] User can view richer analytics across time windows, client cohorts, and profitability trends (DASH-05).
+- [ ] User can navigate settings via a vertical sidebar with dedicated sections (SET-01). ← v1.2
+- [ ] User can manage profile info, avatar, hourly rate, and password in a Profile tab (SET-02). ← v1.2
+- [ ] User can configure branding (logo, header, layout, colors, background) within settings (SET-03). ← v1.2
+- [ ] User can manage business info and payment details in a dedicated tab (SET-04). ← v1.2
+- [ ] User can configure document numbering, terms, tax, and general preferences (SET-05). ← v1.2
+- [ ] User can toggle email notification preferences per event type (SET-06). ← v1.2
+- [ ] User can view and manage third-party integrations (SET-07). ← v1.2
+- [ ] User can view and manage subscription billing (SET-08). ← v1.2
+
+### Deferred
+
+- [ ] User can import clients from CSV or external sources (CLNT-05). — deferred from v1.1
+- [ ] User can view a monthly revenue trend chart (DASH-05). — deferred from v1.1
+- [ ] User can view receivables aging buckets (DASH-06). — deferred from v1.1
+- [ ] User can see period-over-period change indicators on dashboard metrics (DASH-07). — deferred from v1.1
+- [ ] User can sign in with OAuth providers (AUTH-05). — deferred past v1.1
+- [ ] Recurring invoices can auto-send on schedule without manual review (AUTO-06). — deferred past v1.1
+- [ ] User can collect invoice payment online via integrated payment links (OPS-06). — deferred past v1.1
 
 ### Out of Scope
 
@@ -93,4 +120,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-14 after v1.0 milestone — full product loop shipped across 5 phases*
+*Last updated: 2026-04-15 — v1.2 milestone started: Settings UX Redesign*

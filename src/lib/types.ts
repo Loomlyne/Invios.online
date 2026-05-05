@@ -5,8 +5,25 @@ export type OnboardingStep = "business-profile" | "branding" | "defaults" | "pre
 export type SignatureMode = "none" | "upload" | "draw" | "typed";
 export type DocumentTemplateId = "classic" | "executive" | "minimal";
 
-export type SettingsSection = "general" | "invoices" | "notifications" | "account";
+export const SETTINGS_SECTIONS = [
+  "profile",
+  "branding",
+  "business",
+  "general",
+  "emails",
+  "integrations",
+  "billing",
+] as const;
+
+export type SettingsSection = typeof SETTINGS_SECTIONS[number];
 export type BrandingSection = "identity" | "business" | "template" | "documents";
+
+export interface SettingsSectionConfig {
+  key: SettingsSection;
+  label: string;
+  icon: string;
+  description: string;
+}
 
 export type AppNavKey =
   | "dashboard"
@@ -14,7 +31,13 @@ export type AppNavKey =
   | "quotations"
   | "clients"
   | "branding"
-  | "settings";
+  | "settings"
+  | "new-invoice"
+  | "new-quote"
+  | "new-client"
+  | "notes"
+  | "expense"
+  | "project";
 
 export type SetupItemKey = "business-profile" | "branding" | "defaults" | "final-review";
 
@@ -24,7 +47,12 @@ export type AppNavIcon =
   | "file-text"
   | "users-round"
   | "palette"
-  | "settings-2";
+  | "settings-2"
+  | "user-round-plus"
+  | "sticky-note"
+  | "credit-card"
+  | "folder-open"
+  | "notebook-pen";
 
 export interface AppNavItemConfig {
   key: AppNavKey;
@@ -159,6 +187,11 @@ export interface InvoicePreviewData {
   terms: string;
   notes: string;
   lineItems: InvoicePreviewLineItem[];
+  headingFont?: string | null;
+  bodyFont?: string | null;
+  spacing?: string | null;
+  headerLayout?: string | null;
+  lineItemsStyle?: string | null;
 }
 
 export interface AppUserState {

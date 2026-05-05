@@ -75,7 +75,7 @@ export default async function InvoiceDetailPage({
 
   return (
     <div className="grid gap-[var(--space-section)]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Button asChild variant="ghost" className="w-fit">
           <Link href={"/app/invoices" as Route}>
             <MoveLeft className="size-4" />
@@ -87,25 +87,17 @@ export default async function InvoiceDetailPage({
 
       <section className="flex flex-col gap-[var(--space-grid)]">
         <Card>
-          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex gap-[21px]">
-              <div className="flex flex-col items-start gap-0">
-                <CardTitle className="mt-3 text-center" style={{ height: 26 }}>
-                  {invoice.invoiceNumber}
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  {invoice.client.name}
-                  {invoice.client.company ? ` • ${invoice.client.company}` : ""}
-                </CardDescription>
-              </div>
-
-              <div className="flex flex-nowrap items-center justify-start gap-3 text-center">
-                <Badge variant="accent">Invoice detail</Badge>
-                <DocumentStatusBadge status={invoice.status} />
-              </div>
+          <CardHeader className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <CardTitle>{invoice.invoiceNumber}</CardTitle>
+              <Badge variant="accent">Invoice detail</Badge>
+              <DocumentStatusBadge status={invoice.status} />
             </div>
-
-            <div className="flex flex-nowrap gap-2">
+            <CardDescription>
+              {invoice.client.name}
+              {invoice.client.company ? ` • ${invoice.client.company}` : ""}
+            </CardDescription>
+            <div className="flex flex-wrap gap-2">
               <InvoiceDeleteButton invoiceId={invoice.id} />
               <Button asChild variant="secondary" size="sm">
                 <Link href={`/app/invoices/${invoice.slug}/edit` as Route}>
@@ -126,7 +118,7 @@ export default async function InvoiceDetailPage({
             />
 
             <div className="border-t border-black/7 pt-4">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
                 <InvoiceMeta label="Issue date" value={invoice.issueDate} />
                 <InvoiceMeta label="Due date" value={invoice.dueDate} />
                 <InvoiceMeta

@@ -8,7 +8,7 @@ import type {
 export const bottomNavItems: AppNavItemConfig[] = [
   {
     key: "dashboard",
-    label: "Home",
+    label: "Dashboard",
     href: "/app",
     icon: "layout-dashboard",
     description: "Workspace summary and setup readiness.",
@@ -35,11 +35,63 @@ export const bottomNavItems: AppNavItemConfig[] = [
     description: "Manage the client records tied to every document.",
   },
   {
+    key: "branding",
+    label: "Branding",
+    href: "/app/branding" as unknown as import("next").Route,
+    icon: "palette",
+    description: "Logo, colors, fonts, and document identity.",
+  },
+  {
     key: "settings",
     label: "Settings",
     href: "/app/settings",
     icon: "settings-2",
     description: "Preferences, invoice defaults, and notifications.",
+  },
+];
+
+export const fabMenuItems: AppNavItemConfig[] = [
+  {
+    key: "new-invoice",
+    label: "Invoice",
+    href: "/app/invoices/new",
+    icon: "receipt-text",
+    description: "Create a new invoice.",
+  },
+  {
+    key: "new-quote",
+    label: "Quote",
+    href: "/app/quotations/new",
+    icon: "file-text",
+    description: "Create a new quotation.",
+  },
+  {
+    key: "new-client",
+    label: "Client",
+    href: "/app/clients",
+    icon: "user-round-plus",
+    description: "Add a new client.",
+  },
+  {
+    key: "expense",
+    label: "Expense",
+    href: "/app/expenses" as unknown as import("next").Route,
+    icon: "credit-card",
+    description: "Record an expense.",
+  },
+  {
+    key: "project",
+    label: "Project",
+    href: "/app/projects" as unknown as import("next").Route,
+    icon: "folder-open",
+    description: "Start a new project.",
+  },
+  {
+    key: "notes",
+    label: "Notes",
+    href: "/app/notes",
+    icon: "notebook-pen",
+    description: "Quick notes and reminders.",
   },
 ];
 
@@ -75,7 +127,7 @@ export const appNavItems: AppNavItemConfig[] = [
   {
     key: "branding",
     label: "Branding",
-    href: "/app/branding" as unknown as import("next").Route,
+    href: "/app/settings?section=branding" as unknown as import("next").Route,
     icon: "palette",
     description: "Logo, colors, fonts, and document identity.",
   },

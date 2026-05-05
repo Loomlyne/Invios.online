@@ -66,20 +66,17 @@ export default async function QuotationDetailPage({
 
       <section className="flex flex-col gap-[var(--space-grid)]">
         <Card>
-          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge variant="accent">Quotation detail</Badge>
-                <DocumentStatusBadge status={quotation.status} />
-                {isLocked ? <Badge variant="default">Converted</Badge> : null}
-              </div>
-              <CardTitle className="mt-3">{quotation.quotationNumber}</CardTitle>
-              <CardDescription className="mt-2">
-                {quotation.client.name}
-                {quotation.client.company ? ` • ${quotation.client.company}` : ""}
-              </CardDescription>
+          <CardHeader className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <CardTitle>{quotation.quotationNumber}</CardTitle>
+              <Badge variant="accent">Quotation detail</Badge>
+              <DocumentStatusBadge status={quotation.status} />
+              {isLocked ? <Badge variant="default">Converted</Badge> : null}
             </div>
-
+            <CardDescription>
+              {quotation.client.name}
+              {quotation.client.company ? ` • ${quotation.client.company}` : ""}
+            </CardDescription>
             <div className="flex flex-wrap items-center gap-2">
               {isLocked ? (
                 <Button
@@ -104,7 +101,7 @@ export default async function QuotationDetailPage({
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <InfoCard label="Quotation date" value={quotation.quotationDate} />
               <InfoCard label="Expiry date" value={quotation.expiryDate} />
               <InfoCard label="Validity" value={`${quotation.validityDays} days`} />
