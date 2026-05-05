@@ -21,6 +21,6 @@ describe("ui contrast variants", () => {
     const classes = badgeVariants({ variant: "default" });
 
     expect(classes).toContain("text-foreground");
-    expect(classes).toContain("bg-[#FFF7EA]");
+    expect(classes).toContain("bg-surface-subtle");
   });
 });
