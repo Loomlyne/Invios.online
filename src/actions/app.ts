@@ -511,6 +511,7 @@ const businessInfoSchema = z.object({
   trn: z.string().optional().transform((v) => v ?? ""),
   arabicBusinessName: z.string().optional().transform((v) => v ?? ""),
   arabicAddress: z.string().optional().transform((v) => v ?? ""),
+  bankDetails: z.string().optional().transform((v) => v ?? ""),
 });
 
 export async function saveBusinessInfoAction(
@@ -538,6 +539,7 @@ export async function saveBusinessInfoAction(
           trn: parsed.data.trn,
           arabic_business_name: parsed.data.arabicBusinessName,
           arabic_address: parsed.data.arabicAddress,
+          bank_details: parsed.data.bankDetails,
         },
         { onConflict: "user_id" },
       );
