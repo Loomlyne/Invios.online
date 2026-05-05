@@ -91,6 +91,7 @@ export function BusinessInfoPanel({ context }: { context: AppContext }) {
         trn: values.trn,
         arabicBusinessName: b.arabicBusinessName ?? "",
         arabicAddress: b.arabicAddress ?? "",
+        bankDetails: values.showPayment ? serializeBankDetails(values) : "",
       });
     },
     [b.arabicBusinessName, b.arabicAddress],
