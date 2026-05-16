@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { MetricCard } from "@/components/app/metric-card";
 import { DashboardRangeToggle } from "@/components/app/dashboard-range-toggle";
+import { ExportDataButton } from "@/components/app/export-button";
 import { PageHeader } from "@/components/app/page-header";
 import { SetupChecklist } from "@/components/app/setup-checklist";
 import { EmptyState } from "@/components/app/empty-state";
@@ -115,6 +116,7 @@ export default async function AppHomePage({
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <DashboardRangeToggle currentRange={currentRange} currentMetric={currentMetric} />
+            <ExportDataButton href={`/api/export/dashboard?range=${currentRange}`} />
             <Button asChild variant="accent">
               <Link href={"/app/invoices/new" as Route}>
                 <Plus className="size-4" />

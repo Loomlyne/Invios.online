@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Plus } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
+import { ExportDataButton } from "@/components/app/export-button";
 import { PageHeader } from "@/components/app/page-header";
 import { StatStrip } from "@/components/app/stat-strip";
 import { Button } from "@/components/ui/button";
@@ -43,12 +44,15 @@ export default async function InvoicesPage({
         title="Invoices"
         description="Draft, review, share, and export invoices from one surface."
         actions={
-          <Button asChild variant="accent">
-            <Link href={"/app/invoices/new" as Route}>
-              New invoice
-              <Plus className="size-4" />
-            </Link>
-          </Button>
+          <>
+            <ExportDataButton href="/api/export/invoices" />
+            <Button asChild variant="accent">
+              <Link href={"/app/invoices/new" as Route}>
+                New invoice
+                <Plus className="size-4" />
+              </Link>
+            </Button>
+          </>
         }
       >
         <StatStrip
