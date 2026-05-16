@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Plus } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
+import { ExportDataButton } from "@/components/app/export-button";
 import { PageHeader } from "@/components/app/page-header";
 import { StatStrip } from "@/components/app/stat-strip";
 import { Button } from "@/components/ui/button";
@@ -37,12 +38,15 @@ export default async function QuotationsPage({
         title="Quotations"
         description="Scope work, share quotations, and convert accepted ones into invoices."
         actions={
-          <Button asChild variant="accent">
-            <Link href={"/app/quotations/new" as Route}>
-              New quotation
-              <Plus className="size-4" />
-            </Link>
-          </Button>
+          <>
+            <ExportDataButton href="/api/export/quotations" />
+            <Button asChild variant="accent">
+              <Link href={"/app/quotations/new" as Route}>
+                New quotation
+                <Plus className="size-4" />
+              </Link>
+            </Button>
+          </>
         }
       >
         <StatStrip

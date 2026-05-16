@@ -143,6 +143,7 @@ export function BrandingWorkspace({
       trn: String(formData.get("trn") || ""),
       arabicBusinessName: String(formData.get("arabicBusinessName") || ""),
       arabicAddress: String(formData.get("arabicAddress") || ""),
+      bankDetails: profile.bankDetails ?? "",
     };
 
     startTransition(async () => {
