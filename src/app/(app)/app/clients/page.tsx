@@ -5,6 +5,7 @@ import { createClientAction } from "@/actions/clients";
 import { ImportCsvButton } from "@/components/clients/csv-import/import-csv-button";
 import { ClientForm } from "@/components/clients/client-form";
 import { EmptyState } from "@/components/app/empty-state";
+import { ExportDataButton } from "@/components/app/export-button";
 import { PageHeader } from "@/components/app/page-header";
 import { StatStrip } from "@/components/app/stat-strip";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ export default async function ClientsPage({
         description="Manage the client records that anchor every quotation and invoice."
         actions={
           <>
+            <ExportDataButton href="/api/export/clients" />
             <ImportCsvButton />
             <Button asChild variant="accent">
               <Link href={"?create=1" as Route}>
