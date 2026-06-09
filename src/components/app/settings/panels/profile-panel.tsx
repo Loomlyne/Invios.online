@@ -1,11 +1,16 @@
 "use client";
 
-import { startTransition, useCallback, useState } from "react";
+import { startTransition, useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, KeyRound, Loader2, Trash2, X } from "lucide-react";
+import { AlertTriangle, Camera, KeyRound, Loader2, Trash2 } from "lucide-react";
 import type { AppContext, ActionState } from "@/lib/types";
 import { saveGeneralSettingsAction } from "@/actions/app";
-import { changePasswordAction, deleteAccountAction } from "@/actions/auth";
+import {
+  changePasswordAction,
+  deleteAccountAction,
+  uploadAvatarAction,
+  changeEmailAction,
+} from "@/actions/auth";
 import { Section, Field } from "../shared/settings-section";
 import { SaveButton } from "../shared/save-button";
 import { PasswordInput } from "../shared/password-input";
@@ -13,6 +18,7 @@ import { useSettingsForm } from "../shared/use-settings-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 type ProfileFormValues = {
   fullName: string;
@@ -40,12 +46,38 @@ export function ProfilePanel({ context }: { context: AppContext }) {
   const { values, update, isDirty, save, message } =
     useSettingsForm(initialValues, handleSave);
 
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(context.avatarUrl ?? null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+
+  const getInitials = (name: string) =>
+    name.split(" ").filter(Boolean).map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    setAvatarError(null);
+    const formData = new FormData();
+    formData.append("avatar", file);
+    startTransition(async () => {
+      const result = await uploadAvatarAction(formData);
+      setAvatarUploading(false);
+      if (result.status === "success" && result.avatarUrl) {
+        setLocalAvatarUrl(result.avatarUrl);
+      } else if (result.status === "error") {
+        setAvatarError(result.message ?? "Upload failed.");
+      }
+    });
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Settings</h2>
+          <h2 className="text-lg font-semibold">Profile</h2>
           <p className="text-sm text-muted mt-1">Manage your account &amp; preferences</p>
         </div>
         <div className="hidden lg:block">
@@ -57,21 +89,44 @@ export function ProfilePanel({ context }: { context: AppContext }) {
         <p className="text-sm text-danger">{message}</p>
       )}
 
-      {/* Personal Information */}
       <Section title="Personal Information" description="Your profile details visible across the app">
         <div className="flex flex-col sm:flex-row gap-6">
-          {/* Avatar placeholder — click to upload (Phase 10 will add real upload) */}
           <div className="flex flex-col items-center gap-2 shrink-0">
-            <div className="size-20 rounded-full bg-muted/20 border border-border flex items-center justify-center text-xl font-semibold text-muted-strong overflow-hidden">
-              {values.fullName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2) || "?"}
-            </div>
-            <p className="text-xs text-muted">Click to upload</p>
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              className="relative size-20 rounded-full overflow-hidden border border-border bg-muted/20 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/45"
+            >
+              {localAvatarUrl ? (
+                <img src={localAvatarUrl} alt="" className="size-full object-cover" />
+              ) : (
+                <span className="size-full flex items-center justify-center text-xl font-semibold text-muted-strong">
+                  {getInitials(values.fullName)}
+                </span>
+              )}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="size-5 text-white" />
+              </div>
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleAvatarUpload}
+            />
+            {avatarUploading ? (
+              <p className="text-xs text-muted flex items-center gap-1">
+                <Loader2 className="size-3 animate-spin" />
+                Uploading…
+              </p>
+            ) : avatarError ? (
+              <p className="text-xs text-danger text-center max-w-[80px]">{avatarError}</p>
+            ) : (
+              <p className="text-xs text-muted">Click to upload</p>
+            )}
           </div>
+
           <div className="flex-1 space-y-4">
             <Field label="Full Name" htmlFor="fullName">
               <Input
@@ -80,41 +135,15 @@ export function ProfilePanel({ context }: { context: AppContext }) {
                 onChange={(e) => update("fullName", e.target.value)}
               />
             </Field>
-            <Field label="Email">
-              <Input
-                value={context.email ?? ""}
-                readOnly
-                className="bg-muted/10 cursor-not-allowed"
-              />
-              <p className="text-xs text-muted">Email cannot be changed here</p>
-            </Field>
+            <ChangeEmailField email={context.email ?? ""} />
           </div>
         </div>
       </Section>
 
-      {/* Hourly Rate */}
-      <Section title="Hourly Rate" description="Your default hourly rate used for time tracking cost calculations">
-        <Field label="Hourly Rate" htmlFor="hourlyRate">
-          <div className="flex items-center gap-2 max-w-[200px]">
-            <Input
-              id="hourlyRate"
-              type="number"
-              min={0}
-              defaultValue={50}
-              placeholder="0"
-            />
-            <span className="text-sm text-muted font-medium shrink-0">AED</span>
-          </div>
-        </Field>
-      </Section>
-
-      {/* Change Password — self-contained, not part of SaveButton */}
       <ChangePasswordSection />
 
-      {/* Danger Zone */}
       <DeleteAccountSection email={context.email ?? ""} />
 
-      {/* Mobile sticky save */}
       <div className="lg:hidden sticky bottom-20 z-10">
         <div className="bg-surface/80 backdrop-blur-sm border-t border-border px-4 py-3 -mx-4">
           <SaveButton isDirty={isDirty} onSave={save} />
@@ -124,28 +153,130 @@ export function ProfilePanel({ context }: { context: AppContext }) {
   );
 }
 
-/* ─── Change Password (self-contained) ─────────────────────────────────────── */
+/* ─── Change Email ──────────────────────────────────────────────────────────── */
+
+function ChangeEmailField({ email }: { email: string }) {
+  const [editing, setEditing] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const canSubmit = newEmail.length > 3 && confirmEmail.length > 3;
+
+  const handleSubmit = () => {
+    setSaving(true);
+    setMsg(null);
+    startTransition(async () => {
+      const result = await changeEmailAction({ newEmail, confirmEmail });
+      setSaving(false);
+      if (result.status === "success") {
+        setMsg({ type: "success", text: result.message ?? "Check your inbox." });
+        setEditing(false);
+        setNewEmail("");
+        setConfirmEmail("");
+      } else {
+        setMsg({ type: "error", text: result.message ?? "Could not update email." });
+      }
+    });
+  };
+
+  const cancel = () => {
+    setEditing(false);
+    setNewEmail("");
+    setConfirmEmail("");
+    setMsg(null);
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Label>Email</Label>
+      {editing ? (
+        <div className="space-y-3">
+          <Input
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="New email address"
+            autoFocus
+          />
+          <Input
+            type="email"
+            value={confirmEmail}
+            onChange={(e) => setConfirmEmail(e.target.value)}
+            placeholder="Confirm new email"
+          />
+          {msg ? (
+            <p className={`text-xs ${msg.type === "success" ? "text-[#1a7a3a]" : "text-danger"}`}>
+              {msg.text}
+            </p>
+          ) : null}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={saving || !canSubmit}
+              onClick={handleSubmit}
+            >
+              {saving ? <Loader2 className="size-3 animate-spin" /> : null}
+              {saving ? "Sending…" : "Send confirmation"}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={cancel}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center gap-2">
+            <Input value={email} readOnly className="bg-muted/10 cursor-not-allowed" />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="shrink-0"
+              onClick={() => setEditing(true)}
+            >
+              Change
+            </Button>
+          </div>
+          {msg ? (
+            <p className={`text-xs ${msg.type === "success" ? "text-[#1a7a3a]" : "text-danger"}`}>
+              {msg.text}
+            </p>
+          ) : null}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ─── Change Password ───────────────────────────────────────────────────────── */
 
 function ChangePasswordSection() {
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const canSubmit = newPassword.length >= 8 && confirmNewPassword.length >= 8;
+  const canSubmit =
+    currentPassword.length > 0 && newPassword.length >= 8 && confirmNewPassword.length >= 8;
 
   const handleSubmit = () => {
     setSaving(true);
     setMsg(null);
     startTransition(async () => {
       const result = await changePasswordAction({
-        currentPassword: "",
+        currentPassword,
         newPassword,
         confirmNewPassword,
       });
       setSaving(false);
       if (result.status === "success") {
         setMsg({ type: "success", text: result.message ?? "Password updated." });
+        setCurrentPassword("");
         setNewPassword("");
         setConfirmNewPassword("");
       } else {
@@ -155,16 +286,42 @@ function ChangePasswordSection() {
   };
 
   return (
-    <Section title="Change Password" description="Update your account password">
+    <Section
+      title="Change Password"
+      description="Update your account password. You'll need your current password to confirm."
+    >
       <div className="grid gap-4">
-        <Field label="New Password" htmlFor="newPw">
-          <PasswordInput value={newPassword} onChange={setNewPassword} placeholder="At least 8 characters" />
+        <Field label="Current Password" htmlFor="currentPw">
+          <PasswordInput
+            value={currentPassword}
+            onChange={setCurrentPassword}
+            placeholder="Enter current password"
+          />
         </Field>
-        <Field label="Confirm New Password" htmlFor="confirmPw">
-          <PasswordInput value={confirmNewPassword} onChange={setConfirmNewPassword} placeholder="Repeat new password" />
-        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="New Password" htmlFor="newPw">
+            <PasswordInput
+              value={newPassword}
+              onChange={setNewPassword}
+              placeholder="At least 8 characters"
+            />
+          </Field>
+          <Field label="Confirm New Password" htmlFor="confirmPw">
+            <PasswordInput
+              value={confirmNewPassword}
+              onChange={setConfirmNewPassword}
+              placeholder="Repeat new password"
+            />
+          </Field>
+        </div>
         {msg && (
-          <div className={`rounded-[var(--radius-inner)] border px-4 py-3 text-sm ${msg.type === "success" ? "border-success/20 bg-[#F0F9F2] text-success" : "border-danger/20 bg-[#FFF5F3] text-danger"}`}>
+          <div
+            className={`rounded-[var(--radius-inner)] border px-4 py-3 text-sm ${
+              msg.type === "success"
+                ? "border-success/20 bg-[#F0F9F2] text-success"
+                : "border-danger/20 bg-[#FFF5F3] text-danger"
+            }`}
+          >
             {msg.text}
           </div>
         )}
@@ -175,7 +332,11 @@ function ChangePasswordSection() {
           disabled={saving || !canSubmit}
           onClick={handleSubmit}
         >
-          {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <KeyRound className="mr-2 size-4" />}
+          {saving ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <KeyRound className="mr-2 size-4" />
+          )}
           {saving ? "Updating…" : "Update Password"}
         </Button>
       </div>
@@ -183,7 +344,7 @@ function ChangePasswordSection() {
   );
 }
 
-/* ─── Delete Account (dialog confirmation) ─────────────────────────────────── */
+/* ─── Delete Account ────────────────────────────────────────────────────────── */
 
 function DeleteAccountSection({ email }: { email: string }) {
   const router = useRouter();
@@ -211,11 +372,23 @@ function DeleteAccountSection({ email }: { email: string }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold">Delete account</p>
-          <p className="text-sm text-muted">Permanently delete your account and all associated data.</p>
+          <p className="text-sm text-muted">
+            Permanently delete your account and all associated data.
+          </p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); setConfirmation(""); setError(""); }}>
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            setOpen(v);
+            setConfirmation("");
+            setError("");
+          }}
+        >
           <DialogTrigger asChild>
-            <Button type="button" className="bg-danger text-white hover:bg-danger/90 shrink-0">
+            <Button
+              type="button"
+              className="bg-danger text-white hover:bg-danger/90 shrink-0"
+            >
               <Trash2 className="mr-2 size-4" />
               Delete Account
             </Button>
@@ -227,14 +400,23 @@ function DeleteAccountSection({ email }: { email: string }) {
                   <AlertTriangle className="size-5 text-danger" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Delete account permanently</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    Delete account permanently
+                  </p>
                   <p className="text-sm text-muted">{email}</p>
                 </div>
               </div>
               <div className="rounded-[1rem] border border-danger/20 bg-[#FFF5F3] px-4 py-3 text-sm text-danger">
-                This will permanently delete your account, all invoices, quotations, clients, branding, and settings. This cannot be reversed.
+                This will permanently delete your account, all invoices, quotations, clients,
+                branding, and settings. This cannot be reversed.
               </div>
-              <Field label={<>Type <span className="font-mono font-semibold">DELETE</span> to confirm</>}>
+              <Field
+                label={
+                  <>
+                    Type <span className="font-mono font-semibold">DELETE</span> to confirm
+                  </>
+                }
+              >
                 <Input
                   value={confirmation}
                   onChange={(e) => setConfirmation(e.target.value)}
@@ -253,7 +435,11 @@ function DeleteAccountSection({ email }: { email: string }) {
                 onClick={handleDelete}
                 className="w-full bg-danger text-white hover:bg-danger/90"
               >
-                {deleting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Trash2 className="mr-2 size-4" />}
+                {deleting ? (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 size-4" />
+                )}
                 {deleting ? "Deleting…" : "Permanently delete account"}
               </Button>
             </div>
