@@ -144,7 +144,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
   const user = { id: userId, email: userEmail };
 
   const bootstrappedProfile = await ensureUserProfile(supabase, user);
-  const [profileResult, brandingResult, settingsResult] = await Promise.all([
+  const [profileResult, brandingResult, settingsResult, authResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("id,email,full_name,onboarding_step,onboarding_completed_at,setup_checklist_dismissed_at")
@@ -164,6 +164,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       )
       .eq("user_id", user.id)
       .maybeSingle<SettingsRow>(),
+    supabase.auth.getUser(),
   ]);
 
   const userState = createDefaultUserState(user.email ?? "");
@@ -263,9 +264,11 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       settingsResult.data.second_reminder_days ?? userState.settings.secondReminderDays;
   }
 
-  const [logoUrl, signatureUrl] = await Promise.all([
+  const avatarPath = authResult.data?.user?.user_metadata?.avatar_path as string | undefined;
+  const [logoUrl, signatureUrl, avatarUrl] = await Promise.all([
     userState.branding.logoPath ? createSignedAssetUrl(supabase, userState.branding.logoPath) : Promise.resolve(null),
     userState.branding.signaturePath ? createSignedAssetUrl(supabase, userState.branding.signaturePath) : Promise.resolve(null),
+    avatarPath ? createSignedAssetUrl(supabase, avatarPath) : Promise.resolve(null),
   ]);
 
   const previewData = buildInvoicePreviewData(userState, {
@@ -278,6 +281,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     configured: true,
     userId: user.id,
     email: user.email ?? "",
+    avatarUrl,
     userState,
     previewData,
     onboardingComplete: setupProgress.complete,

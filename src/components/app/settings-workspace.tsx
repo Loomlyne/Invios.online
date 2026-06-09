@@ -2,14 +2,14 @@
 
 import { startTransition, useCallback, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { AlertTriangle, Bell, Check, ChevronRight, Eye, EyeOff, KeyRound, Loader2, LogOut, Mail, Palette, Settings2, Shield, SlidersHorizontal, FileText, Trash2 } from "lucide-react";
+import { AlertTriangle, Bell, Camera, Check, ChevronRight, Eye, EyeOff, KeyRound, Loader2, LogOut, Mail, Palette, Settings2, Shield, SlidersHorizontal, FileText, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   saveGeneralSettingsAction,
   saveInvoiceDefaultsAction,
   saveNotificationsAction,
 } from "@/actions/app";
-import { signOutAction, changePasswordAction, deleteAccountAction } from "@/actions/auth";
+import { signOutAction, changePasswordAction, deleteAccountAction, uploadAvatarAction, changeEmailAction } from "@/actions/auth";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,33 @@ export function SettingsWorkspace({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [message, setMessage] = useState("");
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(context.avatarUrl ?? null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+
+  const getInitials = (name: string) =>
+    name.split(" ").filter(Boolean).map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    setAvatarError(null);
+    const formData = new FormData();
+    formData.append("avatar", file);
+    startTransition(async () => {
+      const result = await uploadAvatarAction(formData);
+      setAvatarUploading(false);
+      if (result.status === "success" && result.avatarUrl) {
+        setLocalAvatarUrl(result.avatarUrl);
+      } else if (result.status === "error") {
+        setAvatarError(result.message ?? "Upload failed.");
+      }
+    });
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  };
 
   // Snapshot of last-persisted values for dirty detection
   const savedProfile = useRef<Profile>(context.userState.profile);
@@ -198,17 +225,52 @@ export function SettingsWorkspace({
           {/* ── General ─────────────────────────────────────── */}
           <TabsContent value="general">
             <div className="grid gap-6">
-              <Section title="Profile" description="Your name as it appears on invoices and communications.">
-                <div className="grid gap-4">
-                  <Field label="Name">
-                    <Input
-                      value={profile.fullName}
-                      onChange={(e) => updateProfile("fullName", e.target.value)}
+              <Section title="Profile" description="Your name and account email.">
+                <div className="flex flex-col sm:flex-row gap-6">
+                  <div className="flex flex-col items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="relative size-20 rounded-full overflow-hidden border border-border bg-muted/20 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/45"
+                    >
+                      {localAvatarUrl ? (
+                        <img src={localAvatarUrl} alt="" className="size-full object-cover" />
+                      ) : (
+                        <span className="size-full flex items-center justify-center text-xl font-semibold text-muted-strong">
+                          {getInitials(profile.fullName)}
+                        </span>
+                      )}
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Camera className="size-5 text-white" />
+                      </div>
+                    </button>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
                     />
-                  </Field>
-                  <Field label="Email">
-                    <Input value={context.email ?? ""} readOnly className="bg-surface text-muted" />
-                  </Field>
+                    {avatarUploading ? (
+                      <p className="text-xs text-muted flex items-center gap-1">
+                        <Loader2 className="size-3 animate-spin" />
+                        Uploading…
+                      </p>
+                    ) : avatarError ? (
+                      <p className="text-xs text-danger text-center max-w-[80px]">{avatarError}</p>
+                    ) : (
+                      <p className="text-xs text-muted">Click to upload</p>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-4">
+                    <Field label="Name">
+                      <Input
+                        value={profile.fullName}
+                        onChange={(e) => updateProfile("fullName", e.target.value)}
+                      />
+                    </Field>
+                    <ChangeEmailSection email={context.email ?? ""} />
+                  </div>
                 </div>
               </Section>
 
@@ -446,6 +508,103 @@ function Section({
         <p className="text-sm text-muted">{description}</p>
       </div>
       {children}
+    </div>
+  );
+}
+
+function ChangeEmailSection({ email }: { email: string }) {
+  const [editing, setEditing] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const canSubmit = newEmail.length > 3 && confirmEmail.length > 3;
+
+  const handleSubmit = () => {
+    setSaving(true);
+    setMessage(null);
+    startTransition(async () => {
+      const result = await changeEmailAction({ newEmail, confirmEmail });
+      setSaving(false);
+      if (result.status === "success") {
+        setMessage({ type: "success", text: result.message ?? "Check your inbox." });
+        setEditing(false);
+        setNewEmail("");
+        setConfirmEmail("");
+      } else {
+        setMessage({ type: "error", text: result.message ?? "Could not update email." });
+      }
+    });
+  };
+
+  const cancel = () => {
+    setEditing(false);
+    setNewEmail("");
+    setConfirmEmail("");
+    setMessage(null);
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label>Email</Label>
+      {editing ? (
+        <div className="space-y-3">
+          <Input
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="New email address"
+            autoFocus
+          />
+          <Input
+            type="email"
+            value={confirmEmail}
+            onChange={(e) => setConfirmEmail(e.target.value)}
+            placeholder="Confirm new email"
+          />
+          {message ? (
+            <p className={`text-xs ${message.type === "success" ? "text-[#1a7a3a]" : "text-danger"}`}>
+              {message.text}
+            </p>
+          ) : null}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={saving || !canSubmit}
+              onClick={handleSubmit}
+            >
+              {saving ? <Loader2 className="size-3 animate-spin" /> : null}
+              {saving ? "Sending…" : "Send confirmation"}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={cancel}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center gap-2">
+            <Input value={email} readOnly className="bg-muted/10 cursor-not-allowed" />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="shrink-0"
+              onClick={() => setEditing(true)}
+            >
+              Change
+            </Button>
+          </div>
+          {message ? (
+            <p className={`text-xs ${message.type === "success" ? "text-[#1a7a3a]" : "text-danger"}`}>
+              {message.text}
+            </p>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

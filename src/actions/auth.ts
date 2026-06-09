@@ -316,6 +316,79 @@ export async function deleteAccountAction(confirmation: string): Promise<ActionS
   return { status: "success", redirectTo: "/sign-in" };
 }
 
+export async function uploadAvatarAction(
+  formData: FormData,
+): Promise<ActionState & { avatarUrl?: string }> {
+  const file = formData.get("avatar") as File | null;
+
+  if (!file || file.size === 0) {
+    return { status: "error", message: "No file selected." };
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    return { status: "error", message: "File too large. Maximum 5 MB." };
+  }
+
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowed.includes(file.type)) {
+    return { status: "error", message: "Use JPEG, PNG, or WebP." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return { status: "error", message: "Could not connect." };
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { status: "error", message: "Not authenticated." };
+
+  const extension = file.name.split(".").pop() ?? "jpg";
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const path = `${user.id}/avatar-${Date.now()}.${extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("branding-assets")
+    .upload(path, buffer, { contentType: file.type, upsert: true });
+
+  if (uploadError) return { status: "error", message: uploadError.message };
+
+  await supabase.auth.updateUser({ data: { avatar_path: path } });
+
+  const { data: urlData } = await supabase.storage
+    .from("branding-assets")
+    .createSignedUrl(path, 60 * 10);
+
+  revalidatePath("/app", "layout");
+  return { status: "success", message: "Avatar updated.", avatarUrl: urlData?.signedUrl };
+}
+
+export async function changeEmailAction(data: {
+  newEmail: string;
+  confirmEmail: string;
+}): Promise<ActionState> {
+  if (data.newEmail !== data.confirmEmail) {
+    return { status: "error", message: "Emails do not match." };
+  }
+
+  const parsed = emailSchema.safeParse({ email: data.newEmail });
+  if (!parsed.success) {
+    return { status: "error", message: parsed.error.issues[0]?.message };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return { status: "error", message: "Could not connect." };
+
+  const { error } = await supabase.auth.updateUser(
+    { email: data.newEmail },
+    { emailRedirectTo: `${env.siteUrl}/app` },
+  );
+
+  if (error) return { status: "error", message: error.message };
+
+  return {
+    status: "success",
+    message: `Confirmation sent to ${data.newEmail}. Click the link in your inbox to complete the change.`,
+  };
+}
+
 export async function signOutAction(): Promise<ActionState> {
   const supabase = await createSupabaseServerClient();
 

@@ -190,6 +190,7 @@ export interface AppContext {
   configured: boolean;
   userId?: string;
   email?: string;
+  avatarUrl?: string | null;
   userState: AppUserState;
   previewData: InvoicePreviewData;
   onboardingComplete: boolean;
