@@ -325,6 +325,15 @@ const generalSettingsSchema = z.object({
   defaultTaxRate: z.coerce.number().min(0).max(100),
   taxEnabled: z.coerce.boolean(),
   timezone: z.string().min(1, "Choose a timezone."),
+  dateFormat: z.string().min(1, "Choose a date format."),
+});
+
+const profileSettingsSchema = z.object({
+  fullName: z.string().min(2, "Enter your name."),
+  hourlyRate: z
+    .union([z.coerce.number().min(0).max(999999), z.literal(""), z.null()])
+    .optional()
+    .transform((value) => (value === "" || value === undefined ? null : value)),
 });
 
 export async function saveGeneralSettingsAction(
@@ -355,6 +364,7 @@ export async function saveGeneralSettingsAction(
           default_tax_rate: parsed.data.defaultTaxRate,
           tax_enabled: parsed.data.taxEnabled,
           timezone: parsed.data.timezone,
+          date_format: parsed.data.dateFormat,
         },
         { onConflict: "user_id" },
       );
@@ -366,6 +376,40 @@ export async function saveGeneralSettingsAction(
     return { status: "success", message: "General settings saved." };
   } catch (error) {
     return { status: "error", message: error instanceof Error ? error.message : "Could not save general settings." };
+  }
+}
+
+export async function saveProfileSettingsAction(
+  input: z.infer<typeof profileSettingsSchema>,
+): Promise<ActionState> {
+  try {
+    const parsed = profileSettingsSchema.safeParse(input);
+
+    if (!parsed.success) {
+      return { status: "error", message: parsed.error.issues[0]?.message };
+    }
+
+    const { supabase, user } = await requireSupabase();
+
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(
+        {
+          id: user.id,
+          email: user.email ?? "",
+          full_name: parsed.data.fullName,
+          hourly_rate: parsed.data.hourlyRate,
+        },
+        { onConflict: "id" },
+      );
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/app", "layout");
+    revalidatePath("/app/settings");
+    return { status: "success", message: "Profile saved." };
+  } catch (error) {
+    return { status: "error", message: error instanceof Error ? error.message : "Could not save profile." };
   }
 }
 
@@ -399,6 +443,11 @@ const notificationsSchema = z.object({
   reminderDaysAfter: z.coerce.number().int().min(0).max(365),
   remindOnDueDate: z.coerce.boolean(),
   secondReminderDays: z.coerce.number().int().min(0).max(365),
+  notifyQuoteAccepted: z.coerce.boolean(),
+  notifyPaymentReceived: z.coerce.boolean(),
+  notifyProjectActivity: z.coerce.boolean(),
+  notifyChatFromCustomer: z.coerce.boolean(),
+  notifyChatToCustomer: z.coerce.boolean(),
 });
 
 export async function saveNotificationsAction(
@@ -423,6 +472,11 @@ export async function saveNotificationsAction(
           reminder_days_after: parsed.data.reminderDaysAfter,
           remind_on_due_date: parsed.data.remindOnDueDate,
           second_reminder_days: parsed.data.secondReminderDays,
+          notify_quote_accepted: parsed.data.notifyQuoteAccepted,
+          notify_payment_received: parsed.data.notifyPaymentReceived,
+          notify_project_activity: parsed.data.notifyProjectActivity,
+          notify_chat_from_customer: parsed.data.notifyChatFromCustomer,
+          notify_chat_to_customer: parsed.data.notifyChatToCustomer,
         },
         { onConflict: "user_id" },
       );
@@ -430,7 +484,7 @@ export async function saveNotificationsAction(
     if (error) throw new Error(error.message);
 
     revalidatePath("/app/settings");
-    return { status: "success", message: "Notification preferences saved." };
+    return { status: "success", message: "Email preferences saved." };
   } catch (error) {
     return { status: "error", message: error instanceof Error ? error.message : "Could not save notification preferences." };
   }
@@ -449,10 +503,13 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
     const signatureText = String(formData.get("signatureText") || "");
     const signatureFont = String(formData.get("signatureFont") || "Signature");
     const drawSignature = String(formData.get("drawSignature") || "");
+    const pageBackground = String(formData.get("pageBackground") || "");
     const keepLogoPath = String(formData.get("keepLogoPath") || "");
+    const keepHeaderCoverPath = String(formData.get("keepHeaderCoverPath") || "");
     const keepSignaturePath = String(formData.get("keepSignaturePath") || "");
     const keepFaviconPath = String(formData.get("keepFaviconPath") || "");
     const logoFile = formData.get("logo") as File | null;
+    const headerCoverFile = formData.get("headerCover") as File | null;
     const signatureFile = formData.get("signatureFile") as File | null;
     const faviconFile = formData.get("favicon") as File | null;
 
@@ -460,6 +517,11 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
       logoFile && logoFile.size > 0
         ? await uploadFileToStorage(user.id, logoFile, "logo")
         : keepLogoPath || null;
+
+    const headerCoverPath =
+      headerCoverFile && headerCoverFile.size > 0
+        ? await uploadFileToStorage(user.id, headerCoverFile, "header-cover")
+        : keepHeaderCoverPath || null;
 
     const faviconPath =
       faviconFile && faviconFile.size > 0
@@ -481,7 +543,9 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
           user_id: user.id,
           primary_color: primaryColor || null,
           secondary_color: secondaryColor || null,
+          page_background: pageBackground || null,
           logo_path: logoPath,
+          header_cover_path: headerCoverPath,
           favicon_path: faviconPath,
           base_font: baseFont,
           signature_mode: signatureMode,
@@ -495,7 +559,7 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
     if (error) throw new Error(error.message);
 
     revalidatePath("/app", "layout");
-    revalidatePath("/app/branding");
+    revalidatePath("/app/settings");
     return { status: "success", message: "Identity saved." };
   } catch (error) {
     return { status: "error", message: error instanceof Error ? error.message : "Could not save identity." };
@@ -547,7 +611,7 @@ export async function saveBusinessInfoAction(
     if (error) throw new Error(error.message);
 
     revalidatePath("/app", "layout");
-    revalidatePath("/app/branding");
+    revalidatePath("/app/settings");
     return { status: "success", message: "Business info saved." };
   } catch (error) {
     return { status: "error", message: error instanceof Error ? error.message : "Could not save business info." };
@@ -560,6 +624,7 @@ const templateSchema = z.object({
   spacing: z.enum(["compact", "normal", "spacious"]),
   headerLayout: z.enum(["left", "centered", "split"]),
   lineItemsStyle: z.enum(["table", "cards"]),
+  documentTemplate: z.enum(["classic", "executive", "minimal"]).optional(),
 });
 
 export async function saveTemplateAction(
@@ -590,8 +655,19 @@ export async function saveTemplateAction(
 
     if (error) throw new Error(error.message);
 
+    if (parsed.data.documentTemplate) {
+      const { error: settingsError } = await supabase
+        .from("user_settings")
+        .upsert(
+          { user_id: user.id, document_template: parsed.data.documentTemplate },
+          { onConflict: "user_id" },
+        );
+
+      if (settingsError) throw new Error(settingsError.message);
+    }
+
     revalidatePath("/app", "layout");
-    revalidatePath("/app/branding");
+    revalidatePath("/app/settings");
     return { status: "success", message: "Template settings saved." };
   } catch (error) {
     return { status: "error", message: error instanceof Error ? error.message : "Could not save template settings." };
@@ -633,7 +709,7 @@ export async function saveDocumentsAction(
     if (error) throw new Error(error.message);
 
     revalidatePath("/app", "layout");
-    revalidatePath("/app/branding");
+    revalidatePath("/app/settings");
     return { status: "success", message: "Document settings saved." };
   } catch (error) {
     return { status: "error", message: error instanceof Error ? error.message : "Could not save document settings." };
@@ -765,7 +841,7 @@ export async function uploadCustomFontAction(formData: FormData): Promise<Action
     if (error) throw new Error(error.message);
 
     revalidatePath("/app", "layout");
-    revalidatePath("/app/branding");
+    revalidatePath("/app/settings");
     return { status: "success", message: `Font "${fontName}" uploaded.`, font: newFont };
   } catch (error) {
     return { status: "error", message: error instanceof Error ? error.message : "Could not upload font." };
@@ -797,7 +873,7 @@ export async function deleteCustomFontAction(fontPath: string): Promise<ActionSt
     if (error) throw new Error(error.message);
 
     revalidatePath("/app", "layout");
-    revalidatePath("/app/branding");
+    revalidatePath("/app/settings");
     return { status: "success", message: "Font removed." };
   } catch (error) {
     return { status: "error", message: error instanceof Error ? error.message : "Could not remove font." };

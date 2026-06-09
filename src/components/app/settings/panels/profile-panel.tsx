@@ -4,7 +4,7 @@ import { startTransition, useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Camera, KeyRound, Loader2, Trash2 } from "lucide-react";
 import type { AppContext, ActionState } from "@/lib/types";
-import { saveGeneralSettingsAction } from "@/actions/app";
+import { saveProfileSettingsAction } from "@/actions/app";
 import {
   changePasswordAction,
   deleteAccountAction,
@@ -22,25 +22,26 @@ import { Label } from "@/components/ui/label";
 
 type ProfileFormValues = {
   fullName: string;
+  hourlyRate: string;
 };
 
 export function ProfilePanel({ context }: { context: AppContext }) {
   const initialValues: ProfileFormValues = {
     fullName: context.userState.profile.fullName,
+    hourlyRate:
+      context.userState.profile.hourlyRate != null
+        ? String(context.userState.profile.hourlyRate)
+        : "",
   };
 
   const handleSave = useCallback(
     async (values: ProfileFormValues): Promise<ActionState> => {
-      return saveGeneralSettingsAction({
+      return saveProfileSettingsAction({
         fullName: values.fullName,
-        defaultCurrency: context.userState.settings.defaultCurrency,
-        defaultLanguage: context.userState.settings.defaultLanguage,
-        defaultTaxRate: context.userState.settings.defaultTaxRate,
-        taxEnabled: context.userState.settings.taxEnabled,
-        timezone: context.userState.settings.timezone,
+        hourlyRate: values.hourlyRate === "" ? null : Number(values.hourlyRate),
       });
     },
-    [context.userState.settings],
+    [],
   );
 
   const { values, update, isDirty, save, message } =
@@ -133,6 +134,17 @@ export function ProfilePanel({ context }: { context: AppContext }) {
                 id="fullName"
                 value={values.fullName}
                 onChange={(e) => update("fullName", e.target.value)}
+              />
+            </Field>
+            <Field label="Hourly rate (optional)" htmlFor="hourlyRate">
+              <Input
+                id="hourlyRate"
+                type="number"
+                min={0}
+                step="0.01"
+                value={values.hourlyRate}
+                onChange={(e) => update("hourlyRate", e.target.value)}
+                placeholder="e.g. 350"
               />
             </Field>
             <ChangeEmailField email={context.email ?? ""} />

@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import type { AppContext, ActionState } from "@/lib/types";
 import {
+  saveDocumentsAction,
   saveGeneralSettingsAction,
   saveInvoiceDefaultsAction,
 } from "@/actions/app";
@@ -42,6 +43,7 @@ type GeneralFormValues = {
   defaultTaxRate: number;
   taxEnabled: boolean;
   timezone: string;
+  dateFormat: string;
   invoicePrefix: string;
   quotationPrefix: string;
   defaultNotes: string;
@@ -57,6 +59,7 @@ export function GeneralPanel({ context }: { context: AppContext }) {
     defaultTaxRate: s.defaultTaxRate,
     taxEnabled: s.taxEnabled,
     timezone: s.timezone,
+    dateFormat: s.dateFormat,
     invoicePrefix: s.invoicePrefix,
     quotationPrefix: s.quotationPrefix,
     defaultNotes: s.defaultNotes,
@@ -65,25 +68,34 @@ export function GeneralPanel({ context }: { context: AppContext }) {
 
   const handleSave = useCallback(
     async (values: GeneralFormValues): Promise<ActionState> => {
-      const [general, invoiceDefaults] = await Promise.all([
+      const profile = context.userState.profile;
+      const [general, invoiceDefaults, documents] = await Promise.all([
         saveGeneralSettingsAction({
-          fullName: context.userState.profile.fullName,
+          fullName: profile.fullName,
           defaultCurrency: values.defaultCurrency,
           defaultLanguage: values.defaultLanguage as "en" | "ar" | "bilingual",
           defaultTaxRate: values.defaultTaxRate,
           taxEnabled: values.taxEnabled,
           timezone: values.timezone,
+          dateFormat: values.dateFormat,
         }),
         saveInvoiceDefaultsAction({
           defaultNotes: values.defaultNotes,
           defaultTerms: values.defaultTerms,
         }),
+        saveDocumentsAction({
+          invoicePrefix: values.invoicePrefix,
+          quotationPrefix: values.quotationPrefix,
+          bankDetails: profile.bankDetails,
+          footerText: profile.footerText,
+        }),
       ]);
       if (general.status === "error") return general;
       if (invoiceDefaults.status === "error") return invoiceDefaults;
+      if (documents.status === "error") return documents;
       return { status: "success", message: "General settings saved." };
     },
-    [context.userState.profile.fullName],
+    [context.userState.profile],
   );
 
   const { values, update, isDirty, save, saveState, message } =
@@ -126,17 +138,36 @@ export function GeneralPanel({ context }: { context: AppContext }) {
             />
           </Field>
         </div>
-        <Field label="Default Tax Rate (%)" htmlFor="taxRate">
-          <Input
-            id="taxRate"
-            type="number"
-            min={0}
-            max={100}
-            value={values.defaultTaxRate}
-            onChange={(e) => update("defaultTaxRate", Number(e.target.value))}
-            className="max-w-[200px]"
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Default Tax Rate (%)" htmlFor="taxRate">
+            <Input
+              id="taxRate"
+              type="number"
+              min={0}
+              max={100}
+              value={values.defaultTaxRate}
+              onChange={(e) => update("defaultTaxRate", Number(e.target.value))}
+            />
+          </Field>
+          <Field label="Date format" htmlFor="dateFormat">
+            <Select
+              id="dateFormat"
+              options={DATE_FORMAT_OPTIONS}
+              value={values.dateFormat}
+              onChange={(v) => update("dateFormat", v)}
+            />
+          </Field>
+        </div>
+        <div className="flex items-center justify-between rounded-[var(--radius-inner)] border border-border px-4 py-3">
+          <div>
+            <p className="text-sm font-medium">Include tax on new documents</p>
+            <p className="text-sm text-muted">Show VAT line items using your default tax rate</p>
+          </div>
+          <Switch
+            checked={values.taxEnabled}
+            onCheckedChange={(v) => update("taxEnabled", v)}
           />
-        </Field>
+        </div>
       </Section>
 
       {/* Document Numbering */}
@@ -159,15 +190,23 @@ export function GeneralPanel({ context }: { context: AppContext }) {
         </div>
       </Section>
 
-      {/* Default Invoice Notes */}
-      <Section title="Default Invoice Notes">
-        <Field label="Default Invoice Notes" htmlFor="defaultNotes">
+      <Section title="Default document copy">
+        <Field label="Default notes" htmlFor="defaultNotes">
           <Textarea
             id="defaultNotes"
             value={values.defaultNotes}
             onChange={(e) => update("defaultNotes", e.target.value)}
             rows={3}
             placeholder="Thank you for your business!"
+          />
+        </Field>
+        <Field label="Default terms" htmlFor="defaultTerms">
+          <Textarea
+            id="defaultTerms"
+            value={values.defaultTerms}
+            onChange={(e) => update("defaultTerms", e.target.value)}
+            rows={3}
+            placeholder="Payment due within 14 days."
           />
         </Field>
       </Section>

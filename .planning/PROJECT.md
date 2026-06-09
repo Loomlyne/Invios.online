@@ -20,7 +20,26 @@ Make it dead simple for a service business to send a polished branded quote or i
 - General tab — language, currency, tax, document numbering per doc type, payment terms, date format, default notes, auto-receipt, revoke-public-link
 - Emails tab — notification preference toggles for all event types
 - Integrations tab — third-party connection management (new)
-- Billing tab — subscription/plan management (new)
+- Billing tab — display-only plan info (no Stripe payment collection)
+- Integrations tab — stub now, full hub in v2.0 Phase 19
+
+## Planned Milestone: v2.0 Operator Power
+
+**Goal:** Turn Invios from a billing console into an operator power platform — named client portals, CRM intelligence, time-to-invoice, automation rules, cash flow forecasting, proposals, integrations hub, and AI co-pilot.
+
+**Research complete:** 2026-06-10 (`.planning/research/v2.0-*.md`, `.planning/MILESTONE-v2.0-CONTEXT.md`)
+
+**Phases 13–20:**
+1. Client Portal v2 — `/portal/[operatorSlug]/[portalSlug]` unique named URLs
+2. Client Intelligence — LTV, payment reliability, health signals
+3. Time Tracking — billable hours → invoice line items
+4. Automation Rules — triggers/actions, recurring auto-send (AUTO-06), reminders (EMAIL-07)
+5. Cash Flow Forecast — 30/60/90-day projection, cohort date ranges (DASH-08)
+6. Proposals & Approval — formal proposals with client accept/reject audit trail
+7. Integrations Hub — webhooks, CSV export, delivery logs (no Stripe)
+8. AI Co-pilot — brief-to-draft, document review, smart reminders (opt-in)
+
+**Explicitly excluded:** OPS-06, INT-02, Stripe payment collection — user has no Stripe account.
 
 ## Requirements
 
@@ -45,17 +64,31 @@ Make it dead simple for a service business to send a polished branded quote or i
 - [ ] User can configure document numbering, terms, tax, and general preferences (SET-05). ← v1.2
 - [ ] User can toggle email notification preferences per event type (SET-06). ← v1.2
 - [ ] User can view and manage third-party integrations (SET-07). ← v1.2
-- [ ] User can view and manage subscription billing (SET-08). ← v1.2
+- [ ] User can view billing/plan info display-only — no payment collection (SET-08). ← v1.2
+
+### Shipped (v1.1)
+
+- ✓ User can import clients from CSV (CLNT-05). — v1.1 Phase 6
+- ✓ User can view monthly revenue trend chart (DASH-05). — v1.1 Phase 7
+- ✓ User can view receivables aging buckets (DASH-06). — v1.1 Phase 7
+- ✓ User can see period-over-period change indicators (DASH-07). — v1.1 Phase 7
+
+### Planned (v2.0)
+
+- [ ] Client portal with human-readable URL tied to client name (PORT-01–06). ← v2.0 Phase 13
+- [ ] Client intelligence: LTV, reliability, health (CRM-01–05). ← v2.0 Phase 14
+- [ ] Time tracking with hourly-rate billing (TIME-01–05). ← v2.0 Phase 15
+- [ ] Automation rules + recurring auto-send (AUTO-06–10, EMAIL-07). ← v2.0 Phase 16
+- [ ] Cash flow forecast 30/60/90 + date ranges (FCST-01–04, DASH-08). ← v2.0 Phase 17
+- [ ] Proposals with client approval workflow (PROP-01–05). ← v2.0 Phase 18
+- [ ] Integrations hub: webhooks, exports (INT-03–07). ← v2.0 Phase 19
+- [ ] AI co-pilot for drafts and review (AI-01–05). ← v2.0 Phase 20
 
 ### Deferred
 
-- [ ] User can import clients from CSV or external sources (CLNT-05). — deferred from v1.1
-- [ ] User can view a monthly revenue trend chart (DASH-05). — deferred from v1.1
-- [ ] User can view receivables aging buckets (DASH-06). — deferred from v1.1
-- [ ] User can see period-over-period change indicators on dashboard metrics (DASH-07). — deferred from v1.1
-- [ ] User can sign in with OAuth providers (AUTH-05). — deferred past v1.1
-- [ ] Recurring invoices can auto-send on schedule without manual review (AUTO-06). — deferred past v1.1
-- [ ] User can collect invoice payment online via integrated payment links (OPS-06). — deferred past v1.1
+- [ ] User can sign in with OAuth providers (AUTH-05). — future milestone
+- [ ] User can import clients from HoneyBook/FreshBooks formats (CLNT-06). — future
+- [ ] User can collect invoice payment online via Stripe (OPS-06). — **out of scope** (no Stripe account)
 
 ### Out of Scope
 

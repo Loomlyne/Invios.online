@@ -115,6 +115,7 @@ export function SettingsWorkspace({
           defaultTaxRate: settings.defaultTaxRate,
           taxEnabled: settings.taxEnabled,
           timezone: settings.timezone,
+          dateFormat: settings.dateFormat,
         }),
         saveInvoiceDefaultsAction({
           defaultNotes: settings.defaultNotes,
@@ -126,6 +127,11 @@ export function SettingsWorkspace({
           reminderDaysAfter: settings.reminderDaysAfter,
           remindOnDueDate: settings.remindOnDueDate,
           secondReminderDays: settings.secondReminderDays,
+          notifyQuoteAccepted: settings.notifyQuoteAccepted,
+          notifyPaymentReceived: settings.notifyPaymentReceived,
+          notifyProjectActivity: settings.notifyProjectActivity,
+          notifyChatFromCustomer: settings.notifyChatFromCustomer,
+          notifyChatToCustomer: settings.notifyChatToCustomer,
         }),
       ]);
 
@@ -189,7 +195,7 @@ export function SettingsWorkspace({
       <CardContent className="px-5 py-5 sm:px-6">
         {/* Branding shortcut — visible on mobile where sidebar nav is hidden */}
         <Link
-          href="/app/branding"
+          href="/app/settings?section=branding"
           className="mb-4 flex items-center gap-3 rounded-[var(--radius-inner)] border border-black/6 bg-surface px-4 py-3.5 transition hover:bg-surface-strong lg:hidden"
         >
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/10">

@@ -82,6 +82,7 @@ export interface SetupProgress {
 
 export interface BusinessProfile {
   fullName: string;
+  hourlyRate?: number | null;
   businessName: string;
   businessEmail: string;
   phone: string;
@@ -102,6 +103,8 @@ export interface BrandingSettings {
   primaryColor: string;
   secondaryColor: string;
   logoPath?: string | null;
+  headerCoverPath?: string | null;
+  pageBackground?: string | null;
   faviconPath?: string | null;
   baseFont?: string | null;
   arabicBusinessName?: string | null;
@@ -134,6 +137,12 @@ export interface UserSettings {
   reminderDaysAfter: number;
   remindOnDueDate: boolean;
   secondReminderDays: number;
+  dateFormat: string;
+  notifyQuoteAccepted: boolean;
+  notifyPaymentReceived: boolean;
+  notifyProjectActivity: boolean;
+  notifyChatFromCustomer: boolean;
+  notifyChatToCustomer: boolean;
 }
 
 export interface InvoicePreviewLineItem {
@@ -192,6 +201,7 @@ export interface InvoicePreviewData {
   spacing?: string | null;
   headerLayout?: string | null;
   lineItemsStyle?: string | null;
+  pageBackground?: string | null;
 }
 
 export interface AppUserState {
@@ -208,6 +218,7 @@ export interface AppContext {
   userId?: string;
   email?: string;
   avatarUrl?: string | null;
+  headerCoverUrl?: string | null;
   userState: AppUserState;
   previewData: InvoicePreviewData;
   onboardingComplete: boolean;

@@ -15,6 +15,11 @@ type EmailFormValues = {
   reminderDaysAfter: number;
   remindOnDueDate: boolean;
   secondReminderDays: number;
+  notifyQuoteAccepted: boolean;
+  notifyPaymentReceived: boolean;
+  notifyProjectActivity: boolean;
+  notifyChatFromCustomer: boolean;
+  notifyChatToCustomer: boolean;
 };
 
 export function EmailsPanel({ context }: { context: AppContext }) {
@@ -26,6 +31,11 @@ export function EmailsPanel({ context }: { context: AppContext }) {
     reminderDaysAfter: s.reminderDaysAfter,
     remindOnDueDate: s.remindOnDueDate,
     secondReminderDays: s.secondReminderDays,
+    notifyQuoteAccepted: s.notifyQuoteAccepted,
+    notifyPaymentReceived: s.notifyPaymentReceived,
+    notifyProjectActivity: s.notifyProjectActivity,
+    notifyChatFromCustomer: s.notifyChatFromCustomer,
+    notifyChatToCustomer: s.notifyChatToCustomer,
   };
 
   const handleSave = useCallback(
@@ -115,6 +125,49 @@ export function EmailsPanel({ context }: { context: AppContext }) {
               </Field>
             </div>
           )}
+        </div>
+      </Section>
+
+      <Section title="Activity notifications" description="Choose which events send you an email">
+        <div className="space-y-4">
+          {[
+            {
+              key: "notifyQuoteAccepted" as const,
+              title: "Quote accepted",
+              description: "When a client accepts a quotation",
+            },
+            {
+              key: "notifyPaymentReceived" as const,
+              title: "Payment received",
+              description: "When an invoice is marked paid",
+            },
+            {
+              key: "notifyProjectActivity" as const,
+              title: "Project activity",
+              description: "Updates on linked projects and milestones",
+            },
+            {
+              key: "notifyChatFromCustomer" as const,
+              title: "Client messages",
+              description: "When a client sends a portal message",
+            },
+            {
+              key: "notifyChatToCustomer" as const,
+              title: "Outbound client messages",
+              description: "When your team replies in the client portal",
+            },
+          ].map((item) => (
+            <div key={item.key} className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium">{item.title}</p>
+                <p className="text-sm text-muted">{item.description}</p>
+              </div>
+              <Switch
+                checked={values[item.key]}
+                onCheckedChange={(v) => update(item.key, v)}
+              />
+            </div>
+          ))}
         </div>
       </Section>
 

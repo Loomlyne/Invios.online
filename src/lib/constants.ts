@@ -229,4 +229,10 @@ export const defaultSettings: UserSettings = {
   reminderDaysAfter: 7,
   remindOnDueDate: true,
   secondReminderDays: 14,
+  dateFormat: "d MMM yyyy",
+  notifyQuoteAccepted: true,
+  notifyPaymentReceived: true,
+  notifyProjectActivity: false,
+  notifyChatFromCustomer: true,
+  notifyChatToCustomer: true,
 };

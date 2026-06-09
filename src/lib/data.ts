@@ -11,6 +11,7 @@ type ProfileRow = {
   id: string;
   email: string;
   full_name: string | null;
+  hourly_rate: number | null;
   onboarding_step: AppUserState["onboardingStep"] | null;
   onboarding_completed_at: string | null;
   setup_checklist_dismissed_at: string | null;
@@ -28,6 +29,8 @@ type BrandingRow = {
   primary_color: string | null;
   secondary_color: string | null;
   logo_path: string | null;
+  header_cover_path: string | null;
+  page_background: string | null;
   favicon_path: string | null;
   base_font: string | null;
   arabic_business_name: string | null;
@@ -60,6 +63,12 @@ type SettingsRow = {
   reminder_days_after: number | null;
   remind_on_due_date: boolean | null;
   second_reminder_days: number | null;
+  date_format: string | null;
+  notify_quote_accepted: boolean | null;
+  notify_payment_received: boolean | null;
+  notify_project_activity: boolean | null;
+  notify_chat_from_customer: boolean | null;
+  notify_chat_to_customer: boolean | null;
 };
 
 async function createSignedAssetUrl(
@@ -147,20 +156,20 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
   const [profileResult, brandingResult, settingsResult, authResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id,email,full_name,onboarding_step,onboarding_completed_at,setup_checklist_dismissed_at")
+      .select("id,email,full_name,hourly_rate,onboarding_step,onboarding_completed_at,setup_checklist_dismissed_at")
       .eq("id", user.id)
       .maybeSingle<ProfileRow>(),
     supabase
       .from("branding")
       .select(
-        "business_name,business_email,phone,website,address,trn,bank_details,footer_text,primary_color,secondary_color,logo_path,favicon_path,base_font,arabic_business_name,arabic_address,heading_font,body_font,spacing,header_layout,line_items_style,signature_mode,signature_path,signature_text,signature_font,invoice_prefix,quotation_prefix,custom_fonts",
+        "business_name,business_email,phone,website,address,trn,bank_details,footer_text,primary_color,secondary_color,logo_path,header_cover_path,page_background,favicon_path,base_font,arabic_business_name,arabic_address,heading_font,body_font,spacing,header_layout,line_items_style,signature_mode,signature_path,signature_text,signature_font,invoice_prefix,quotation_prefix,custom_fonts",
       )
       .eq("user_id", user.id)
       .maybeSingle<BrandingRow>(),
     supabase
       .from("user_settings")
       .select(
-        "default_currency,default_language,default_tax_rate,tax_enabled,default_terms,default_notes,timezone,document_template,reminder_enabled,reminder_days_before,reminder_days_after,remind_on_due_date,second_reminder_days",
+        "default_currency,default_language,default_tax_rate,tax_enabled,default_terms,default_notes,timezone,document_template,reminder_enabled,reminder_days_before,reminder_days_after,remind_on_due_date,second_reminder_days,date_format,notify_quote_accepted,notify_payment_received,notify_project_activity,notify_chat_from_customer,notify_chat_to_customer",
       )
       .eq("user_id", user.id)
       .maybeSingle<SettingsRow>(),
@@ -184,6 +193,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
 
   if (profileResult.data) {
     userState.profile.fullName = profileResult.data.full_name ?? "";
+    userState.profile.hourlyRate = profileResult.data.hourly_rate ?? null;
     userState.email = profileResult.data.email ?? user.email ?? "";
     userState.onboardingStep =
       profileResult.data.onboarding_step ?? "business-profile";
@@ -214,6 +224,8 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     userState.branding.secondaryColor =
       brandingResult.data.secondary_color ?? userState.branding.secondaryColor;
     userState.branding.logoPath = brandingResult.data.logo_path;
+    userState.branding.headerCoverPath = brandingResult.data.header_cover_path;
+    userState.branding.pageBackground = brandingResult.data.page_background;
     userState.branding.faviconPath = brandingResult.data.favicon_path;
     userState.branding.baseFont = brandingResult.data.base_font ?? userState.branding.baseFont;
     userState.branding.arabicBusinessName = brandingResult.data.arabic_business_name ?? "";
@@ -262,11 +274,26 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
       settingsResult.data.remind_on_due_date ?? userState.settings.remindOnDueDate;
     userState.settings.secondReminderDays =
       settingsResult.data.second_reminder_days ?? userState.settings.secondReminderDays;
+    userState.settings.dateFormat =
+      settingsResult.data.date_format ?? userState.settings.dateFormat;
+    userState.settings.notifyQuoteAccepted =
+      settingsResult.data.notify_quote_accepted ?? userState.settings.notifyQuoteAccepted;
+    userState.settings.notifyPaymentReceived =
+      settingsResult.data.notify_payment_received ?? userState.settings.notifyPaymentReceived;
+    userState.settings.notifyProjectActivity =
+      settingsResult.data.notify_project_activity ?? userState.settings.notifyProjectActivity;
+    userState.settings.notifyChatFromCustomer =
+      settingsResult.data.notify_chat_from_customer ?? userState.settings.notifyChatFromCustomer;
+    userState.settings.notifyChatToCustomer =
+      settingsResult.data.notify_chat_to_customer ?? userState.settings.notifyChatToCustomer;
   }
 
   const avatarPath = authResult.data?.user?.user_metadata?.avatar_path as string | undefined;
-  const [logoUrl, signatureUrl, avatarUrl] = await Promise.all([
+  const [logoUrl, headerCoverUrl, signatureUrl, avatarUrl] = await Promise.all([
     userState.branding.logoPath ? createSignedAssetUrl(supabase, userState.branding.logoPath) : Promise.resolve(null),
+    userState.branding.headerCoverPath
+      ? createSignedAssetUrl(supabase, userState.branding.headerCoverPath)
+      : Promise.resolve(null),
     userState.branding.signaturePath ? createSignedAssetUrl(supabase, userState.branding.signaturePath) : Promise.resolve(null),
     avatarPath ? createSignedAssetUrl(supabase, avatarPath) : Promise.resolve(null),
   ]);
@@ -282,6 +309,7 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
     userId: user.id,
     email: user.email ?? "",
     avatarUrl,
+    headerCoverUrl,
     userState,
     previewData,
     onboardingComplete: setupProgress.complete,

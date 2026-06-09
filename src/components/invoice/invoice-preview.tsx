@@ -51,13 +51,14 @@ export const InvoicePreview = memo(function InvoicePreview({
       )}
       dir={isRtl ? "rtl" : undefined}
       lang={isArabicOnly ? "ar" : "en"}
-      style={
-        preview.bodyFont
+      style={{
+        ...(preview.bodyFont
           ? { fontFamily: `${preview.bodyFont}, var(--font-sans), sans-serif` }
           : isRtl || isBilingual
-          ? { fontFamily: "var(--font-arabic, var(--font-sans)), var(--font-sans), sans-serif" }
-          : undefined
-      }
+            ? { fontFamily: "var(--font-arabic, var(--font-sans)), var(--font-sans), sans-serif" }
+            : {}),
+        ...(preview.pageBackground ? { backgroundColor: preview.pageBackground } : {}),
+      }}
       data-document-kind={preview.kind ?? "invoice"}
       data-document-mode={mode}
       data-document-template={template.id}

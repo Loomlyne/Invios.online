@@ -98,6 +98,7 @@ export function buildInvoicePreviewData(
     spacing: userState.branding.spacing || defaultBranding.spacing,
     headerLayout: userState.branding.headerLayout || defaultBranding.headerLayout,
     lineItemsStyle: userState.branding.lineItemsStyle || defaultBranding.lineItemsStyle,
+    pageBackground: userState.branding.pageBackground ?? null,
   };
 
   return { ...base, ...overrides };

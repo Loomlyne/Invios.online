@@ -1,20 +1,21 @@
-import type { BrandingSection } from "@/lib/types";
-import { BrandingWorkspace } from "@/components/app/branding-workspace";
-import { getAppContext } from "@/lib/data";
+import { permanentRedirect } from "next/navigation";
 
-const validSections = new Set<BrandingSection>(["identity", "business", "template", "documents"]);
+const LEGACY_SECTION_MAP: Record<string, string> = {
+  identity: "branding",
+  template: "branding",
+  business: "business",
+  documents: "general",
+};
 
 export default async function BrandingPage({
   searchParams,
 }: {
   searchParams?: Promise<{ section?: string }>;
 }) {
-  const context = await getAppContext();
-  const resolvedSearchParams = await searchParams;
-  const section = resolvedSearchParams?.section;
-  const initialSection = validSections.has(section as BrandingSection)
-    ? (section as BrandingSection)
-    : "identity";
+  const resolved = await searchParams;
+  const legacy = resolved?.section;
+  const target =
+    legacy && LEGACY_SECTION_MAP[legacy] ? LEGACY_SECTION_MAP[legacy] : "branding";
 
-  return <BrandingWorkspace context={context} initialSection={initialSection} />;
+  permanentRedirect(`/app/settings?section=${target}`);
 }
