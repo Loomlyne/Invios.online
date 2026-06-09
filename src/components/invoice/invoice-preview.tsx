@@ -161,9 +161,9 @@ export const InvoicePreview = memo(function InvoicePreview({
         bilingualLabel={bilingualLabel}
       />
 
-      {/* ── Signature ── */}
+      {/* ── Signature + Footer grouped to avoid orphaned last page ── */}
       {(preview.signatureMode === "typed" && preview.signatureText) || preview.signatureUrl ? (
-        <div className={cn("border-t border-black/5 sm:text-right", px, py, template.signatureSurfaceClassName)}>
+        <div className={cn("border-t border-black/5 sm:text-right break-inside-avoid", px, py, template.signatureSurfaceClassName)}>
           {preview.signatureMode === "typed" && preview.signatureText ? (
             <div>
               <p
@@ -192,7 +192,7 @@ export const InvoicePreview = memo(function InvoicePreview({
       {/* ── Payment info ── */}
       {template.footerLayout === "side-by-side" ? null : (
         bankFields.length > 0 ? (
-          <div className={cn("border-t border-black/5", px, py)}>
+          <div className={cn("border-t border-black/5 break-inside-avoid", px, py)}>
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Payment info", "معلومات الدفع")}</p>
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-4">
               {bankFields.map((f, i) => (
