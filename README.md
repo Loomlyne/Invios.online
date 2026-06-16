@@ -246,7 +246,7 @@ See `.planning/PROJECT.md` and `.planning/MILESTONES.md` for internal planning d
 
 ## Contributing & support
 
-This repository is the source for the live product at [invios.online](https://invios.online). For bugs or feature work, use your team’s usual GitHub issue or PR workflow.
+This repository is the source for the live product at [invios.online](https://invios.online). Contributions, bug reports, and feature ideas are welcome via GitHub issues and pull requests.
 
 When opening issues, include whether the problem is on **production**, **preview**, or **local**, and attach steps to reproduce (route, user state, browser).
 
@@ -254,4 +254,4 @@ When opening issues, include whether the problem is on **production**, **preview
 
 ## License
 
-Private / all rights reserved unless a `LICENSE` file is added to this repository.
+[MIT](LICENSE) — Copyright (c) 2026 Loomlyne.
