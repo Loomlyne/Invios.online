@@ -227,3 +227,53 @@ export function sendReminderEmail(params: {
     })
     .catch((err: unknown) => console.error("[email] Failed to send reminder email:", err));
 }
+
+export function sendSubscriptionActivatedEmail(email: string, plan: string): void {
+  const client = getResend();
+  if (!client) return;
+
+  const planLabel = plan === "annual" ? "Annual" : "Monthly";
+
+  client.emails
+    .send({
+      from: env.emailFrom,
+      to: email,
+      subject: "Your Invios Pro access is now active",
+      html: brandedEmailHtml({
+        title: "Welcome to Invios Pro",
+        bodyLines: [
+          "Your subscription is now active and your workspace is fully unlocked.",
+          `Plan: Invios Pro (${planLabel})`,
+          "You can find your access key and manage your subscription in Settings → Billing.",
+        ],
+        ctaUrl: `${env.siteUrl}/app`,
+        ctaLabel: "Open Invios",
+        footnote: "Thank you for subscribing to Invios.",
+      }),
+    })
+    .catch((err: unknown) => console.error("[email] Failed to send subscription activated email:", err));
+}
+
+export function sendSubscriptionCanceledEmail(email: string, accessUntil: string): void {
+  const client = getResend();
+  if (!client) return;
+
+  client.emails
+    .send({
+      from: env.emailFrom,
+      to: email,
+      subject: "Your Invios subscription has been canceled",
+      html: brandedEmailHtml({
+        title: "Subscription canceled",
+        bodyLines: [
+          "Your Invios Pro subscription has been canceled.",
+          `You will retain full access to your workspace until ${accessUntil}.`,
+          "After that date, your account will revert to read-only mode. You can resubscribe at any time.",
+        ],
+        ctaUrl: `${env.siteUrl}/pricing`,
+        ctaLabel: "Resubscribe",
+        footnote: "We're sorry to see you go. Your data is safe and will be here if you return.",
+      }),
+    })
+    .catch((err: unknown) => console.error("[email] Failed to send subscription canceled email:", err));
+}

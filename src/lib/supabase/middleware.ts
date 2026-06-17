@@ -1,6 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured } from "@/lib/env";
+
+function createAdminClient() {
+  if (!env.supabaseUrl || !env.supabaseServiceRoleKey) return null;
+  return createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
 
 export async function updateSession(request: NextRequest) {
   if (!isSupabaseConfigured()) {
@@ -55,6 +63,38 @@ export async function updateSession(request: NextRequest) {
     redirectUrl.pathname = "/app";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // Subscription gate: only for authenticated /app routes, allow /app/settings so users can manage billing
+  const isAppRoute = request.nextUrl.pathname.startsWith("/app");
+  const isSettingsRoute = request.nextUrl.pathname.startsWith("/app/settings");
+
+  if (isAppRoute && !isSettingsRoute && user) {
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: sub } = await (adminClient as any)
+        .from("subscriptions")
+        .select("status, current_period_end")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const now = new Date();
+      const isActive =
+        sub &&
+        (sub.status === "active" ||
+          sub.status === "trialing" ||
+          (sub.status === "canceled" &&
+            sub.current_period_end &&
+            new Date(sub.current_period_end) > now));
+
+      if (!isActive) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = "/pricing";
+        redirectUrl.search = "";
+        return NextResponse.redirect(redirectUrl);
+      }
+    }
   }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
