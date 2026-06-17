@@ -6,9 +6,10 @@ export const env = {
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailFrom: process.env.EMAIL_FROM ?? "Invios <onboarding@resend.dev>",
   cronSecret: process.env.CRON_SECRET ?? "",
-  polarWebhookSecret: process.env.POLAR_WEBHOOK_SECRET ?? "",
-  polarCheckoutUrl: process.env.POLAR_CHECKOUT_URL ?? "",
-  polarPortalUrl: process.env.POLAR_PORTAL_URL ?? "",
+  paddleWebhookSecret: process.env.PADDLE_WEBHOOK_SECRET ?? "",
+  paddleCheckoutUrl: process.env.PADDLE_CHECKOUT_URL ?? "",
+  paddlePortalUrl: process.env.PADDLE_PORTAL_URL ?? "",
+  paddleClientToken: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ?? "",
 };
 
 export function isSupabaseConfigured() {

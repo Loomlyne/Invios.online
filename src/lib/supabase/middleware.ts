@@ -3,11 +3,36 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured } from "@/lib/env";
 
+// These API routes require an active paid subscription
+const PAID_ONLY_PREFIXES = [
+  "/api/invoices",
+  "/api/quotations",
+  "/api/export",
+];
+
 function createAdminClient() {
   if (!env.supabaseUrl || !env.supabaseServiceRoleKey) return null;
   return createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
+}
+
+async function checkPaidSubscription(userId: string): Promise<boolean> {
+  const admin = createAdminClient();
+  if (!admin) return true; // fail open if admin client is unavailable
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: sub } = await (admin as any)
+    .from("subscriptions")
+    .select("status, current_period_end")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!sub) return false;
+  if (sub.status === "active" || sub.status === "trialing") return true;
+  if (sub.status === "canceled" && sub.current_period_end) {
+    return new Date(sub.current_period_end) > new Date();
+  }
+  return false;
 }
 
 export async function updateSession(request: NextRequest) {
@@ -45,19 +70,23 @@ export async function updateSession(request: NextRequest) {
     requestHeaders.set("x-middleware-user-email", user.email ?? "");
   }
 
-  const isAuthRoute =
-    request.nextUrl.pathname.startsWith("/sign-in") ||
-    request.nextUrl.pathname.startsWith("/sign-up") ||
-    request.nextUrl.pathname.startsWith("/forgot-password") ||
-    request.nextUrl.pathname.startsWith("/update-password");
+  const { pathname } = request.nextUrl;
 
-  if (request.nextUrl.pathname.startsWith("/app") && !user) {
+  const isAuthRoute =
+    pathname.startsWith("/sign-in") ||
+    pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/update-password");
+
+  // Unauthenticated → redirect to sign-in for protected app pages
+  if (pathname.startsWith("/app") && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/sign-in";
-    redirectUrl.searchParams.set("next", request.nextUrl.pathname);
+    redirectUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Authenticated users on auth pages → send to app
   if (isAuthRoute && user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/app";
@@ -65,35 +94,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Subscription gate: only for authenticated /app routes, allow /app/settings so users can manage billing
-  const isAppRoute = request.nextUrl.pathname.startsWith("/app");
-  const isSettingsRoute = request.nextUrl.pathname.startsWith("/app/settings");
-
-  if (isAppRoute && !isSettingsRoute && user) {
-    const adminClient = createAdminClient();
-    if (adminClient) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: sub } = await (adminClient as any)
-        .from("subscriptions")
-        .select("status, current_period_end")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const now = new Date();
-      const isActive =
-        sub &&
-        (sub.status === "active" ||
-          sub.status === "trialing" ||
-          (sub.status === "canceled" &&
-            sub.current_period_end &&
-            new Date(sub.current_period_end) > now));
-
-      if (!isActive) {
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = "/pricing";
-        redirectUrl.search = "";
-        return NextResponse.redirect(redirectUrl);
-      }
+  // Premium API routes require an active paid subscription
+  const isPremiumRoute = PAID_ONLY_PREFIXES.some((p) => pathname.startsWith(p));
+  if (isPremiumRoute && user) {
+    const paid = await checkPaidSubscription(user.id);
+    if (!paid) {
+      return Response.json(
+        { error: "Pro subscription required", upgrade: "/pricing" },
+        { status: 402 },
+      );
     }
   }
 
