@@ -40,7 +40,7 @@ const PRO_FEATURES = [
 const FAQS = [
   {
     q: "What currency am I billed in?",
-    a: "All Pro subscriptions are billed in UAE Dirhams (AED) at AED 50 per month, inclusive of any applicable taxes. Payments are processed securely by Creem.",
+    a: "All Pro subscriptions are billed in US Dollars (USD) at $15 per month, inclusive of any applicable taxes. Payments are processed securely by Creem.",
   },
   {
     q: "Can I cancel anytime?",
@@ -84,7 +84,7 @@ export default async function PricingPage() {
             Start free. Upgrade when ready.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-muted-strong">
-            No credit card required to get started. Upgrade to Pro for unlimited invoicing and the full feature set — AED 50/month, cancel anytime.
+            No credit card required to get started. Upgrade to Pro for unlimited invoicing and the full feature set — $15/month, cancel anytime.
           </p>
         </div>
       </section>
@@ -98,7 +98,7 @@ export default async function PricingPage() {
             <div className="mb-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Free</p>
               <div className="mt-3 flex items-end gap-1">
-                <span className="display-text text-4xl font-semibold text-foreground">AED 0</span>
+                <span className="display-text text-4xl font-semibold text-foreground">Free</span>
               </div>
               <p className="mt-1.5 text-sm text-muted">Forever free — no card needed</p>
             </div>
@@ -137,7 +137,7 @@ export default async function PricingPage() {
             <div className="mb-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Pro</p>
               <div className="mt-3 flex items-end gap-1">
-                <span className="display-text text-4xl font-semibold text-foreground">AED 50</span>
+                <span className="display-text text-4xl font-semibold text-foreground">$15</span>
                 <span className="mb-0.5 text-sm text-muted">/month</span>
               </div>
               <p className="mt-1.5 text-sm text-muted">

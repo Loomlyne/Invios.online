@@ -27,7 +27,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(202,138,4,0.18),transparent_24%),radial-gradient(circle_at_top_right,rgba(28,25,23,0.08),transparent_18%)]" />
         <div className="relative mx-auto max-w-[1400px] px-4 pb-10 pt-12 sm:px-6 lg:px-8 lg:pb-16">
           <div className="animate-enter space-y-7">
-            <Badge variant="accent">Invoicing &amp; quotations for AED businesses</Badge>
+            <Badge variant="accent">Invoicing &amp; quotations for UAE businesses</Badge>
             <div className="max-w-3xl space-y-5">
               <h1 className="display-text text-5xl font-semibold leading-none text-balance text-foreground sm:text-6xl lg:text-7xl">
                 Send invoices that actually look worth paying.
@@ -49,7 +49,7 @@ export default function LandingPage() {
               </Button>
             </div>
             <p className="text-sm text-muted">
-              Free plan available · Pro from <span className="font-semibold text-foreground">AED 50/month</span> · Cancel anytime
+              Free plan available · Pro from <span className="font-semibold text-foreground">$15/month</span> · Cancel anytime
             </p>
           </div>
 
@@ -116,7 +116,7 @@ export default function LandingPage() {
             Start free. Upgrade when you are ready.
           </h2>
           <p className="mt-3 text-base leading-7 text-muted-strong">
-            No credit card to begin. Pro unlocks unlimited documents and the full feature set for AED 50/month.
+            No credit card to begin. Pro unlocks unlimited documents and the full feature set for $15/month.
           </p>
         </div>
 
@@ -125,7 +125,7 @@ export default function LandingPage() {
           <div className="flex flex-col rounded-[var(--radius-card)] border border-black/10 bg-surface p-7 subtle-shadow">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Free</p>
             <div className="mt-3 flex items-end gap-1">
-              <span className="display-text text-4xl font-semibold text-foreground">AED 0</span>
+              <span className="display-text text-4xl font-semibold text-foreground">Free</span>
             </div>
             <p className="mt-1.5 text-sm text-muted">Forever free — no card needed</p>
             <ul className="mb-8 mt-6 grid gap-2.5">
@@ -151,7 +151,7 @@ export default function LandingPage() {
             </span>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Pro</p>
             <div className="mt-3 flex items-end gap-1">
-              <span className="display-text text-4xl font-semibold text-foreground">AED 50</span>
+              <span className="display-text text-4xl font-semibold text-foreground">$15</span>
               <span className="mb-0.5 text-sm text-muted">/month</span>
             </div>
             <p className="mt-1.5 text-sm text-muted">
@@ -177,7 +177,7 @@ export default function LandingPage() {
 
         <div className="mx-auto mt-5 flex max-w-3xl items-center justify-center gap-2 rounded-[var(--radius-inner)] border border-border bg-surface-subtle px-5 py-3 text-center text-sm text-muted">
           <ShieldCheck className="size-4 shrink-0 text-accent" aria-hidden="true" />
-          Secure checkout via Creem · Prices in AED · Cancel anytime · 7-day money-back guarantee
+          Secure checkout via Creem · Prices in USD · Cancel anytime · 7-day money-back guarantee
         </div>
       </section>
 
@@ -286,7 +286,7 @@ const FAQS = [
   },
   {
     q: "What does it cost?",
-    a: "The Free plan is AED 0 forever. Pro is AED 50/month, billed monthly through Creem, and unlocks unlimited documents plus the full feature set. Cancel anytime.",
+    a: "The Free plan is free forever. Pro is $15/month, billed monthly through Creem, and unlocks unlimited documents plus the full feature set. Cancel anytime.",
   },
   {
     q: "Can I get a refund?",

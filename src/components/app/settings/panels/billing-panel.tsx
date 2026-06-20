@@ -46,7 +46,7 @@ function PlanCard({ sub }: { sub: Subscription }) {
       <dl className="grid gap-3 sm:grid-cols-2 text-sm">
         <div className="rounded-[var(--radius-inner)] border border-border px-4 py-3">
           <dt className="text-muted">Billing cycle</dt>
-          <dd className="font-medium mt-1">Monthly · AED 50</dd>
+          <dd className="font-medium mt-1">Monthly · $15</dd>
         </div>
         <div className="rounded-[var(--radius-inner)] border border-border px-4 py-3">
           <dt className="text-muted">Next renewal</dt>
@@ -74,7 +74,7 @@ function FreePlan() {
         <div className="flex items-start gap-3">
           <Zap className="size-5 text-accent mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Upgrade to Pro — AED 50/month</p>
+            <p className="text-sm font-semibold text-foreground">Upgrade to Pro — $15/month</p>
             <p className="text-sm text-muted mt-1">
               Unlock unlimited invoices, PDF export, recurring invoices, email reminders, and full analytics.
             </p>

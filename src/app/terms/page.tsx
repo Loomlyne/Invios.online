@@ -88,12 +88,12 @@ export default function TermsPage() {
 
             <section id="plans" className="p-6 sm:p-8">
               <h2 className="text-base font-semibold text-foreground">4. Free and Pro Plans</h2>
-              <p className="mt-3 text-sm leading-7 text-muted-strong">The Free plan allows up to 3 invoices, 3 quotations, and 2 clients at no cost. The Pro plan, billed at AED 50 per month, unlocks unlimited invoices, quotations, and clients, along with PDF/PNG export, recurring invoices, email reminders, analytics, and custom branding. Plan limits and features may be updated with reasonable notice.</p>
+              <p className="mt-3 text-sm leading-7 text-muted-strong">The Free plan allows up to 3 invoices, 3 quotations, and 2 clients at no cost. The Pro plan, billed at $15 per month, unlocks unlimited invoices, quotations, and clients, along with PDF/PNG export, recurring invoices, email reminders, analytics, and custom branding. Plan limits and features may be updated with reasonable notice.</p>
             </section>
 
             <section id="payment" className="p-6 sm:p-8">
               <h2 className="text-base font-semibold text-foreground">5. Payment and Billing</h2>
-              <p className="mt-3 text-sm leading-7 text-muted-strong">Pro plan subscriptions are billed monthly at AED 50 through our payment processor, Creem. By subscribing, you authorise Creem to charge your payment method on a recurring monthly basis until you cancel. All prices are in UAE Dirhams (AED) and are inclusive of any applicable taxes. Failed payments may result in suspension of Pro access until payment is resolved.</p>
+              <p className="mt-3 text-sm leading-7 text-muted-strong">Pro plan subscriptions are billed monthly at $15 through our payment processor, Creem. By subscribing, you authorise Creem to charge your payment method on a recurring monthly basis until you cancel. All prices are in US Dollars (USD) and are inclusive of any applicable taxes. Failed payments may result in suspension of Pro access until payment is resolved.</p>
             </section>
 
             <section id="cancellation" className="p-6 sm:p-8">

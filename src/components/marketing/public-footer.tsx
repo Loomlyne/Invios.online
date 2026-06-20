@@ -48,7 +48,7 @@ export function PublicFooter() {
 
         <div className="mt-10 flex flex-col gap-2 border-t border-border pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 Invios. All rights reserved.</span>
-          <span>Prices in AED. Payments processed securely by Creem.</span>
+          <span>Prices in USD. Payments processed securely by Creem.</span>
         </div>
       </div>
     </footer>
