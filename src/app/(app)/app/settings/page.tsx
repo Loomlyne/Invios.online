@@ -1,6 +1,7 @@
-import { SETTINGS_SECTIONS, type SettingsSection } from "@/lib/types";
+import { SETTINGS_SECTIONS, type SettingsSection, type SubscriptionData } from "@/lib/types";
 import { SettingsShell } from "@/components/app/settings/settings-shell";
 import { getAppContext } from "@/lib/data";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const validSections = new Set<SettingsSection>(SETTINGS_SECTIONS);
 
@@ -16,5 +17,33 @@ export default async function SettingsPage({
     ? (section as SettingsSection)
     : "profile";
 
-  return <SettingsShell context={context} initialSection={initialSection} />;
+  // Fetch subscription server-side so BillingPanel can stay a pure display component
+  let subscription: SubscriptionData = null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    if (supabase) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("subscriptions")
+          .select("status, current_period_end, plan")
+          .eq("user_id", user.id)
+          .maybeSingle<NonNullable<SubscriptionData>>();
+        subscription = data ?? null;
+      }
+    }
+  } catch {
+    // Non-fatal — billing panel will show the free state
+  }
+
+  const portalUrl = process.env.PADDLE_PORTAL_URL ?? "#";
+
+  return (
+    <SettingsShell
+      context={context}
+      initialSection={initialSection}
+      subscription={subscription}
+      portalUrl={portalUrl}
+    />
+  );
 }

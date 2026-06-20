@@ -233,3 +233,9 @@ export type ActionState = {
   message?: string;
   redirectTo?: string;
 };
+
+export type SubscriptionData = {
+  status: "inactive" | "trialing" | "active" | "past_due" | "canceled" | "revoked";
+  current_period_end: string | null;
+  plan: string | null;
+} | null;

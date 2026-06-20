@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { Drawer } from "vaul";
 import { cn } from "@/lib/utils";
-import type { SettingsSection, AppContext } from "@/lib/types";
+import type { SettingsSection, AppContext, SubscriptionData } from "@/lib/types";
 import { SettingsSidebar, SIDEBAR_ITEMS } from "./settings-sidebar";
 import { ProfilePanel } from "./panels/profile-panel";
 import { BrandingPanel } from "./panels/branding-panel";
@@ -18,9 +18,13 @@ import { BillingPanel } from "./panels/billing-panel";
 export function SettingsShell({
   context,
   initialSection,
+  subscription,
+  portalUrl,
 }: {
   context: AppContext;
   initialSection: SettingsSection;
+  subscription: SubscriptionData;
+  portalUrl: string;
 }) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SettingsSection>(initialSection);
@@ -91,7 +95,7 @@ export function SettingsShell({
         {activeSection === "general" && <GeneralPanel context={context} />}
         {activeSection === "emails" && <EmailsPanel context={context} />}
         {activeSection === "integrations" && <IntegrationsPanel />}
-        {activeSection === "billing" && <BillingPanel />}
+        {activeSection === "billing" && <BillingPanel subscription={subscription} portalUrl={portalUrl} />}
       </main>
     </div>
   );
