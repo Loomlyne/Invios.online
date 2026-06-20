@@ -3,15 +3,9 @@ import Link from "next/link";
 import { AlertTriangle, XCircle, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { SubscriptionData } from "@/lib/types";
 
-type SubscriptionStatus = "inactive" | "trialing" | "active" | "past_due" | "canceled" | "revoked";
-
-type Subscription = {
-  status: SubscriptionStatus;
-  current_period_end: string | null;
-  plan: string | null;
-};
+type Subscription = NonNullable<SubscriptionData>;
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
@@ -27,9 +21,7 @@ function isPeriodActive(end: string | null): boolean {
   return new Date(end) > new Date();
 }
 
-const portalUrl = process.env.PADDLE_PORTAL_URL ?? "#";
-
-function ManageLink() {
+function ManageLink({ portalUrl }: { portalUrl: string }) {
   return (
     <Button asChild variant="secondary" size="sm" className="w-full sm:w-fit">
       <a href={portalUrl} target="_blank" rel="noopener noreferrer">
@@ -98,16 +90,16 @@ function FreePlan() {
   );
 }
 
-function ActiveSubscription({ sub }: { sub: Subscription }) {
+function ActiveSubscription({ sub, portalUrl }: { sub: Subscription; portalUrl: string }) {
   return (
     <div className="space-y-4">
       <PlanCard sub={sub} />
-      <ManageLink />
+      <ManageLink portalUrl={portalUrl} />
     </div>
   );
 }
 
-function CanceledWithAccess({ sub }: { sub: Subscription }) {
+function CanceledWithAccess({ sub, portalUrl }: { sub: Subscription; portalUrl: string }) {
   return (
     <div className="space-y-4">
       <div className="rounded-[var(--radius-md)] border border-amber-700/20 bg-amber-50 px-4 py-3 flex items-start gap-3">
@@ -118,12 +110,12 @@ function CanceledWithAccess({ sub }: { sub: Subscription }) {
         </p>
       </div>
       <PlanCard sub={sub} />
-      <ManageLink />
+      <ManageLink portalUrl={portalUrl} />
     </div>
   );
 }
 
-function PastDue() {
+function PastDue({ portalUrl }: { portalUrl: string }) {
   return (
     <div className="space-y-4">
       <div className="rounded-[var(--radius-md)] border border-orange-700/20 bg-orange-50 px-4 py-3 flex items-start gap-3">
@@ -132,7 +124,7 @@ function PastDue() {
           Payment failed — please update your payment method to keep Pro access.
         </p>
       </div>
-      <ManageLink />
+      <ManageLink portalUrl={portalUrl} />
     </div>
   );
 }
@@ -153,23 +145,16 @@ function AccessEnded() {
   );
 }
 
-export async function BillingPanel() {
-  const supabase = await createSupabaseServerClient();
-  let sub: Subscription | null = null;
-
-  if (supabase) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase
-        .from("subscriptions")
-        .select("status, current_period_end, plan")
-        .eq("user_id", user.id)
-        .maybeSingle<Subscription>();
-      sub = data ?? null;
-    }
-  }
-
+export function BillingPanel({
+  subscription,
+  portalUrl,
+}: {
+  subscription: SubscriptionData;
+  portalUrl: string;
+}) {
+  const sub = subscription;
   const status = sub?.status ?? "inactive";
+
   let content: ReactNode;
 
   if (!sub || status === "inactive") {
@@ -177,13 +162,13 @@ export async function BillingPanel() {
   } else if (status === "revoked") {
     content = <AccessEnded />;
   } else if (status === "active" || status === "trialing") {
-    content = <ActiveSubscription sub={sub} />;
+    content = <ActiveSubscription sub={sub} portalUrl={portalUrl} />;
   } else if (status === "canceled") {
     content = isPeriodActive(sub.current_period_end)
-      ? <CanceledWithAccess sub={sub} />
+      ? <CanceledWithAccess sub={sub} portalUrl={portalUrl} />
       : <AccessEnded />;
   } else if (status === "past_due") {
-    content = <PastDue />;
+    content = <PastDue portalUrl={portalUrl} />;
   } else {
     content = <AccessEnded />;
   }
