@@ -3,6 +3,13 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured, isSupabaseAdminConfigured } from "@/lib/env";
 
+const SESSION_COOKIE_OPTIONS = {
+  path: "/",
+  sameSite: "lax" as const,
+  httpOnly: false,
+  maxAge: 400 * 24 * 60 * 60,
+};
+
 export async function createSupabaseServerClient() {
   if (!isSupabaseConfigured()) {
     return null;
@@ -11,6 +18,7 @@ export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
 
   return createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
+    cookieOptions: SESSION_COOKIE_OPTIONS,
     cookies: {
       getAll() {
         return cookieStore.getAll();

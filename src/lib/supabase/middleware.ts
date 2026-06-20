@@ -10,6 +10,24 @@ const PAID_ONLY_PREFIXES = [
   "/api/export",
 ];
 
+const SESSION_COOKIE_OPTIONS = {
+  path: "/",
+  sameSite: "lax" as const,
+  httpOnly: false,
+  maxAge: 400 * 24 * 60 * 60,
+};
+
+type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
+
+// Apply refreshed Supabase auth cookies to a response.
+// Must be called on EVERY response path so rotated refresh tokens are not dropped.
+function applyCookies(response: NextResponse, cookies: PendingCookie[]) {
+  cookies.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
+  });
+  return response;
+}
+
 function createAdminClient() {
   if (!env.supabaseUrl || !env.supabaseServiceRoleKey) return null;
   return createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
@@ -46,9 +64,10 @@ export async function updateSession(request: NextRequest) {
   requestHeaders.delete("x-middleware-user-email");
 
   // Track cookies that need to be set on the response.
-  let pendingCookies: { name: string; value: string; options: Record<string, unknown> }[] = [];
+  let pendingCookies: PendingCookie[] = [];
 
   const supabase = createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
+    cookieOptions: SESSION_COOKIE_OPTIONS,
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -78,40 +97,39 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/update-password");
 
-  // Unauthenticated → redirect to sign-in for protected app pages
+  // Unauthenticated → redirect to sign-in for protected app pages.
+  // Apply refreshed auth cookies on redirect so rotated tokens are not dropped.
   if (pathname.startsWith("/app") && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/sign-in";
     redirectUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(redirectUrl);
+    return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies);
   }
 
-  // Authenticated users on auth pages → send to app
+  // Authenticated users on auth pages → send to app.
+  // Apply refreshed auth cookies on redirect so rotated tokens are not dropped.
   if (isAuthRoute && user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/app";
     redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl);
+    return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies);
   }
 
-  // Premium API routes require an active paid subscription
+  // Premium API routes require an active paid subscription.
   const isPremiumRoute = PAID_ONLY_PREFIXES.some((p) => pathname.startsWith(p));
   if (isPremiumRoute && user) {
     const paid = await checkPaidSubscription(user.id);
     if (!paid) {
-      return Response.json(
-        { error: "Pro subscription required", upgrade: "/pricing" },
-        { status: 402 },
+      return applyCookies(
+        NextResponse.json(
+          { error: "Pro subscription required", upgrade: "/pricing" },
+          { status: 402 },
+        ),
+        pendingCookies,
       );
     }
   }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
-
-  // Apply any refreshed auth cookies to the response.
-  pendingCookies.forEach(({ name, value, options }) => {
-    response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
-  });
-
-  return response;
+  return applyCookies(response, pendingCookies);
 }
