@@ -6,10 +6,10 @@ export const env = {
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailFrom: process.env.EMAIL_FROM ?? "Invios <onboarding@resend.dev>",
   cronSecret: process.env.CRON_SECRET ?? "",
-  paddleWebhookSecret: process.env.PADDLE_WEBHOOK_SECRET ?? "",
-  paddleCheckoutUrl: process.env.PADDLE_CHECKOUT_URL ?? "",
-  paddlePortalUrl: process.env.PADDLE_PORTAL_URL ?? "",
-  paddleClientToken: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ?? "",
+  // Creem billing — https://docs.creem.io
+  creemApiKey: process.env.CREEM_API_KEY ?? "",
+  creemProductId: process.env.CREEM_PRODUCT_ID ?? "",
+  creemWebhookSecret: process.env.CREEM_WEBHOOK_SECRET ?? "",
 };
 
 export function isSupabaseConfigured() {
@@ -22,6 +22,10 @@ export function isSupabaseAdminConfigured() {
 
 export function isEmailConfigured() {
   return Boolean(env.resendApiKey);
+}
+
+export function isCreemConfigured() {
+  return Boolean(env.creemApiKey && env.creemProductId);
 }
 
 export function isCronAuthenticated(authHeader: string | null): boolean {
