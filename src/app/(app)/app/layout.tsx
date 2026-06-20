@@ -4,6 +4,8 @@ import { AppShell } from "@/components/app/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAppContext } from "@/lib/data";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { SubscriptionData } from "@/lib/types";
 
 function hexToTokens(hex: string) {
   const clean = hex.replace("#", "");
@@ -64,6 +66,21 @@ export default async function ProtectedLayout({
 }) {
   const context = await getAppContext();
 
+  let subscription: SubscriptionData = null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    if (supabase && context.userId) {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("status, current_period_end, plan")
+        .eq("user_id", context.userId)
+        .maybeSingle<NonNullable<SubscriptionData>>();
+      subscription = data ?? null;
+    }
+  } catch {
+    // non-fatal
+  }
+
   if (context.configured && !context.email) {
     redirect("/sign-in");
   }
@@ -107,7 +124,7 @@ export default async function ProtectedLayout({
           --border-brand: ${t.borderBrand};
         }
       `}</style>
-      <AppShell context={context}>
+      <AppShell context={context} subscription={subscription}>
         {children}
       </AppShell>
     </>
