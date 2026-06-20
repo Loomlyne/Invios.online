@@ -23,11 +23,11 @@ function isPeriodActive(end: string | null): boolean {
 
 function ManageLink({ portalUrl }: { portalUrl: string }) {
   return (
-    <Button asChild variant="secondary" size="sm" className="w-full sm:w-fit">
-      <a href={portalUrl} target="_blank" rel="noopener noreferrer">
+    <form action={portalUrl} method="post" className="w-full sm:w-fit">
+      <Button type="submit" variant="secondary" size="sm" className="w-full sm:w-fit">
         Manage Subscription
-      </a>
-    </Button>
+      </Button>
+    </form>
   );
 }
 

@@ -177,7 +177,7 @@ export default function LandingPage() {
 
         <div className="mx-auto mt-5 flex max-w-3xl items-center justify-center gap-2 rounded-[var(--radius-inner)] border border-border bg-surface-subtle px-5 py-3 text-center text-sm text-muted">
           <ShieldCheck className="size-4 shrink-0 text-accent" aria-hidden="true" />
-          Secure checkout via Paddle · Prices in AED · Cancel anytime · 7-day money-back guarantee
+          Secure checkout via Creem · Prices in AED · Cancel anytime · 7-day money-back guarantee
         </div>
       </section>
 
@@ -286,7 +286,7 @@ const FAQS = [
   },
   {
     q: "What does it cost?",
-    a: "The Free plan is AED 0 forever. Pro is AED 50/month, billed monthly through Paddle, and unlocks unlimited documents plus the full feature set. Cancel anytime.",
+    a: "The Free plan is AED 0 forever. Pro is AED 50/month, billed monthly through Creem, and unlocks unlimited documents plus the full feature set. Cancel anytime.",
   },
   {
     q: "Can I get a refund?",

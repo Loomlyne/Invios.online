@@ -122,7 +122,7 @@ export default function RefundPage() {
 
               <section id="payment-processing" className="p-6 sm:p-8">
                 <h2 className="text-base font-semibold text-foreground">6. Payment Processing</h2>
-                <p className="mt-3 text-sm leading-7 text-muted-strong">All payments are processed by Paddle, our third-party payment processor. Refunds are initiated by Invios through Paddle and are subject to Paddle's standard processing timelines. Currency conversion rates at the time of the original transaction apply — refunds are processed in the original currency (AED).</p>
+                <p className="mt-3 text-sm leading-7 text-muted-strong">All payments are processed by Creem, our third-party payment processor. Refunds are initiated by Invios through Creem and are subject to Creem's standard processing timelines. Currency conversion rates at the time of the original transaction apply — refunds are processed in the original currency (AED).</p>
               </section>
 
               <section id="contact" className="p-6 sm:p-8">

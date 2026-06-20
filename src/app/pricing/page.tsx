@@ -40,7 +40,7 @@ const PRO_FEATURES = [
 const FAQS = [
   {
     q: "What currency am I billed in?",
-    a: "All Pro subscriptions are billed in UAE Dirhams (AED) at AED 50 per month, inclusive of any applicable taxes. Payments are processed securely by Paddle.",
+    a: "All Pro subscriptions are billed in UAE Dirhams (AED) at AED 50 per month, inclusive of any applicable taxes. Payments are processed securely by Creem.",
   },
   {
     q: "Can I cancel anytime?",
@@ -57,23 +57,17 @@ const FAQS = [
 ];
 
 export default async function PricingPage() {
-  let userEmail: string | undefined;
   let isSignedIn = false;
 
   try {
     const supabase = await createSupabaseServerClient();
     if (supabase) {
       const { data } = await supabase.auth.getUser();
-      userEmail = data.user?.email ?? undefined;
       isSignedIn = Boolean(data.user);
     }
   } catch {
     // Public page — session is best-effort
   }
-
-  const checkoutBase = process.env.PADDLE_CHECKOUT_URL ?? "#";
-  const emailParam = userEmail ? `?customer_email=${encodeURIComponent(userEmail)}` : "";
-  const checkoutHref = `${checkoutBase}${emailParam}`;
 
   return (
     <main className="min-h-screen overflow-hidden">
@@ -162,13 +156,25 @@ export default async function PricingPage() {
             </ul>
 
             <div className="mt-auto">
-              <a
-                href={checkoutHref}
-                className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-inner)] bg-accent px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-strong)]"
-              >
-                Upgrade to Pro
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </a>
+              {isSignedIn ? (
+                <form action="/api/creem/checkout" method="post">
+                  <button
+                    type="submit"
+                    className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-inner)] bg-accent px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-strong)]"
+                  >
+                    Upgrade to Pro
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </button>
+                </form>
+              ) : (
+                <a
+                  href="/sign-up?next=/pricing"
+                  className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-inner)] bg-accent px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-strong)]"
+                >
+                  Create account to upgrade
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </a>
+              )}
             </div>
           </div>
 
@@ -177,7 +183,7 @@ export default async function PricingPage() {
         {/* Trust strip */}
         <div className="mx-auto mt-5 flex max-w-3xl items-center justify-center gap-2 rounded-[var(--radius-inner)] border border-border bg-surface-subtle px-5 py-3 text-center text-sm text-muted">
           <ShieldCheck className="size-4 shrink-0 text-accent" aria-hidden="true" />
-          Secure checkout via Paddle · Cancel anytime · 7-day money-back guarantee
+          Secure checkout via Creem · Cancel anytime · 7-day money-back guarantee
         </div>
       </section>
 

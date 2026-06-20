@@ -79,7 +79,7 @@ export default function PrivacyPage() {
                 <p><strong className="text-foreground">Business information:</strong> Information you provide for invoicing, including business name, address, Tax Registration Number (TRN), bank details, logo, and branding assets.</p>
                 <p><strong className="text-foreground">Client data:</strong> Names, email addresses, and contact details of your clients that you enter into the platform.</p>
                 <p><strong className="text-foreground">Document data:</strong> Invoices, quotations, line items, and financial records you create through the Service.</p>
-                <p><strong className="text-foreground">Payment data:</strong> Billing and subscription information processed by our payment processor, Paddle. We do not store full card numbers — Paddle handles all sensitive payment data.</p>
+                <p><strong className="text-foreground">Payment data:</strong> Billing and subscription information processed by our payment processor, Creem. We do not store full card numbers — Creem handles all sensitive payment data.</p>
                 <p><strong className="text-foreground">Usage data:</strong> Log data such as IP address, browser type, pages visited, and timestamps, collected automatically for security and performance purposes.</p>
               </div>
             </section>
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
                 <p>We use the following third-party services to operate Invios:</p>
                 <ul className="list-disc space-y-1 pl-5">
                   <li><strong className="text-foreground">Supabase</strong> — database, authentication, and file storage</li>
-                  <li><strong className="text-foreground">Paddle</strong> — payment processing and subscription management</li>
+                  <li><strong className="text-foreground">Creem</strong> — payment processing and subscription management</li>
                   <li><strong className="text-foreground">Resend</strong> — transactional email delivery</li>
                   <li><strong className="text-foreground">Vercel</strong> — application hosting and deployment</li>
                 </ul>

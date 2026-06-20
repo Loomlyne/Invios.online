@@ -93,7 +93,7 @@ export default function TermsPage() {
 
             <section id="payment" className="p-6 sm:p-8">
               <h2 className="text-base font-semibold text-foreground">5. Payment and Billing</h2>
-              <p className="mt-3 text-sm leading-7 text-muted-strong">Pro plan subscriptions are billed monthly at AED 50 through our payment processor, Paddle. By subscribing, you authorise Paddle to charge your payment method on a recurring monthly basis until you cancel. All prices are in UAE Dirhams (AED) and are inclusive of any applicable taxes. Failed payments may result in suspension of Pro access until payment is resolved.</p>
+              <p className="mt-3 text-sm leading-7 text-muted-strong">Pro plan subscriptions are billed monthly at AED 50 through our payment processor, Creem. By subscribing, you authorise Creem to charge your payment method on a recurring monthly basis until you cancel. All prices are in UAE Dirhams (AED) and are inclusive of any applicable taxes. Failed payments may result in suspension of Pro access until payment is resolved.</p>
             </section>
 
             <section id="cancellation" className="p-6 sm:p-8">
