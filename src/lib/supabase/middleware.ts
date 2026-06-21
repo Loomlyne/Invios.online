@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured } from "@/lib/env";
 
-// These API routes require an active paid subscription
+// Routes requiring an active Pro subscription
 const PAID_ONLY_PREFIXES = [
   "/api/invoices",
   "/api/quotations",
