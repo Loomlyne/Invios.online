@@ -6,6 +6,7 @@ import { env, isSupabaseConfigured, isSupabaseAdminConfigured } from "@/lib/env"
 const SESSION_COOKIE_OPTIONS = {
   path: "/",
   sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
   httpOnly: false,
   maxAge: 400 * 24 * 60 * 60,
 };

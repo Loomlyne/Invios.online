@@ -13,6 +13,7 @@ const PAID_ONLY_PREFIXES = [
 const SESSION_COOKIE_OPTIONS = {
   path: "/",
   sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
   httpOnly: false,
   maxAge: 400 * 24 * 60 * 60,
 };
@@ -58,6 +59,14 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  // Redirect www → apex so auth cookies are always on a single domain.
+  const host = request.headers.get("host") ?? "";
+  if (host.startsWith("www.")) {
+    const url = request.nextUrl.clone();
+    url.host = host.slice(4); // strip "www."
+    return NextResponse.redirect(url, { status: 308 });
+  }
+
   // Strip any client-supplied spoofed auth headers before trusting them downstream.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete("x-middleware-user-id");
@@ -74,7 +83,11 @@ export async function updateSession(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         pendingCookies = cookiesToSet;
-        cookiesToSet.forEach(({ name, value }) => requestHeaders.set(`cookie`, `${name}=${value}`));
+        // Append refreshed cookies to the forwarded request so Server Components
+        // see the updated session without making another round-trip.
+        const existing = requestHeaders.get("cookie") ?? "";
+        const updated = cookiesToSet.map(({ name, value }) => `${name}=${value}`);
+        requestHeaders.set("cookie", [existing, ...updated].filter(Boolean).join("; "));
       },
     },
   });
