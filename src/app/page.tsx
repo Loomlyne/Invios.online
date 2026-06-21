@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   ArrowRight,
   BarChart3,
@@ -17,7 +18,10 @@ import { PublicFooter } from "@/components/marketing/public-footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const h = await headers();
+  const isSignedIn = Boolean(h.get("x-middleware-user-id"));
+
   return (
     <main className="overflow-hidden">
       <PublicNav />
@@ -38,15 +42,26 @@ export default function LandingPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button asChild variant="accent" size="lg">
-                <Link href="/sign-up">
-                  Start free — no card needed
-                  <ArrowRight className="size-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="secondary" size="lg">
-                <Link href="/pricing">View pricing</Link>
-              </Button>
+              {isSignedIn ? (
+                <Button asChild variant="accent" size="lg">
+                  <Link href="/app">
+                    Go to dashboard
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild variant="accent" size="lg">
+                    <Link href="/sign-up">
+                      Start free — no card needed
+                      <ArrowRight className="size-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="secondary" size="lg">
+                    <Link href="/pricing">View pricing</Link>
+                  </Button>
+                </>
+              )}
             </div>
             <p className="text-sm text-muted">
               Free plan available · Pro from <span className="font-semibold text-foreground">$15/month</span> · Cancel anytime
@@ -212,8 +227,8 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="accent" size="lg">
-                <Link href="/sign-up">
-                  Get started free
+                <Link href={isSignedIn ? "/app" : "/sign-up"}>
+                  {isSignedIn ? "Go to dashboard" : "Get started free"}
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
