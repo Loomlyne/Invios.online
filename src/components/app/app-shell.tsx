@@ -1,17 +1,20 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { Zap } from "lucide-react";
 import { AppSidebarNav } from "@/components/app/app-sidebar-nav";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { InviosLogo } from "@/components/app/invios-logo";
 import { PageTransition } from "@/components/app/page-transition";
 import { UserAvatarMenu } from "@/components/app/user-avatar-menu";
-import type { AppContext } from "@/lib/types";
+import type { AppContext, SubscriptionData } from "@/lib/types";
 
 export function AppShell({
   context,
+  subscription,
   children,
 }: {
   context: AppContext;
+  subscription?: SubscriptionData;
   children: ReactNode;
 }) {
   return (
@@ -27,6 +30,27 @@ export function AppShell({
             <div className="pt-4">
               <AppSidebarNav />
             </div>
+            {(!subscription || subscription.status === "inactive") && (
+              <div className="mt-4 border-t border-black/6 pt-4 px-2">
+                <div className="rounded-[var(--radius-inner)] border border-accent/20 bg-accent-soft/20 p-3 space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <Zap className="size-3.5 text-accent shrink-0" />
+                    <p className="text-xs font-semibold text-foreground">Upgrade to Pro</p>
+                  </div>
+                  <p className="text-xs text-muted leading-relaxed">
+                    Unlimited invoices, PDF export, recurring billing &amp; more.
+                  </p>
+                  <form action="/api/creem/checkout" method="post">
+                    <button
+                      type="submit"
+                      className="w-full rounded-[var(--radius-inner)] bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+                    >
+                      Become Pro — $15/mo
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         </aside>
 

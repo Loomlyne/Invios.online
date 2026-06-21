@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { AlertTriangle, XCircle, Zap } from "lucide-react";
+import { AlertTriangle, Check, X, XCircle, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { SubscriptionData } from "@/lib/types";
@@ -57,9 +57,24 @@ function PlanCard({ sub }: { sub: Subscription }) {
   );
 }
 
+const PLAN_FEATURES: { label: string; free: boolean; pro: boolean }[] = [
+  { label: "Up to 3 invoices", free: true, pro: false },
+  { label: "Unlimited invoices & quotations", free: false, pro: true },
+  { label: "Up to 2 clients", free: true, pro: false },
+  { label: "Unlimited clients", free: false, pro: true },
+  { label: "Basic dashboard", free: true, pro: true },
+  { label: "PDF & PNG export", free: false, pro: true },
+  { label: "CSV export", free: false, pro: true },
+  { label: "Recurring invoices", free: false, pro: true },
+  { label: "Email reminders", free: false, pro: true },
+  { label: "Analytics & reports", free: false, pro: true },
+  { label: "Custom branding", free: false, pro: true },
+];
+
 function FreePlan() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Current plan row */}
       <div className="rounded-[var(--radius-md)] border border-border bg-white p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -70,19 +85,46 @@ function FreePlan() {
           <Badge variant="default">Free</Badge>
         </div>
       </div>
-      <div className="rounded-[var(--radius-md)] border border-dashed border-accent/30 bg-accent-soft/30 p-5">
+
+      {/* Feature comparison */}
+      <div className="rounded-[var(--radius-md)] border border-border overflow-hidden">
+        <div className="grid grid-cols-3 bg-surface-subtle px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+          <span>Feature</span>
+          <span className="text-center">Free</span>
+          <span className="text-center text-accent">Pro</span>
+        </div>
+        {PLAN_FEATURES.map(({ label, free, pro }) => (
+          <div key={label} className="grid grid-cols-3 border-t border-border px-4 py-2.5 text-sm">
+            <span className="text-muted-strong">{label}</span>
+            <span className="flex justify-center">
+              {free
+                ? <Check className="size-4 text-accent" />
+                : <X className="size-4 text-muted/40" />}
+            </span>
+            <span className="flex justify-center">
+              {pro
+                ? <Check className="size-4 text-accent" />
+                : <X className="size-4 text-muted/40" />}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Upgrade CTA */}
+      <div className="rounded-[var(--radius-md)] border-2 border-accent/25 bg-accent-soft/30 p-5">
         <div className="flex items-start gap-3">
           <Zap className="size-5 text-accent mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-semibold text-foreground">Upgrade to Pro — $15/month</p>
             <p className="text-sm text-muted mt-1">
-              Unlock unlimited invoices, PDF export, recurring invoices, email reminders, and full analytics.
+              Billed monthly · 7-day money-back guarantee · Cancel anytime
             </p>
-            <div className="mt-4">
-              <Button asChild variant="accent" size="sm">
-                <Link href="/pricing">View Pro Plan</Link>
+            <form action="/api/creem/checkout" method="post" className="mt-4">
+              <Button type="submit" variant="accent" size="sm">
+                <Zap className="size-3.5" />
+                Upgrade to Pro
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
