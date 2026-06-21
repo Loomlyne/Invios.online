@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
@@ -154,7 +156,7 @@ export default function PrivacyPage() {
 
             <section id="changes" className="p-6 sm:p-8">
               <h2 className="text-base font-semibold text-foreground">10. Changes to This Policy</h2>
-              <p className="mt-3 text-sm leading-7 text-muted-strong">We may update this Privacy Policy from time to time. We will notify you of any material changes by email or by posting a notice on the Service. The date at the top of this policy reflects when it was last revised.</p>
+              <p className="mt-3 text-sm leading-7 text-muted-strong">We may update this Privacy Policy from time to time. We will notify you of material changes by email or by posting a notice on the Service. The date at the top of this policy reflects when it was last revised.</p>
             </section>
 
             <section id="contact" className="p-6 sm:p-8">

@@ -3,12 +3,26 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured, isSupabaseAdminConfigured } from "@/lib/env";
 
+function getApexCookieDomain(): string | undefined {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl) return undefined;
+  try {
+    const hostname = new URL(siteUrl).hostname.replace(/^www\./, "");
+    return hostname.includes(".") ? `.${hostname}` : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const COOKIE_DOMAIN = getApexCookieDomain();
+
 const SESSION_COOKIE_OPTIONS = {
   path: "/",
   sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
   httpOnly: false,
   maxAge: 400 * 24 * 60 * 60,
+  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
 };
 
 export async function createSupabaseServerClient() {
