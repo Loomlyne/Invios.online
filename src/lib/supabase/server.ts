@@ -1,29 +1,8 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured, isSupabaseAdminConfigured } from "@/lib/env";
-
-function getApexCookieDomain(): string | undefined {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (!siteUrl) return undefined;
-  try {
-    const hostname = new URL(siteUrl).hostname.replace(/^www\./, "");
-    return hostname.includes(".") ? `.${hostname}` : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-const COOKIE_DOMAIN = getApexCookieDomain();
-
-const SESSION_COOKIE_OPTIONS = {
-  path: "/",
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
-  httpOnly: false,
-  maxAge: 400 * 24 * 60 * 60,
-  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
-};
+import { getSessionCookieOptions } from "@/lib/supabase/cookies";
 
 export async function createSupabaseServerClient() {
   if (!isSupabaseConfigured()) {
@@ -31,9 +10,11 @@ export async function createSupabaseServerClient() {
   }
 
   const cookieStore = await cookies();
+  const headersList = await headers();
+  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
 
   return createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
-    cookieOptions: SESSION_COOKIE_OPTIONS,
+    cookieOptions: getSessionCookieOptions(host),
     cookies: {
       getAll() {
         return cookieStore.getAll();

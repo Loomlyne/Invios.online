@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured } from "@/lib/env";
+import { getSessionCookieOptions } from "@/lib/supabase/cookies";
 
 // Routes requiring an active Pro subscription
 const PAID_ONLY_PREFIXES = [
@@ -10,30 +11,20 @@ const PAID_ONLY_PREFIXES = [
   "/api/export",
 ];
 
-// Derive the apex domain from NEXT_PUBLIC_SITE_URL so auth cookies are scoped
-// to .invios.online and work identically on www and the apex domain.
-// Returns undefined on localhost so dev cookies stay host-only.
-function getApexCookieDomain(): string | undefined {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (!siteUrl) return undefined;
+// The canonical user-facing host (e.g. "invios.online"), derived from
+// NEXT_PUBLIC_SITE_URL.
+const CANONICAL_HOST = (() => {
   try {
-    const hostname = new URL(siteUrl).hostname.replace(/^www\./, "");
-    return hostname.includes(".") ? `.${hostname}` : undefined;
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://invios.online").hostname;
   } catch {
-    return undefined;
+    return "invios.online";
   }
-}
+})();
 
-const COOKIE_DOMAIN = getApexCookieDomain();
-
-const SESSION_COOKIE_OPTIONS = {
-  path: "/",
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
-  httpOnly: false,
-  maxAge: 400 * 24 * 60 * 60,
-  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
-};
+// Retired Vercel aliases. Requests landing here are bounced to the canonical
+// domain so customers stop using an old-looking *.vercel.app URL and everyone
+// converges on invios.online.
+const LEGACY_REDIRECT_HOSTS = new Set(["invios-phase1-koss.vercel.app"]);
 
 type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
 
@@ -84,6 +75,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url, { status: 308 });
   }
 
+  // Bounce retired Vercel aliases to the canonical domain (converge on invios.online).
+  if (LEGACY_REDIRECT_HOSTS.has(host)) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.hostname = CANONICAL_HOST;
+    url.port = "";
+    return NextResponse.redirect(url, { status: 308 });
+  }
+
   // Strip any client-supplied spoofed auth headers before trusting them downstream.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete("x-middleware-user-id");
@@ -93,7 +93,7 @@ export async function updateSession(request: NextRequest) {
   let pendingCookies: PendingCookie[] = [];
 
   const supabase = createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
-    cookieOptions: SESSION_COOKIE_OPTIONS,
+    cookieOptions: getSessionCookieOptions(host),
     cookies: {
       getAll() {
         return request.cookies.getAll();
