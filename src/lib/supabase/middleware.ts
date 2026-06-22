@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured } from "@/lib/env";
+import { getSessionCookieOptions } from "@/lib/supabase/cookies";
 
 // Routes requiring an active Pro subscription
 const PAID_ONLY_PREFIXES = [
@@ -9,31 +10,6 @@ const PAID_ONLY_PREFIXES = [
   "/api/quotations",
   "/api/export",
 ];
-
-// Derive the apex domain from NEXT_PUBLIC_SITE_URL so auth cookies are scoped
-// to .invios.online and work identically on www and the apex domain.
-// Returns undefined on localhost so dev cookies stay host-only.
-function getApexCookieDomain(): string | undefined {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (!siteUrl) return undefined;
-  try {
-    const hostname = new URL(siteUrl).hostname.replace(/^www\./, "");
-    return hostname.includes(".") ? `.${hostname}` : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-const COOKIE_DOMAIN = getApexCookieDomain();
-
-const SESSION_COOKIE_OPTIONS = {
-  path: "/",
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
-  httpOnly: false,
-  maxAge: 400 * 24 * 60 * 60,
-  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
-};
 
 type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
 
@@ -93,7 +69,7 @@ export async function updateSession(request: NextRequest) {
   let pendingCookies: PendingCookie[] = [];
 
   const supabase = createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
-    cookieOptions: SESSION_COOKIE_OPTIONS,
+    cookieOptions: getSessionCookieOptions(host),
     cookies: {
       getAll() {
         return request.cookies.getAll();
