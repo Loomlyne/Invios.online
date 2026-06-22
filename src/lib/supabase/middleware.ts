@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
-import { env, isSupabaseConfigured } from "@/lib/env";
+import { env, isSupabaseConfigured, isAdminEmail } from "@/lib/env";
 import { getSessionCookieOptions } from "@/lib/supabase/cookies";
 
 // Routes requiring an active Pro subscription
@@ -126,6 +126,15 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/sign-up") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/update-password");
+
+  // Operator-only admin area. First line of defense: anyone who is not a
+  // signed-in allowlisted admin gets a bare 404, hiding that /admin even exists.
+  // The admin layout re-checks via requireAdmin() (defense in depth).
+  if (pathname.startsWith("/admin")) {
+    if (!user || !isAdminEmail(user.email)) {
+      return applyCookies(new NextResponse(null, { status: 404 }), pendingCookies);
+    }
+  }
 
   // Unauthenticated → redirect to sign-in for protected app pages.
   // Apply refreshed auth cookies on redirect so rotated tokens are not dropped.
