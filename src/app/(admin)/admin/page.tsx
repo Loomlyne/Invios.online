@@ -32,19 +32,19 @@ export default async function AdminOverviewPage() {
       title: "Accounts overview & search",
       description: "Find any account, see plan, stats, and who needs help.",
       href: "/admin/accounts" as const,
-      status: "Next",
+      status: "Live",
     },
     {
       title: "Per-account deep view",
       description: "Drill into one account: clients, documents, payments, settings.",
       href: "/admin/accounts" as const,
-      status: "Planned",
+      status: "Live",
     },
     {
       title: "Billing & subscription control",
       description: "Reconcile Creem subscriptions and open billing portals.",
       href: "/admin/billing" as const,
-      status: "Planned",
+      status: "Next",
     },
     {
       title: "Errors, logs & data export",
