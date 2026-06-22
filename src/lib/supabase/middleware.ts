@@ -11,6 +11,21 @@ const PAID_ONLY_PREFIXES = [
   "/api/export",
 ];
 
+// The canonical user-facing host (e.g. "invios.online"), derived from
+// NEXT_PUBLIC_SITE_URL.
+const CANONICAL_HOST = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://invios.online").hostname;
+  } catch {
+    return "invios.online";
+  }
+})();
+
+// Retired Vercel aliases. Requests landing here are bounced to the canonical
+// domain so customers stop using an old-looking *.vercel.app URL and everyone
+// converges on invios.online.
+const LEGACY_REDIRECT_HOSTS = new Set(["invios-phase1-koss.vercel.app"]);
+
 type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
 
 // Apply refreshed Supabase auth cookies to a response.
@@ -57,6 +72,15 @@ export async function updateSession(request: NextRequest) {
   if (host.startsWith("www.")) {
     const url = request.nextUrl.clone();
     url.host = host.slice(4); // strip "www."
+    return NextResponse.redirect(url, { status: 308 });
+  }
+
+  // Bounce retired Vercel aliases to the canonical domain (converge on invios.online).
+  if (LEGACY_REDIRECT_HOSTS.has(host)) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.hostname = CANONICAL_HOST;
+    url.port = "";
     return NextResponse.redirect(url, { status: 308 });
   }
 
