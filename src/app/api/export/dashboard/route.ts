@@ -39,7 +39,12 @@ export async function GET(request: Request) {
     : "all";
 
   const context = await getAppContext();
-  const userId = context.userId ?? "";
+  if (!context.userId) {
+    // Guard against `.eq("user_id", "")` against a uuid column, which throws
+    // `invalid input syntax for type uuid: ""`.
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+  const userId = context.userId;
   const currency = context.userState.settings.defaultCurrency;
 
   const [metrics, drilldownRows, insights] = await Promise.all([
