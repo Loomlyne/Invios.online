@@ -9,6 +9,10 @@ import { formatCurrency } from "@/lib/utils";
 
 export const maxDuration = 60;
 
+// Cap per-invocation to prevent Vercel's 60s ceiling from being hit as the
+// user base grows. Any overflow is processed on the next scheduled run.
+const BATCH_LIMIT = 100;
+
 export async function GET(request: NextRequest) {
   if (!isCronAuthenticated(request.headers.get("authorization"))) {
     return new Response("Unauthorized", { status: 401 });
@@ -23,13 +27,15 @@ export async function GET(request: NextRequest) {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // 1. Fetch all users with reminders enabled
+  // 1. Fetch users with reminders enabled (oldest-first for deterministic pagination)
   const { data: users, error: usersError } = await supabase
     .from("user_settings")
     .select(
       "user_id, reminder_days_before, reminder_days_after, remind_on_due_date, second_reminder_days",
     )
-    .eq("reminder_enabled", true);
+    .eq("reminder_enabled", true)
+    .order("user_id")
+    .limit(BATCH_LIMIT);
 
   if (usersError) {
     console.error("[cron/reminders] Failed to fetch users:", usersError);
@@ -145,7 +151,13 @@ export async function GET(request: NextRequest) {
     console.error("[cron/reminders] Errors:", errors);
   }
 
-  return Response.json({ sent, skipped, errors: errors.length });
+  return Response.json({
+    sent,
+    skipped,
+    errors: errors.length,
+    // true = another batch may remain; the next cron run will process it
+    limited: users.length === BATCH_LIMIT,
+  });
 }
 
 /** Helper: sum payments for an invoice to get collected amount */

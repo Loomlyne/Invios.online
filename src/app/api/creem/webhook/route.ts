@@ -78,11 +78,20 @@ async function resolveUserByEmail(
   admin: any,
   email: string,
 ): Promise<string | null> {
-  const { data, error } = await admin.auth.admin.listUsers();
-  if (error || !data) return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const match = data.users.find((u: any) => u.email === email);
-  return match?.id ?? null;
+  // listUsers is paginated (50/page by default). Page through with a large
+  // perPage and a hard cap so accounts beyond the first page are still matched.
+  // Email comparison is case-insensitive (emails are not case-sensitive).
+  const target = email.toLowerCase();
+  const perPage = 1000;
+  for (let page = 1; page <= 50; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
+    if (error || !data) return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const match = data.users.find((u: any) => u.email?.toLowerCase() === target);
+    if (match) return match.id;
+    if (data.users.length < perPage) break; // reached the last page
+  }
+  return null;
 }
 
 export async function POST(request: NextRequest) {

@@ -30,6 +30,9 @@ export default function RootError({
           This is on our side, not yours. Try again in a moment — if it keeps
           happening, sign in again or contact support@invios.online.
         </p>
+        {error.digest && (
+          <p className="text-xs text-muted/70">Reference: {error.digest}</p>
+        )}
       </div>
       <div className="flex flex-wrap items-center justify-center gap-3">
         <Button type="button" variant="accent" onClick={reset}>

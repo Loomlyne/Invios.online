@@ -3,8 +3,10 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured, isAdminEmail } from "@/lib/env";
 import { getSessionCookieOptions } from "@/lib/supabase/cookies";
+import { PRO_BILLING_ENABLED } from "@/lib/constants";
 
-// Routes requiring an active Pro subscription
+// Routes requiring an active Pro subscription. Only enforced while Pro billing
+// is activated (PRO_BILLING_ENABLED); kept here so re-enabling is a one-liner.
 const PAID_ONLY_PREFIXES = [
   "/api/invoices",
   "/api/quotations",
@@ -46,7 +48,7 @@ function createAdminClient() {
 
 async function checkPaidSubscription(userId: string): Promise<boolean> {
   const admin = createAdminClient();
-  if (!admin) return true; // fail open if admin client is unavailable
+  if (!admin) return false; // fail closed — misconfigured admin client must not grant access
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: sub } = await (admin as any)
     .from("subscriptions")
@@ -154,8 +156,10 @@ export async function updateSession(request: NextRequest) {
     return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies);
   }
 
-  // Premium API routes require an active paid subscription.
-  const isPremiumRoute = PAID_ONLY_PREFIXES.some((p) => pathname.startsWith(p));
+  // Premium API routes require an active paid subscription — but only once Pro
+  // billing is activated. While disabled, nothing is gated (all features free).
+  const isPremiumRoute =
+    PRO_BILLING_ENABLED && PAID_ONLY_PREFIXES.some((p) => pathname.startsWith(p));
   if (isPremiumRoute && user) {
     const paid = await checkPaidSubscription(user.id);
     if (!paid) {
