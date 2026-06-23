@@ -42,7 +42,13 @@ export default function SignUpPage() {
         }}
         submitLabel="Create account"
       />
-      <div className="mt-5 text-sm text-muted">
+      <p className="mt-4 text-center text-xs text-muted">
+        By creating an account, you agree to our{" "}
+        <Link href="/terms" className="underline underline-offset-4 hover:text-foreground">Terms of Service</Link>
+        {" "}and{" "}
+        <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">Privacy Policy</Link>.
+      </p>
+      <div className="mt-4 text-sm text-muted">
         Need a reset instead?{" "}
         <Link href="/forgot-password" className="font-medium text-foreground underline-offset-4 hover:underline">
           Reset your password

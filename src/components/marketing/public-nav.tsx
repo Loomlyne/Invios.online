@@ -38,6 +38,9 @@ export async function PublicNav({ cta = "signup" }: { cta?: "signup" | "pricing"
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="h-10 px-4">
+                <Link href="/pricing">Pricing</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm" className="h-10 px-4">
                 <Link href="/sign-in">Sign in</Link>
               </Button>
               <Button asChild variant="accent" size="sm" className="h-10 px-4">
