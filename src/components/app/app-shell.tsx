@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/app/bottom-nav";
 import { InviosLogo } from "@/components/app/invios-logo";
 import { PageTransition } from "@/components/app/page-transition";
 import { UserAvatarMenu } from "@/components/app/user-avatar-menu";
+import { PRICING } from "@/lib/constants";
 import type { AppContext, SubscriptionData } from "@/lib/types";
 
 export function AppShell({
@@ -45,7 +46,7 @@ export function AppShell({
                       type="submit"
                       className="w-full rounded-[var(--radius-inner)] bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
                     >
-                      Become Pro — $15/mo
+                      Become Pro — {PRICING.proMonthlyShort}
                     </button>
                   </form>
                 </div>

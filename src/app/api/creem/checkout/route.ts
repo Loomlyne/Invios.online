@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createCreemCheckout, isCreemConfigured } from "@/lib/creem";
+import { PRO_BILLING_ENABLED } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
@@ -8,6 +9,12 @@ export const runtime = "nodejs";
 // payment page. Driven by a POST form on the pricing page (no JS required).
 export async function POST(request: NextRequest) {
   const origin = request.nextUrl.origin;
+
+  // Pro billing not activated yet: the plan is shown but not purchasable.
+  // Send shoppers back to the pricing page instead of starting a charge.
+  if (!PRO_BILLING_ENABLED) {
+    return NextResponse.redirect(new URL("/pricing", origin), { status: 303 });
+  }
 
   const supabase = await createSupabaseServerClient();
   const { data } = supabase
