@@ -19,10 +19,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # pnpm 10: this repo's pnpm-workspace.yaml uses `ignoredBuiltDependencies`,
+      # a pnpm 10 feature. pnpm 9 rejects that file ("packages field missing or
+      # empty"), which is what Vercel and local both run.
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       # No `cache: pnpm` here: this repo ships a pnpm-workspace.yaml that only
       # sets ignoredBuiltDependencies (no `packages:` field), which makes
