@@ -47,9 +47,14 @@ export function AuthShell({
           </div>
         </section>
 
-        <section className="flex items-center justify-center">
+        <section className="flex flex-col items-center justify-center gap-6">
           <div className="w-full max-w-lg rounded-[2rem] border border-black/10 bg-white/88 p-6 soft-shadow sm:p-8">
             {children}
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-muted">
+            <Link href="/terms" className="transition hover:text-foreground">Terms of Service</Link>
+            <Link href="/privacy" className="transition hover:text-foreground">Privacy Policy</Link>
+            <a href="mailto:support@invios.online" className="transition hover:text-foreground">support@invios.online</a>
           </div>
         </section>
       </div>

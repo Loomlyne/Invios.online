@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Route } from "next";
+import { redirect } from "next/navigation";
 import { DashboardRefresher } from "@/components/app/dashboard-refresher";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { MetricCard } from "@/components/app/metric-card";
@@ -97,7 +98,17 @@ export default async function AppHomePage({
   const currentRange = parseRange(typeof params.range === "string" ? params.range : undefined);
   const currentMetric = parseMetric(typeof params.metric === "string" ? params.metric : undefined);
   const context = await getAppContext();
-  const userId = context.userId ?? "";
+
+  // Without a resolved user id, the dashboard queries below would run
+  // `.eq("user_id", "")` against a uuid column and throw
+  // `invalid input syntax for type uuid: ""`, crashing the render. The layout
+  // redirects unauthenticated requests, but layout and page render
+  // concurrently, so guard here too and bounce cleanly to sign-in.
+  if (!context.userId) {
+    redirect("/sign-in");
+  }
+
+  const userId = context.userId;
   const [metrics, drilldownRows, insights, recentInvoices, recentQuotations, analyticsData] = await Promise.all([
     getDashboardMetrics(userId, currentRange),
     getDashboardDrilldown(userId, currentMetric, currentRange),

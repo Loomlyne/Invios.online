@@ -100,4 +100,18 @@ describe("updateSession middleware", () => {
 
     expect(response.headers.get("location")).toBeNull();
   });
+
+  it("Test 7: redirects the retired vercel.app alias to the canonical domain", async () => {
+    const response = await updateSession(
+      new NextRequest(new URL("/app", "https://invios-phase1-koss.vercel.app"), {
+        headers: { host: "invios-phase1-koss.vercel.app" },
+      }),
+    );
+
+    const location = response.headers.get("location");
+    expect(location).not.toBeNull();
+    const redirectUrl = new URL(location!);
+    expect(redirectUrl.hostname).toBe("invios.online");
+    expect(redirectUrl.pathname).toBe("/app");
+  });
 });
