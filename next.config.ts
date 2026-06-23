@@ -39,12 +39,35 @@ const securityHeaders = [
   },
 ];
 
+// Derive the Supabase storage host so next/image can optimize tenant logos
+// served from signed Storage URLs. Falls back to the project-host wildcard.
+function supabaseHostname(): string {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (url) {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      // fall through to wildcard
+    }
+  }
+  return "*.supabase.co";
+}
+
 const nextConfig: NextConfig = {
   typedRoutes: true,
   experimental: {
     serverActions: {
       bodySizeLimit: "5mb",
     },
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: supabaseHostname(),
+        pathname: "/storage/v1/object/**",
+      },
+    ],
   },
   async headers() {
     return [

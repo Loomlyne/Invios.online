@@ -61,7 +61,32 @@ export async function GET(request: NextRequest) {
         continue;
       }
 
-      // 3. Calculate new dates
+      // 3. Optimistically claim this cycle by advancing next_due_date FIRST,
+      //    guarded on the value we read. If a concurrent or previous partial run
+      //    already advanced it, the update matches no row and we skip — making
+      //    generation idempotent and preventing duplicate invoices / double-billing.
+      const newNextDue = advanceNextDueDate(
+        schedule.next_due_date,
+        schedule.frequency as "weekly" | "monthly" | "quarterly",
+      );
+
+      const { data: claimed, error: claimError } = await supabase
+        .from("recurring_schedules")
+        .update({ next_due_date: newNextDue, updated_at: new Date().toISOString() })
+        .eq("id", schedule.id)
+        .eq("next_due_date", schedule.next_due_date)
+        .select("id");
+
+      if (claimError) {
+        errors.push(`Schedule ${schedule.id}: claim failed — ${claimError.message}`);
+        continue;
+      }
+      if (!claimed || claimed.length === 0) {
+        // Already advanced by another run — skip to avoid duplicate generation.
+        continue;
+      }
+
+      // 4. Calculate new dates
       const issueDateDiff =
         source.due_date && source.issue_date
           ? Math.round(
@@ -77,7 +102,7 @@ export async function GET(request: NextRequest) {
         .toISOString()
         .split("T")[0];
 
-      // 4. Get next invoice number
+      // 5. Get next invoice number
       const { data: branding } = await supabase
         .from("branding")
         .select("invoice_prefix")
@@ -90,7 +115,7 @@ export async function GET(request: NextRequest) {
         p_prefix: prefix,
       });
 
-      // 5. Build unique slug
+      // 6. Build unique slug
       const { data: existingSlugs } = await supabase
         .from("invoices")
         .select("slug")
@@ -99,7 +124,7 @@ export async function GET(request: NextRequest) {
       const slugList = (existingSlugs ?? []).map((s: { slug: string }) => s.slug);
       const slug = buildUniqueSlug(`${numberData}-${source.client_id}`, slugList);
 
-      // 6. Insert new draft invoice
+      // 7. Insert new draft invoice
       const recurringNote = `Generated from recurring schedule — Invoice #${source.invoice_number}`;
       const existingNotes = source.notes
         ? `${source.notes}\n\n${recurringNote}`
@@ -130,20 +155,14 @@ export async function GET(request: NextRequest) {
       });
 
       if (insertError) {
-        errors.push(`Schedule ${schedule.id}: insert failed — ${insertError.message}`);
+        // Schedule was already advanced; log loudly so this cycle can be retried
+        // manually. We do NOT roll back the advance — a rare logged skip is safer
+        // than risking a duplicate invoice to the client.
+        errors.push(
+          `Schedule ${schedule.id}: insert failed AFTER advancing schedule — ${insertError.message}`,
+        );
         continue;
       }
-
-      // 7. Advance next_due_date on the schedule
-      const newNextDue = advanceNextDueDate(
-        schedule.next_due_date,
-        schedule.frequency as "weekly" | "monthly" | "quarterly",
-      );
-
-      await supabase
-        .from("recurring_schedules")
-        .update({ next_due_date: newNextDue, updated_at: new Date().toISOString() })
-        .eq("id", schedule.id);
 
       processed++;
     } catch (err) {
