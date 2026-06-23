@@ -55,7 +55,7 @@ function createAdminClient() {
 
 async function checkPaidSubscription(userId: string): Promise<boolean> {
   const admin = createAdminClient();
-  if (!admin) return true; // fail open if admin client is unavailable
+  if (!admin) return false; // fail closed — misconfigured admin client must not grant access
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: sub } = await (admin as any)
     .from("subscriptions")
