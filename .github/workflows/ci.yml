@@ -24,11 +24,15 @@ jobs:
         with:
           version: 9
 
+      # No `cache: pnpm` here: this repo ships a pnpm-workspace.yaml that only
+      # sets ignoredBuiltDependencies (no `packages:` field), which makes
+      # setup-node's cache step fail at `pnpm store path` ("packages field
+      # missing or empty"). Skipping the cache keeps CI reliable; installs cost
+      # a few extra seconds. Vercel is unaffected (it never runs store path).
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
 
       # --no-frozen-lockfile tolerates the known lockfile drift documented in
       # the functionality audit (M3); tighten to frozen once lockfiles converge.
