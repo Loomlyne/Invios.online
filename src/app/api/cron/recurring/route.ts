@@ -6,6 +6,10 @@ import { buildUniqueSlug, createShareToken } from "@/lib/billing-utils";
 
 export const maxDuration = 60;
 
+// Cap per-invocation to prevent Vercel's 60s ceiling from being hit as the
+// schedule count grows. Any overflow is processed on the next scheduled run.
+const BATCH_LIMIT = 100;
+
 export async function GET(request: NextRequest) {
   if (!isCronAuthenticated(request.headers.get("authorization"))) {
     return new Response("Unauthorized", { status: 401 });
@@ -28,12 +32,14 @@ export async function GET(request: NextRequest) {
     next_due_date: string;
   };
 
-  // 1. Fetch all active schedules where next_due_date <= today
+  // 1. Fetch active schedules due today (oldest-first for deterministic pagination)
   const { data: schedules, error: scheduleError } = await supabase
     .from("recurring_schedules")
     .select("id, user_id, source_invoice_id, frequency, next_due_date")
     .eq("is_active", true)
-    .lte("next_due_date", today) as { data: RecurringScheduleRow[] | null; error: { message: string } | null };
+    .lte("next_due_date", today)
+    .order("next_due_date")
+    .limit(BATCH_LIMIT) as { data: RecurringScheduleRow[] | null; error: { message: string } | null };
 
   if (scheduleError) {
     console.error("[cron/recurring] Failed to fetch schedules:", scheduleError);
@@ -176,5 +182,10 @@ export async function GET(request: NextRequest) {
     console.error("[cron/recurring] Errors:", errors);
   }
 
-  return Response.json({ processed, errors: errors.length });
+  return Response.json({
+    processed,
+    errors: errors.length,
+    // true = another batch may remain; the next cron run will process it
+    limited: schedules.length === BATCH_LIMIT,
+  });
 }
