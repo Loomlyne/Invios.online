@@ -11,7 +11,7 @@ import type {
 // tag are still shown, but it cannot be purchased ("shown, not activated").
 // Flip to `true` to activate Pro: middleware enforces PAID_ONLY_PREFIXES again
 // and /api/creem/checkout starts a live Creem checkout.
-export const PRO_BILLING_ENABLED: boolean = false;
+export const PRO_BILLING_ENABLED: boolean = true;
 
 // Canonical Pro pricing — single source of truth (USD). Rendered everywhere a
 // price is shown so the figure can never drift across surfaces again.
