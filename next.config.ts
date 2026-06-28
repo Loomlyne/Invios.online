@@ -34,7 +34,10 @@ const securityHeaders = [
       "connect-src 'self' https://*.supabase.co https://*.supabase.net wss://*.supabase.co",
       "frame-ancestors 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
+      // 'self' for app forms; creem.io so the checkout/billing-portal form POSTs
+      // can redirect out to Creem's hosted pages (form-action gates the whole
+      // redirect chain in Chromium, so the external target must be allowlisted).
+      "form-action 'self' https://creem.io https://*.creem.io",
     ].join("; "),
   },
 ];

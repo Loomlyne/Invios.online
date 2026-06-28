@@ -10,8 +10,9 @@ export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
   const origin = request.nextUrl.origin;
 
+  // Pro billing not activated yet: the plan is shown but not purchasable.
+  // Send shoppers back to the pricing page instead of starting a charge.
   if (!PRO_BILLING_ENABLED) {
-    console.log("[checkout] blocked: PRO_BILLING_ENABLED=false");
     return NextResponse.redirect(new URL("/pricing", origin), { status: 303 });
   }
 
@@ -21,17 +22,15 @@ export async function POST(request: NextRequest) {
     : { data: { user: null } };
   const user = data.user;
 
+  // Must be signed in so the subscription is tied to an account.
   if (!user) {
-    console.log("[checkout] blocked: no user session");
     return NextResponse.redirect(new URL("/sign-up?next=/pricing", origin), { status: 303 });
   }
 
   if (!isCreemConfigured()) {
-    console.log("[checkout] blocked: Creem not configured (check CREEM_API_KEY / CREEM_PRODUCT_ID env vars)");
     return NextResponse.redirect(new URL("/pricing?billing=unavailable", origin), { status: 303 });
   }
 
-  console.log("[checkout] calling Creem for user", user.id);
   const checkoutUrl = await createCreemCheckout({
     userId: user.id,
     email: user.email ?? undefined,
@@ -39,10 +38,8 @@ export async function POST(request: NextRequest) {
   });
 
   if (!checkoutUrl) {
-    console.log("[checkout] Creem returned no URL");
     return NextResponse.redirect(new URL("/pricing?billing=error", origin), { status: 303 });
   }
 
-  console.log("[checkout] redirecting to Creem:", checkoutUrl.slice(0, 80));
   return NextResponse.redirect(checkoutUrl, { status: 303 });
 }
