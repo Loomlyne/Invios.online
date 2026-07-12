@@ -123,11 +123,13 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // NOTE: /update-password is intentionally NOT listed — the password-recovery
+  // link signs the user in (via /auth/confirm) and then lands them here, so an
+  // authenticated user must be allowed to stay on this page.
   const isAuthRoute =
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
-    pathname.startsWith("/forgot-password") ||
-    pathname.startsWith("/update-password");
+    pathname.startsWith("/forgot-password");
 
   // Operator-only admin area. First line of defense: anyone who is not a
   // signed-in allowlisted admin gets a bare 404, hiding that /admin even exists.
