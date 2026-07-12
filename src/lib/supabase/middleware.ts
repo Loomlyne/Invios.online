@@ -99,6 +99,9 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
     cookieOptions: getSessionCookieOptions(host),
+    auth: {
+      experimental: { passkey: true },
+    },
     cookies: {
       getAll() {
         return request.cookies.getAll();

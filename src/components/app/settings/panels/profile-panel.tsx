@@ -1,8 +1,8 @@
 "use client";
 
-import { startTransition, useCallback, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Camera, KeyRound, Loader2, Trash2 } from "lucide-react";
+import { AlertTriangle, Camera, Fingerprint, KeyRound, Loader2, Trash2 } from "lucide-react";
 import type { AppContext, ActionState } from "@/lib/types";
 import { saveProfileSettingsAction } from "@/actions/app";
 import {
@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type ProfileFormValues = {
   fullName: string;
@@ -153,6 +154,8 @@ export function ProfilePanel({ context }: { context: AppContext }) {
       </Section>
 
       <ChangePasswordSection />
+
+      <PasskeysSection />
 
       <DeleteAccountSection email={context.email ?? ""} />
 
@@ -350,6 +353,147 @@ function ChangePasswordSection() {
             <KeyRound className="mr-2 size-4" />
           )}
           {saving ? "Updating…" : "Update Password"}
+        </Button>
+      </div>
+    </Section>
+  );
+}
+
+/* ─── Passkeys ───────────────────────────────────────────────────────────────── */
+
+type PasskeyItem = {
+  id: string;
+  friendly_name?: string;
+  created_at: string;
+  last_used_at?: string;
+};
+
+function PasskeysSection() {
+  const [supported, setSupported] = useState(false);
+  const [passkeys, setPasskeys] = useState<PasskeyItem[] | null>(null);
+  const [registering, setRegistering] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadPasskeys = useCallback(async () => {
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) return;
+    const { data, error: listError } = await supabase.auth.passkey.list();
+    if (listError) {
+      setError(listError.message || "Could not load passkeys.");
+      return;
+    }
+    setPasskeys(data ?? []);
+  }, []);
+
+  useEffect(() => {
+    setSupported(
+      typeof window !== "undefined" &&
+        "PublicKeyCredential" in window &&
+        typeof window.PublicKeyCredential === "function",
+    );
+    loadPasskeys();
+  }, [loadPasskeys]);
+
+  const handleRegister = () => {
+    setRegistering(true);
+    setError(null);
+    startTransition(async () => {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) {
+        setRegistering(false);
+        return;
+      }
+      const { error: registerError } = await supabase.auth.registerPasskey();
+      setRegistering(false);
+      if (registerError) {
+        if (registerError.name === "AbortError" || registerError.message?.includes("aborted")) return;
+        setError(registerError.message || "Could not register passkey.");
+        return;
+      }
+      loadPasskeys();
+    });
+  };
+
+  const handleDelete = (passkeyId: string) => {
+    setRemovingId(passkeyId);
+    setError(null);
+    startTransition(async () => {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) {
+        setRemovingId(null);
+        return;
+      }
+      const { error: deleteError } = await supabase.auth.passkey.delete({ passkeyId });
+      setRemovingId(null);
+      if (deleteError) {
+        setError(deleteError.message || "Could not remove passkey.");
+        return;
+      }
+      setPasskeys((prev) => prev?.filter((p) => p.id !== passkeyId) ?? null);
+    });
+  };
+
+  if (!supported) return null;
+
+  return (
+    <Section
+      title="Passkeys"
+      description="Sign in with biometrics or a security key instead of your password."
+    >
+      <div className="space-y-4">
+        {passkeys && passkeys.length > 0 ? (
+          <ul className="divide-y divide-border rounded-[var(--radius-inner)] border border-border">
+            {passkeys.map((pk) => (
+              <li key={pk.id} className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Fingerprint className="size-4 shrink-0 text-muted" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {pk.friendly_name || "Passkey"}
+                    </p>
+                    <p className="text-xs text-muted">
+                      Added {new Date(pk.created_at).toLocaleDateString()}
+                      {pk.last_used_at
+                        ? ` · Last used ${new Date(pk.last_used_at).toLocaleDateString()}`
+                        : ""}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={removingId === pk.id}
+                  onClick={() => handleDelete(pk.id)}
+                >
+                  {removingId === pk.id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-4" />
+                  )}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : passkeys ? (
+          <p className="text-sm text-muted">No passkeys registered yet.</p>
+        ) : null}
+
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={registering}
+          onClick={handleRegister}
+        >
+          {registering ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <Fingerprint className="mr-2 size-4" />
+          )}
+          {registering ? "Waiting for passkey…" : "Add a passkey"}
         </Button>
       </div>
     </Section>

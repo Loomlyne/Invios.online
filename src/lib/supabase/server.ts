@@ -15,6 +15,9 @@ export async function createSupabaseServerClient() {
 
   return createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
     cookieOptions: getSessionCookieOptions(host),
+    auth: {
+      experimental: { passkey: true },
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -38,6 +41,6 @@ export function createSupabaseAdminClient() {
   }
 
   return createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
+    auth: { autoRefreshToken: false, persistSession: false, experimental: { passkey: true } },
   });
 }

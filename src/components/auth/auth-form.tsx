@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -21,6 +22,7 @@ export function AuthForm({
   footer,
   submitLabel,
   forgotPasswordHref,
+  passkey,
 }: {
   title: string;
   description: string;
@@ -39,6 +41,7 @@ export function AuthForm({
   };
   submitLabel: string;
   forgotPasswordHref?: Route;
+  passkey?: ReactNode;
 }) {
   const [state, formAction, isPending] = useActionState(action, initialState);
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>({});
@@ -118,6 +121,17 @@ export function AuthForm({
           {submitLabel}
         </Button>
       </form>
+
+      {passkey ? (
+        <div className="mt-5 space-y-5">
+          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-muted">
+            <span className="h-px flex-1 bg-border" />
+            or
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          {passkey}
+        </div>
+      ) : null}
 
       <div className="mt-6 flex items-center justify-between gap-4 text-sm text-muted">
         <span>{footer.prompt}</span>

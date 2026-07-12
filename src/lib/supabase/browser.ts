@@ -22,6 +22,7 @@ export function createSupabaseBrowserClient() {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
+          experimental: { passkey: true },
         },
       },
     );

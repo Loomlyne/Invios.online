@@ -1,5 +1,6 @@
 import { AuthForm } from "@/components/auth/auth-form";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { PasskeySignInButton } from "@/components/auth/passkey-button";
 import { signInAction } from "@/actions/auth";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -56,6 +57,7 @@ export default async function SignInPage({
         }}
         submitLabel="Enter Invios"
         forgotPasswordHref="/forgot-password"
+        passkey={<PasskeySignInButton />}
       />
     </AuthShell>
   );
