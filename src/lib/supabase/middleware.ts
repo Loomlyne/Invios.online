@@ -13,20 +13,23 @@ const PAID_ONLY_PREFIXES = [
   "/api/export",
 ];
 
-// The canonical user-facing host (e.g. "invios.online"), derived from
-// NEXT_PUBLIC_SITE_URL.
-const CANONICAL_HOST = (() => {
-  try {
-    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://invios.online").hostname;
-  } catch {
-    return "invios.online";
-  }
-})();
-
 // Retired Vercel aliases. Requests landing here are bounced to the canonical
 // domain so customers stop using an old-looking *.vercel.app URL and everyone
 // converges on invios.online.
 const LEGACY_REDIRECT_HOSTS = new Set(["invios-phase1-koss.vercel.app"]);
+
+// The canonical user-facing host (e.g. "invios.online"), derived from
+// NEXT_PUBLIC_SITE_URL. A retired alias can never be canonical — if the env
+// var still points at one (stale Vercel config), fall back to invios.online,
+// otherwise the legacy 308 above would redirect the alias to itself.
+const CANONICAL_HOST = (() => {
+  try {
+    const host = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://invios.online").hostname;
+    return LEGACY_REDIRECT_HOSTS.has(host) ? "invios.online" : host;
+  } catch {
+    return "invios.online";
+  }
+})();
 
 type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
 

@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { sendWelcomeEmail } from "@/lib/email";
-import { env } from "@/lib/env";
 import { ensureUserProfile } from "@/lib/profile-bootstrap";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -35,8 +34,12 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const next = safeNext(searchParams.get("next"));
 
+  // Redirect relative to the host the user actually hit (the canonical domain
+  // once DNS points there), NOT env.siteUrl — a stale NEXT_PUBLIC_SITE_URL
+  // would bounce the browser to a domain where the just-set session cookies
+  // don't exist, making a successful confirmation look like a failed login.
   const redirectTo = (path: string) =>
-    NextResponse.redirect(new URL(path, env.siteUrl));
+    NextResponse.redirect(new URL(path, request.url));
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
