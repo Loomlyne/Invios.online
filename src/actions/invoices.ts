@@ -291,8 +291,52 @@ export async function updateInvoiceAction(
   }
 }
 
+/**
+ * D-7: Guard manual status changes so a hand-set status can't contradict the
+ * payment/date-derived automation.
+ *  - draft <-> sent: allowed in both directions.
+ *  - paid: allowed only from sent / overdue / partial_paid (freelancers mark
+ *    invoices paid by hand).
+ *  - overpaid / partial_paid / overdue: always blocked manually — these are
+ *    derived from payments (status automation) and dates (syncOverdueStatuses).
+ */
+function isManualStatusTransitionAllowed(from: InvoiceStatus, to: InvoiceStatus): boolean {
+  if (from === to) return true; // redundant no-op, harmless
+  switch (to) {
+    case "draft":
+    case "sent":
+      return from === "draft" || from === "sent";
+    case "paid":
+      return from === "sent" || from === "overdue" || from === "partial_paid";
+    case "overpaid":
+    case "partial_paid":
+    case "overdue":
+    default:
+      return false;
+  }
+}
+
 export async function setInvoiceStatusAction(id: string, status: InvoiceStatus) {
   const { supabase, user } = await requireSession();
+
+  const { data: current, error: fetchError } = await supabase
+    .from("invoices")
+    .select("status")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (fetchError) {
+    throw new Error(fetchError.message);
+  }
+
+  const from = current.status as InvoiceStatus;
+  if (!isManualStatusTransitionAllowed(from, status)) {
+    throw new Error(
+      `Cannot change status from "${from}" to "${status}". "paid" can only be set from sent, overdue, or partial paid; "overpaid", "partial paid", and "overdue" are set automatically from payments and due dates.`,
+    );
+  }
+
   const { data, error } = await supabase
     .from("invoices")
     .update({ status })

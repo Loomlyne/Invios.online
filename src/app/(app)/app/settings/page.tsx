@@ -36,7 +36,7 @@ export default async function SettingsPage({
     // Non-fatal — billing panel will show the free state
   }
 
-  const portalUrl = process.env.PADDLE_PORTAL_URL ?? "#";
+  const portalUrl = "/api/creem/portal";
 
   return (
     <SettingsShell

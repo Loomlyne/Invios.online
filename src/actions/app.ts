@@ -183,12 +183,19 @@ export async function saveBusinessProfileAction(
   }
 }
 
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+
+function validateHexColor(value: string): string | null {
+  const v = value.trim();
+  return HEX_COLOR_RE.test(v) ? v : null;
+}
+
 export async function saveBrandingStepAction(formData: FormData): Promise<ActionState> {
   try {
     const { supabase, user } = await requireSupabase();
 
-    const primaryColor = String(formData.get("primaryColor") || "");
-    const secondaryColor = String(formData.get("secondaryColor") || "");
+    const primaryColor = validateHexColor(String(formData.get("primaryColor") || ""));
+    const secondaryColor = validateHexColor(String(formData.get("secondaryColor") || ""));
     const signatureMode = String(formData.get("signatureMode") || "none") as SignatureMode;
     const signatureText = String(formData.get("signatureText") || "");
     const signatureFont = String(formData.get("signatureFont") || "Signature");
@@ -218,8 +225,8 @@ export async function saveBrandingStepAction(formData: FormData): Promise<Action
       .upsert(
         {
           user_id: user.id,
-          primary_color: primaryColor || null,
-          secondary_color: secondaryColor || null,
+          primary_color: primaryColor,
+          secondary_color: secondaryColor,
           logo_path: logoPath,
           signature_mode: signatureMode,
           signature_path: signatureMode === "typed" || signatureMode === "none" ? null : signaturePath,
@@ -496,8 +503,8 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
   try {
     const { supabase, user } = await requireSupabase();
 
-    const primaryColor = String(formData.get("primaryColor") || "");
-    const secondaryColor = String(formData.get("secondaryColor") || "");
+    const primaryColor = validateHexColor(String(formData.get("primaryColor") || ""));
+    const secondaryColor = validateHexColor(String(formData.get("secondaryColor") || ""));
     const baseFont = String(formData.get("baseFont") || "DM Sans");
     const signatureMode = String(formData.get("signatureMode") || "none") as SignatureMode;
     const signatureText = String(formData.get("signatureText") || "");
@@ -541,8 +548,8 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
       .upsert(
         {
           user_id: user.id,
-          primary_color: primaryColor || null,
-          secondary_color: secondaryColor || null,
+          primary_color: primaryColor,
+          secondary_color: secondaryColor,
           page_background: pageBackground || null,
           logo_path: logoPath,
           header_cover_path: headerCoverPath,

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, Check, X, XCircle, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PRICING } from "@/lib/constants";
 import type { SubscriptionData } from "@/lib/types";
 
 type Subscription = NonNullable<SubscriptionData>;
@@ -46,7 +47,7 @@ function PlanCard({ sub }: { sub: Subscription }) {
       <dl className="grid gap-3 sm:grid-cols-2 text-sm">
         <div className="rounded-[var(--radius-inner)] border border-border px-4 py-3">
           <dt className="text-muted">Billing cycle</dt>
-          <dd className="font-medium mt-1">Monthly · $15</dd>
+          <dd className="font-medium mt-1">Monthly · {PRICING.currencySymbol}{PRICING.proMonthlyAmount}</dd>
         </div>
         <div className="rounded-[var(--radius-inner)] border border-border px-4 py-3">
           <dt className="text-muted">Next renewal</dt>
@@ -115,7 +116,7 @@ function FreePlan() {
         <div className="flex items-start gap-3">
           <Zap className="size-5 text-accent mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Upgrade to Pro — $15/month</p>
+            <p className="text-sm font-semibold text-foreground">Upgrade to Pro — {PRICING.proMonthlyLabel}</p>
             <p className="text-sm text-muted mt-1">
               Billed monthly · 7-day money-back guarantee · Cancel anytime
             </p>

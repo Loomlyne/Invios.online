@@ -1,7 +1,8 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { env, isSupabaseConfigured, isSupabaseAdminConfigured } from "@/lib/env";
+import { getSessionCookieOptions } from "@/lib/supabase/cookies";
 
 export async function createSupabaseServerClient() {
   if (!isSupabaseConfigured()) {
@@ -9,8 +10,14 @@ export async function createSupabaseServerClient() {
   }
 
   const cookieStore = await cookies();
+  const headersList = await headers();
+  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
 
   return createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
+    cookieOptions: getSessionCookieOptions(host),
+    auth: {
+      experimental: { passkey: true },
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -34,6 +41,6 @@ export function createSupabaseAdminClient() {
   }
 
   return createClient(env.supabaseUrl, env.supabaseServiceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
+    auth: { autoRefreshToken: false, persistSession: false, experimental: { passkey: true } },
   });
 }

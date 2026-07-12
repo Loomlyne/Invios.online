@@ -1,14 +1,46 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
-import { env, isSupabaseConfigured } from "@/lib/env";
+import { env, isSupabaseConfigured, isAdminEmail } from "@/lib/env";
+import { getSessionCookieOptions } from "@/lib/supabase/cookies";
+import { PRO_BILLING_ENABLED } from "@/lib/constants";
 
-// These API routes require an active paid subscription
+// Routes requiring an active Pro subscription. Only enforced while Pro billing
+// is activated (PRO_BILLING_ENABLED); kept here so re-enabling is a one-liner.
 const PAID_ONLY_PREFIXES = [
   "/api/invoices",
   "/api/quotations",
   "/api/export",
 ];
+
+// Retired Vercel aliases. Requests landing here are bounced to the canonical
+// domain so customers stop using an old-looking *.vercel.app URL and everyone
+// converges on invios.online.
+const LEGACY_REDIRECT_HOSTS = new Set(["invios-phase1-koss.vercel.app"]);
+
+// The canonical user-facing host (e.g. "invios.online"), derived from
+// NEXT_PUBLIC_SITE_URL. A retired alias can never be canonical — if the env
+// var still points at one (stale Vercel config), fall back to invios.online,
+// otherwise the legacy 308 above would redirect the alias to itself.
+const CANONICAL_HOST = (() => {
+  try {
+    const host = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://invios.online").hostname;
+    return LEGACY_REDIRECT_HOSTS.has(host) ? "invios.online" : host;
+  } catch {
+    return "invios.online";
+  }
+})();
+
+type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
+
+// Apply refreshed Supabase auth cookies to a response.
+// Must be called on EVERY response path so rotated refresh tokens are not dropped.
+function applyCookies(response: NextResponse, cookies: PendingCookie[]) {
+  cookies.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
+  });
+  return response;
+}
 
 function createAdminClient() {
   if (!env.supabaseUrl || !env.supabaseServiceRoleKey) return null;
@@ -19,7 +51,7 @@ function createAdminClient() {
 
 async function checkPaidSubscription(userId: string): Promise<boolean> {
   const admin = createAdminClient();
-  if (!admin) return true; // fail open if admin client is unavailable
+  if (!admin) return false; // fail closed — misconfigured admin client must not grant access
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: sub } = await (admin as any)
     .from("subscriptions")
@@ -40,22 +72,47 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  // Redirect www → apex so auth cookies are always on a single domain.
+  const host = request.headers.get("host") ?? "";
+  if (host.startsWith("www.")) {
+    const url = request.nextUrl.clone();
+    url.host = host.slice(4); // strip "www."
+    return NextResponse.redirect(url, { status: 308 });
+  }
+
+  // Bounce retired Vercel aliases to the canonical domain (converge on invios.online).
+  if (LEGACY_REDIRECT_HOSTS.has(host)) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.hostname = CANONICAL_HOST;
+    url.port = "";
+    return NextResponse.redirect(url, { status: 308 });
+  }
+
   // Strip any client-supplied spoofed auth headers before trusting them downstream.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete("x-middleware-user-id");
   requestHeaders.delete("x-middleware-user-email");
 
   // Track cookies that need to be set on the response.
-  let pendingCookies: { name: string; value: string; options: Record<string, unknown> }[] = [];
+  let pendingCookies: PendingCookie[] = [];
 
   const supabase = createServerClient(env.supabaseUrl, env.supabasePublishableKey, {
+    cookieOptions: getSessionCookieOptions(host),
+    auth: {
+      experimental: { passkey: true },
+    },
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
         pendingCookies = cookiesToSet;
-        cookiesToSet.forEach(({ name, value }) => requestHeaders.set(`cookie`, `${name}=${value}`));
+        // Append refreshed cookies to the forwarded request so Server Components
+        // see the updated session without making another round-trip.
+        const existing = requestHeaders.get("cookie") ?? "";
+        const updated = cookiesToSet.map(({ name, value }) => `${name}=${value}`);
+        requestHeaders.set("cookie", [existing, ...updated].filter(Boolean).join("; "));
       },
     },
   });
@@ -72,46 +129,58 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // NOTE: /update-password is intentionally NOT listed — the password-recovery
+  // link signs the user in (via /auth/confirm) and then lands them here, so an
+  // authenticated user must be allowed to stay on this page.
   const isAuthRoute =
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
-    pathname.startsWith("/forgot-password") ||
-    pathname.startsWith("/update-password");
+    pathname.startsWith("/forgot-password");
 
-  // Unauthenticated → redirect to sign-in for protected app pages
+  // Operator-only admin area. First line of defense: anyone who is not a
+  // signed-in allowlisted admin gets a bare 404, hiding that /admin even exists.
+  // The admin layout re-checks via requireAdmin() (defense in depth).
+  if (pathname.startsWith("/admin")) {
+    if (!user || !isAdminEmail(user.email)) {
+      return applyCookies(new NextResponse(null, { status: 404 }), pendingCookies);
+    }
+  }
+
+  // Unauthenticated → redirect to sign-in for protected app pages.
+  // Apply refreshed auth cookies on redirect so rotated tokens are not dropped.
   if (pathname.startsWith("/app") && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/sign-in";
     redirectUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(redirectUrl);
+    return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies);
   }
 
-  // Authenticated users on auth pages → send to app
+  // Authenticated users on auth pages → send to app.
+  // Apply refreshed auth cookies on redirect so rotated tokens are not dropped.
   if (isAuthRoute && user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/app";
     redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl);
+    return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies);
   }
 
-  // Premium API routes require an active paid subscription
-  const isPremiumRoute = PAID_ONLY_PREFIXES.some((p) => pathname.startsWith(p));
+  // Premium API routes require an active paid subscription — but only once Pro
+  // billing is activated. While disabled, nothing is gated (all features free).
+  const isPremiumRoute =
+    PRO_BILLING_ENABLED && PAID_ONLY_PREFIXES.some((p) => pathname.startsWith(p));
   if (isPremiumRoute && user) {
     const paid = await checkPaidSubscription(user.id);
     if (!paid) {
-      return Response.json(
-        { error: "Pro subscription required", upgrade: "/pricing" },
-        { status: 402 },
+      return applyCookies(
+        NextResponse.json(
+          { error: "Pro subscription required", upgrade: "/pricing" },
+          { status: 402 },
+        ),
+        pendingCookies,
       );
     }
   }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
-
-  // Apply any refreshed auth cookies to the response.
-  pendingCookies.forEach(({ name, value, options }) => {
-    response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
-  });
-
-  return response;
+  return applyCookies(response, pendingCookies);
 }

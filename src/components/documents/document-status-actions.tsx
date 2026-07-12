@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { ArrowRight, Send, Trash2 } from "lucide-react";
@@ -29,6 +29,19 @@ export function DocumentStatusActions({
 }: DocumentStatusActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isConfirmingDelete) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsConfirmingDelete(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isConfirmingDelete]);
 
   const handleDeleteInvoice = () => {
     startTransition(async () => {
@@ -47,7 +60,8 @@ export function DocumentStatusActions({
       if (result.status === "success" && result.redirectTo) {
         router.push(result.redirectTo as Route);
       } else if (result.status === "error") {
-        alert(`Error: ${result.message}`);
+        setDeleteError(result.message ?? "Could not delete quotation.");
+        setIsConfirmingDelete(false);
       }
     });
   };
@@ -166,15 +180,39 @@ export function DocumentStatusActions({
         </Button>
       )}
 
-      <Button
-        onClick={handleDeleteQuotation}
-        disabled={isPending}
-        variant="danger"
-        className="w-full"
-      >
-        <Trash2 className="size-4" />
-        {isPending ? "Deleting..." : "Delete quotation"}
-      </Button>
+      <div className="grid gap-2 sm:col-span-2">
+        {isConfirmingDelete ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-foreground">Confirm delete?</span>
+            <Button onClick={handleDeleteQuotation} disabled={isPending} variant="danger" size="sm">
+              <Trash2 className="size-4" />
+              {isPending ? "Deleting..." : "Confirm"}
+            </Button>
+            <Button
+              onClick={() => setIsConfirmingDelete(false)}
+              disabled={isPending}
+              variant="secondary"
+              size="sm"
+            >
+              Cancel
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={() => {
+              setDeleteError(null);
+              setIsConfirmingDelete(true);
+            }}
+            disabled={isPending}
+            variant="danger"
+            className="w-full"
+          >
+            <Trash2 className="size-4" />
+            Delete quotation
+          </Button>
+        )}
+        {deleteError ? <p className="text-sm text-danger">{deleteError}</p> : null}
+      </div>
     </div>
   );
 }

@@ -173,7 +173,7 @@ export const InvoicePreview = memo(function InvoicePreview({
               >
                 {preview.signatureText}
               </p>
-              <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Date signed", "التاريخ")}</p>
+              <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Date signed", "التاريخ")}</p>
               <p className="mt-1 text-sm tabular-nums text-foreground">{formatDateDisplay(preview.issueDate)}</p>
             </div>
           ) : (
@@ -183,7 +183,7 @@ export const InvoicePreview = memo(function InvoicePreview({
                 src={preview.signatureUrl!}
                 className="ml-auto h-14 object-contain"
               />
-              <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Date signed", "التاريخ")}</p>
+              <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Date signed", "التاريخ")}</p>
               <p className="mt-1 text-sm tabular-nums text-foreground">{formatDateDisplay(preview.issueDate)}</p>
             </div>
           )}
@@ -194,11 +194,11 @@ export const InvoicePreview = memo(function InvoicePreview({
       {template.footerLayout === "side-by-side" ? null : (
         bankFields.length > 0 ? (
           <div className={cn("border-t border-black/5 break-inside-avoid", px, py)}>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Payment info", "معلومات الدفع")}</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Payment info", "معلومات الدفع")}</p>
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-4">
               {bankFields.map((f, i) => (
                 <div key={i}>
-                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#A8A29E]">{f.label}</p>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#6b6359]">{f.label}</p>
                   <p className="mt-1 text-sm font-medium text-foreground">{f.value}</p>
                 </div>
               ))}
@@ -272,7 +272,7 @@ function StandardHeader({
         <div className={layout === "centered" ? "text-center" : "text-right"}>
           <p
             className={cn(template.numberClassName)}
-            style={{ color: preview.accentColor }}
+            style={{ color: accentTextColor(preview.accentColor) }}
           >
             {documentTitle}
           </p>
@@ -319,7 +319,7 @@ function EditorialHeader({
           </p>
         </div>
         <div className="text-right">
-          <p className={cn(template.numberClassName)} style={{ color: preview.accentColor }}>
+          <p className={cn(template.numberClassName)} style={{ color: accentTextColor(preview.accentColor) }}>
             {documentTitle.toUpperCase()}
           </p>
           <p className="mt-1 text-sm font-medium text-foreground">#{preview.invoiceNumber}</p>
@@ -389,13 +389,13 @@ function TwoRowHeader({
       {/* Row 2 — RECIPIENT left, INVOICE + number right */}
       <div className="flex flex-wrap items-start justify-between gap-4 py-5">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">Recipient</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">Recipient</p>
         </div>
         <div className="text-right">
-          <p className={cn(template.numberClassName)} style={{ color: preview.accentColor }}>
+          <p className={cn(template.numberClassName)} style={{ color: accentTextColor(preview.accentColor) }}>
             {documentTitle.toUpperCase()}
           </p>
-          <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+          <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">
             Invoice Number
           </p>
           <p className="mt-0.5 text-sm font-medium text-foreground">{preview.invoiceNumber}</p>
@@ -424,7 +424,7 @@ function GridMeta({ preview, template, recipientName, totals, px, py, bilingualL
       <div className={cn(px, py, template.metaSurfaceClassName)}>
         <div className="grid gap-6 sm:grid-cols-[1fr_auto_auto]">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Billed to", "الفاتورة إلى")}</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Billed to", "الفاتورة إلى")}</p>
             <p className="mt-2 text-sm font-semibold text-foreground">{recipientName}</p>
             {preview.recipientCompany && preview.recipientName !== preview.recipientCompany ? (
               <p className="text-sm text-[#78716C]">{preview.recipientName}</p>
@@ -442,7 +442,7 @@ function GridMeta({ preview, template, recipientName, totals, px, py, bilingualL
 
           <div className="space-y-3">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">
                 {preview.issueDateLabel || bilingualLabel("Invoice date", "تاريخ الفاتورة")}
               </p>
               <p className="mt-1 text-sm font-medium tabular-nums text-foreground">
@@ -450,7 +450,7 @@ function GridMeta({ preview, template, recipientName, totals, px, py, bilingualL
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">
                 {preview.dueDateLabel || bilingualLabel("Due date", "تاريخ الاستحقاق")}
               </p>
               <p className="mt-1 text-sm font-medium tabular-nums text-foreground">
@@ -460,8 +460,8 @@ function GridMeta({ preview, template, recipientName, totals, px, py, bilingualL
           </div>
 
           <div className="text-right sm:min-w-[140px]">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Amount due", "المبلغ المستحق")}</p>
-            <p className="mt-2 text-lg font-semibold" style={{ color: preview.accentColor }} dir="ltr">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Amount due", "المبلغ المستحق")}</p>
+            <p className="mt-2 text-lg font-semibold" style={{ color: accentTextColor(preview.accentColor) }} dir="ltr">
               {totals.totalLabel}
             </p>
           </div>
@@ -478,28 +478,28 @@ function ContactGridMeta({ preview, template, recipientName, totals, px, py, bil
       {/* Client details row */}
       <div className="grid gap-6 sm:grid-cols-[1fr_auto_auto] text-sm">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Billed to", "الفاتورة إلى")}</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Billed to", "الفاتورة إلى")}</p>
           <p className="mt-2 font-semibold text-foreground">{recipientName}</p>
           {preview.recipientAddress ? <p className="text-[#78716C]">{preview.recipientAddress}</p> : null}
           {preview.recipientPhone ? <p className="text-[#78716C]">{preview.recipientPhone}</p> : null}
         </div>
         <div className="space-y-3">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">
               {preview.issueDateLabel || bilingualLabel("Invoice date", "تاريخ الفاتورة")}
             </p>
             <p className="mt-1 font-medium tabular-nums text-foreground">{formatDateDisplay(preview.issueDate)}</p>
           </div>
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">
               {preview.dueDateLabel || bilingualLabel("Due date", "تاريخ الاستحقاق")}
             </p>
             <p className="mt-1 font-medium tabular-nums text-foreground">{formatDateDisplay(preview.dueDate)}</p>
           </div>
         </div>
         <div className="text-right sm:min-w-[120px]">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Amount due", "المبلغ المستحق")}</p>
-          <p className="mt-2 text-lg font-semibold" style={{ color: preview.accentColor }} dir="ltr">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Amount due", "المبلغ المستحق")}</p>
+          <p className="mt-2 text-lg font-semibold" style={{ color: accentTextColor(preview.accentColor) }} dir="ltr">
             {totals.totalLabel}
           </p>
         </div>
@@ -537,22 +537,22 @@ function RecipientBlockMeta({ preview, template, recipientName, totals, px, py, 
       {/* Dates row */}
       <div className="mt-4 flex flex-wrap gap-6 text-sm">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">
             {preview.issueDateLabel || bilingualLabel("Invoice date", "تاريخ الفاتورة")}
           </p>
           <p className="mt-1 font-medium tabular-nums text-foreground">{formatDateDisplay(preview.issueDate)}</p>
         </div>
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">
             {preview.dueDateLabel || bilingualLabel("Due date", "تاريخ الاستحقاق")}
           </p>
           <p className="mt-1 font-medium tabular-nums text-foreground">{formatDateDisplay(preview.dueDate)}</p>
         </div>
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">
             {bilingualLabel("Amount due", "المبلغ المستحق")}
           </p>
-          <p className="mt-1 font-semibold tabular-nums" style={{ color: preview.accentColor }} dir="ltr">
+          <p className="mt-1 font-semibold tabular-nums" style={{ color: accentTextColor(preview.accentColor) }} dir="ltr">
             {totals.totalLabel}
           </p>
         </div>
@@ -583,7 +583,7 @@ function BilingualLineItems({
         <div key={item.id} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 border-b border-black/5 py-4">
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="text-sm tabular-nums text-[#A8A29E]">{i + 1}.</span>
+              <span className="text-sm tabular-nums text-[#6b6359]">{i + 1}.</span>
               <span className="whitespace-pre-wrap text-sm font-medium text-foreground">{item.description}</span>
             </div>
             <div className="mt-1 flex gap-4 text-sm tabular-nums text-[#78716C]">
@@ -592,14 +592,14 @@ function BilingualLineItems({
               <span className="font-medium text-foreground" dir="ltr">{formatCurrency(item.unitPrice * item.quantity, preview.currency)}</span>
             </div>
             {item.durationValue && item.durationUnit && (
-              <span className="mt-0.5 block text-xs text-[#A8A29E]">
+              <span className="mt-0.5 block text-xs text-[#6b6359]">
                 {formatDuration(item.durationValue, item.durationUnit)}
               </span>
             )}
           </div>
           <div dir="rtl" lang="ar" className="mt-2 md:mt-0">
             <span className="text-sm font-medium text-foreground">{getArabicDescription(item)}</span>
-            {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-[#A8A29E]">{item.notes}</span> : null}
+            {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-[#6b6359]">{item.notes}</span> : null}
           </div>
         </div>
       ))}
@@ -626,12 +626,12 @@ function CardLineItems({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
-                <span className="text-xs tabular-nums text-[#A8A29E]">{i + 1}.</span>
+                <span className="text-xs tabular-nums text-[#6b6359]">{i + 1}.</span>
                 <span className="whitespace-pre-wrap text-sm font-medium text-foreground">
                   {isArabicOnly ? getArabicDescription(item) : item.description}
                 </span>
               </div>
-              {item.notes ? <p className="mt-1 text-xs text-[#A8A29E] whitespace-pre-wrap">{item.notes}</p> : null}
+              {item.notes ? <p className="mt-1 text-xs text-[#6b6359] whitespace-pre-wrap">{item.notes}</p> : null}
             </div>
             <div className="shrink-0 text-right text-sm tabular-nums">
               <p className="font-medium text-foreground" dir="ltr">{formatCurrency(item.unitPrice * item.quantity, preview.currency)}</p>
@@ -639,7 +639,7 @@ function CardLineItems({
                 {item.quantity} × {formatCurrency(item.unitPrice, preview.currency)}
               </p>
               {item.durationValue && item.durationUnit && (
-                <p className="text-xs text-[#A8A29E]">{formatDuration(item.durationValue, item.durationUnit)}</p>
+                <p className="text-xs text-[#6b6359]">{formatDuration(item.durationValue, item.durationUnit)}</p>
               )}
             </div>
           </div>
@@ -683,10 +683,10 @@ function TableLineItems({
         <tbody>
           {preview.lineItems.map((item, i) => (
             <tr key={item.id} className="border-b border-black/5">
-              <td className="py-4 pr-2 text-sm tabular-nums text-[#A8A29E]">{i + 1}</td>
+              <td className="py-4 pr-2 text-sm tabular-nums text-[#6b6359]">{i + 1}</td>
               <td className="py-4 pr-4 text-sm text-foreground">
                 <span className="whitespace-pre-wrap font-medium">{isArabicOnly ? getArabicDescription(item) : item.description}</span>
-                {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-[#A8A29E]">{item.notes}</span> : null}
+                {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-[#6b6359]">{item.notes}</span> : null}
               </td>
               <td className="py-4 pr-4 text-right text-sm tabular-nums text-[#78716C]">{item.quantity}</td>
               {showDurationColumn && (
@@ -753,7 +753,7 @@ function RowTotals({
           ) : null}
           <div className={cn("flex justify-between border-t pt-3 text-base font-semibold", template.totalsDividerClassName)}>
             <span>{bilingualLabel("Total", "الإجمالي")}</span>
-            <span className="tabular-nums" dir="ltr" style={{ color: preview.accentColor }}>{totals.totalLabel}</span>
+            <span className="tabular-nums" dir="ltr" style={{ color: accentTextColor(preview.accentColor) }}>{totals.totalLabel}</span>
           </div>
         </div>
       </div>
@@ -783,13 +783,13 @@ function StackedFooter({
       <div className="grid gap-6 sm:grid-cols-2">
         {preview.terms ? (
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Terms", "الشروط والأحكام")}</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Terms", "الشروط والأحكام")}</p>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#78716C]">{preview.terms}</p>
           </div>
         ) : null}
         {preview.notes ? (
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Notes", "ملاحظات")}</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Notes", "ملاحظات")}</p>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#78716C]">{preview.notes}</p>
           </div>
         ) : null}
@@ -824,11 +824,11 @@ function SideBySideFooter({
       {/* Bank details — horizontal row */}
       {hasBankDetails ? (
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Bank Details", "تفاصيل البنك")}</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Bank Details", "تفاصيل البنك")}</p>
           <div className="mt-3 flex flex-wrap gap-x-6 gap-y-3">
             {bankFields.map((f, i) => (
               <div key={i}>
-                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#A8A29E]">{f.label}</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#6b6359]">{f.label}</p>
                 <p className="mt-0.5 text-sm font-medium text-foreground">{f.value}</p>
               </div>
             ))}
@@ -841,13 +841,13 @@ function SideBySideFooter({
         <div className={cn("grid gap-6 sm:grid-cols-2", hasBankDetails && "mt-6")}>
           {hasTerms ? (
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Terms", "الشروط والأحكام")}</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Terms", "الشروط والأحكام")}</p>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#78716C]">{preview.terms}</p>
             </div>
           ) : null}
           {hasNotes ? (
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#A8A29E]">{bilingualLabel("Notes", "ملاحظات")}</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Notes", "ملاحظات")}</p>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#78716C]">{preview.notes}</p>
             </div>
           ) : null}
@@ -858,6 +858,36 @@ function SideBySideFooter({
 }
 
 /* ═══════════════════════════ Helpers ═══════════════════════════ */
+
+/**
+ * Guard a user accent color for use as TEXT on the white/near-white document
+ * background. Light accents (yellow, lime, pale pastels) fall below WCAG
+ * contrast and become unreadable — especially once flattened into a customer
+ * PDF. Compute the sRGB relative luminance; if the color is too light, mix it
+ * toward black so text stays legible. Decorative fills/lines should keep the
+ * raw accent and NOT use this. Dependency-free.
+ */
+function accentTextColor(hex?: string): string | undefined {
+  if (!hex) return undefined;
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim());
+  if (!m) return hex; // non-6-digit-hex (rgb(), var(), named) — leave untouched
+  const int = parseInt(m[1], 16);
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  const lin = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  const lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  if (lum <= 0.65) return hex; // dark enough for white bg — use as-is
+  // Too light: darken by mixing toward black (55%) to recover contrast.
+  const mix = 0.55;
+  const dr = Math.round(r * (1 - mix));
+  const dg = Math.round(g * (1 - mix));
+  const db = Math.round(b * (1 - mix));
+  return `#${((1 << 24) | (dr << 16) | (dg << 8) | db).toString(16).slice(1)}`;
+}
 
 function formatDuration(value: number, unit: string): string {
   const label = unit.charAt(0).toUpperCase() + unit.slice(1);

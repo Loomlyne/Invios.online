@@ -5,8 +5,12 @@ import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
+import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import type { DataViewConfig } from "./types";
+
+// Interactive elements inside a row should handle their own click/keyboard
+// behavior instead of triggering row navigation.
+const INTERACTIVE_SELECTOR = "a, button, input, select, textarea, [role='button']";
 
 export function TableView<TItem, TStatus extends string>({
   items,
@@ -92,8 +96,21 @@ export function TableView<TItem, TStatus extends string>({
             sortedItems.map((item) => (
               <tr
                 key={config.getId(item)}
-                onClick={() => router.push(config.getHref(item) as Route)}
-                className="cursor-pointer border-t border-black/5 bg-surface transition hover:bg-surface-subtle"
+                onClick={(e: MouseEvent<HTMLTableRowElement>) => {
+                  const target = e.target as HTMLElement;
+                  if (target.closest(INTERACTIVE_SELECTOR)) return;
+                  router.push(config.getHref(item) as Route);
+                }}
+                onKeyDown={(e: KeyboardEvent<HTMLTableRowElement>) => {
+                  if (e.key !== "Enter" && e.key !== " ") return;
+                  const target = e.target as HTMLElement;
+                  if (target.closest(INTERACTIVE_SELECTOR)) return;
+                  e.preventDefault();
+                  router.push(config.getHref(item) as Route);
+                }}
+                tabIndex={0}
+                role="link"
+                className="cursor-pointer border-t border-black/5 bg-surface transition hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFCF7]"
               >
                 {config.tableColumns.map((col) => (
                   <td

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Route } from "next";
+import { redirect } from "next/navigation";
+import { DashboardRefresher } from "@/components/app/dashboard-refresher";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { MetricCard } from "@/components/app/metric-card";
 import { DashboardRangeToggle } from "@/components/app/dashboard-range-toggle";
@@ -34,6 +36,8 @@ import {
   getDashboardRecentQuotations,
   getDashboardAnalyticsData,
 } from "@/lib/billing-data";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -82,7 +86,7 @@ function buildDashboardHref(metric: DashboardMetricKey, range: DashboardRangeKey
 }
 
 function formatMetricValue(value: number, currency: string) {
-  return value > 0 ? formatCurrency(value, currency) : "\u2014";
+  return value > 0 ? formatCurrency(value, currency) : "—";
 }
 
 export default async function AppHomePage({
@@ -94,7 +98,17 @@ export default async function AppHomePage({
   const currentRange = parseRange(typeof params.range === "string" ? params.range : undefined);
   const currentMetric = parseMetric(typeof params.metric === "string" ? params.metric : undefined);
   const context = await getAppContext();
-  const userId = context.userId ?? "";
+
+  // Without a resolved user id, the dashboard queries below would run
+  // `.eq("user_id", "")` against a uuid column and throw
+  // `invalid input syntax for type uuid: ""`, crashing the render. The layout
+  // redirects unauthenticated requests, but layout and page render
+  // concurrently, so guard here too and bounce cleanly to sign-in.
+  if (!context.userId) {
+    redirect("/sign-in");
+  }
+
+  const userId = context.userId;
   const [metrics, drilldownRows, insights, recentInvoices, recentQuotations, analyticsData] = await Promise.all([
     getDashboardMetrics(userId, currentRange),
     getDashboardDrilldown(userId, currentMetric, currentRange),
@@ -172,7 +186,7 @@ export default async function AppHomePage({
         />
         <MetricCard
           label="Collection rate"
-          value={metrics.collectionRate !== null ? `${metrics.collectionRate}%` : "\u2014"}
+          value={metrics.collectionRate !== null ? `${metrics.collectionRate}%` : "—"}
           accent={metrics.collectionRate === 100}
           interactive
           active={currentMetric === "collection-rate"}
@@ -182,7 +196,7 @@ export default async function AppHomePage({
         />
       </div>
 
-      {/* Profitability insight strip — Expenses, Net profit, Avg invoice */}
+      {/* Profitability insight strip */}
       <div className="grid gap-[var(--space-grid)] sm:grid-cols-3">
         {[
           { label: "Expenses", value: formatCurrency(insights.analytics.totalExpenses, currency) },
@@ -199,8 +213,7 @@ export default async function AppHomePage({
         ))}
       </div>
 
-      {/* Analytics row — Revenue trend + Aging breakdown (per D-01, D-02) */}
-      {/* Client wrappers hold next/dynamic ssr:false — not allowed in Server Components in Next.js 15 */}
+      {/* Analytics row */}
       <div className="grid gap-[var(--space-grid)] md:grid-cols-[3fr_2fr]">
         <Card>
           <CardHeader>
@@ -230,7 +243,7 @@ export default async function AppHomePage({
         </Card>
       </div>
 
-      {/* Drilldown — selected metric detail */}
+      {/* Drilldown */}
       <Card>
         <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -525,7 +538,7 @@ export default async function AppHomePage({
         </div>
       </div>
 
-      {/* Deep dive — top clients + activity */}
+      {/* Deep dive */}
       <div className="grid gap-[var(--space-grid)] xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
           <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -664,6 +677,7 @@ export default async function AppHomePage({
       </div>
 
       {!context.setupProgress.complete && <SetupChecklist context={context} />}
+      <DashboardRefresher />
     </div>
   );
 }

@@ -1,7 +1,11 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Check, X } from "lucide-react";
-import { InviosLogo } from "@/components/app/invios-logo";
+import { ArrowRight, Check, ShieldCheck, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { PublicNav } from "@/components/marketing/public-nav";
+import { PublicFooter } from "@/components/marketing/public-footer";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -35,59 +39,56 @@ const PRO_FEATURES = [
   { label: "Priority support", included: true },
 ];
 
+const FAQS = [
+  {
+    q: "What currency am I billed in?",
+    a: "All Pro subscriptions are billed in US Dollars (USD) at $15 per month, inclusive of any applicable taxes. Payments are processed securely by Creem.",
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes. You can cancel your Pro subscription at any time from the customer portal. Your Pro access stays active until the end of the current billing period, then your account reverts to the Free plan.",
+  },
+  {
+    q: "Do you offer refunds?",
+    a: "We offer a full refund within 7 days of each monthly charge — no questions asked. See our Refund Policy for full details.",
+  },
+  {
+    q: "Is there a free plan?",
+    a: "Yes. The Free plan lets you create up to 3 invoices, 3 quotations, and 2 clients at no cost, with no credit card required.",
+  },
+];
+
 export default async function PricingPage() {
-  let userEmail: string | undefined;
+  let isSignedIn = false;
 
   try {
     const supabase = await createSupabaseServerClient();
     if (supabase) {
       const { data } = await supabase.auth.getUser();
-      userEmail = data.user?.email ?? undefined;
+      isSignedIn = Boolean(data.user);
     }
   } catch {
     // Public page — session is best-effort
   }
 
-  const checkoutBase = process.env.PADDLE_CHECKOUT_URL ?? "#";
-  const emailParam = userEmail ? `?customer_email=${encodeURIComponent(userEmail)}` : "";
-  const checkoutHref = `${checkoutBase}${emailParam}`;
-
   return (
-    <main className="min-h-screen">
-      {/* Header */}
-      <header className="mx-auto max-w-[1400px] px-4 pb-0 pt-6 sm:px-6 lg:px-8">
-        <div className="glass-panel flex items-center justify-between gap-4 rounded-[1.4rem] border border-black/8 px-4 py-3 subtle-shadow">
-          <Link href="/">
-            <InviosLogo />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/sign-in"
-              className="rounded-[0.85rem] px-4 py-2 text-sm font-medium text-muted-strong transition hover:bg-black/5 hover:text-foreground"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/sign-up"
-              className="rounded-[0.85rem] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
-            >
-              Get started free
-            </Link>
-          </div>
-        </div>
-      </header>
+    <main className="min-h-screen overflow-hidden">
+      <PublicNav cta="signup" />
 
       {/* Hero */}
-      <section className="mx-auto max-w-[1400px] px-4 pb-10 pt-16 text-center sm:px-6 sm:pt-20 lg:px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
-          Transparent pricing
-        </p>
-        <h1 className="display-text mt-4 text-4xl font-semibold leading-none text-foreground sm:text-5xl lg:text-6xl">
-          Start free. Upgrade when ready.
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-muted-strong">
-          No credit card required to get started. Upgrade to Pro for unlimited invoicing and the full feature set.
-        </p>
+      <section className="relative">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(202,138,4,0.16),transparent_30%)]" />
+        <div className="relative mx-auto max-w-[1400px] px-4 pb-10 pt-16 text-center sm:px-6 sm:pt-20 lg:px-8">
+          <div className="flex justify-center">
+            <Badge variant="accent">Transparent pricing</Badge>
+          </div>
+          <h1 className="display-text mt-5 text-4xl font-semibold leading-none text-foreground sm:text-5xl lg:text-6xl">
+            Start free. Upgrade when ready.
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-muted-strong">
+            No credit card required to get started. Upgrade to Pro for unlimited invoicing and the full feature set — $15/month, cancel anytime.
+          </p>
+        </div>
       </section>
 
       {/* Pricing cards */}
@@ -99,7 +100,7 @@ export default async function PricingPage() {
             <div className="mb-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Free</p>
               <div className="mt-3 flex items-end gap-1">
-                <span className="display-text text-4xl font-semibold text-foreground">AED 0</span>
+                <span className="display-text text-4xl font-semibold text-foreground">Free</span>
               </div>
               <p className="mt-1.5 text-sm text-muted">Forever free — no card needed</p>
             </div>
@@ -121,10 +122,10 @@ export default async function PricingPage() {
 
             <div className="mt-auto">
               <Link
-                href="/sign-up"
+                href={isSignedIn ? "/app" : "/sign-up"}
                 className="block w-full rounded-[var(--radius-inner)] border border-black/10 bg-surface-strong px-5 py-3 text-center text-sm font-semibold text-foreground transition hover:border-border-brand hover:bg-[var(--bg-dark)]"
               >
-                Create free account
+                {isSignedIn ? "Go to dashboard" : "Create free account"}
               </Link>
             </div>
           </div>
@@ -138,7 +139,7 @@ export default async function PricingPage() {
             <div className="mb-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Pro</p>
               <div className="mt-3 flex items-end gap-1">
-                <span className="display-text text-4xl font-semibold text-foreground">AED 50</span>
+                <span className="display-text text-4xl font-semibold text-foreground">$15</span>
                 <span className="mb-0.5 text-sm text-muted">/month</span>
               </div>
               <p className="mt-1.5 text-sm text-muted">
@@ -157,39 +158,74 @@ export default async function PricingPage() {
             </ul>
 
             <div className="mt-auto">
-              <a
-                href={checkoutHref}
-                className="block w-full rounded-[var(--radius-inner)] bg-accent px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-strong)]"
-              >
-                Upgrade to Pro
-              </a>
+              {isSignedIn ? (
+                <form action="/api/creem/checkout" method="post">
+                  <button
+                    type="submit"
+                    className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-inner)] bg-accent px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-strong)]"
+                  >
+                    Upgrade to Pro
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </button>
+                </form>
+              ) : (
+                <a
+                  href="/sign-up?next=/pricing"
+                  className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-inner)] bg-accent px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-strong)]"
+                >
+                  Create account to upgrade
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </a>
+              )}
             </div>
           </div>
 
         </div>
+
+        {/* Trust strip */}
+        <div className="mx-auto mt-5 flex max-w-3xl items-center justify-center gap-2 rounded-[var(--radius-inner)] border border-border bg-surface-subtle px-5 py-3 text-center text-sm text-muted">
+          <ShieldCheck className="size-4 shrink-0 text-accent" aria-hidden="true" />
+          Secure checkout via Creem · Cancel anytime · 7-day money-back guarantee
+        </div>
       </section>
 
-      {/* Footer note */}
-      <section className="mx-auto max-w-[1400px] px-4 pb-10 pt-2 text-center sm:px-6 lg:px-8">
-        <p className="text-sm text-muted">
-          Already have an account?{" "}
-          <Link href="/sign-in" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Sign in
-          </Link>
-          {" · "}
-          <Link href="/terms" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Terms
-          </Link>
-          {" · "}
-          <Link href="/privacy" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Privacy
-          </Link>
-          {" · "}
-          <Link href="/refund" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Refund policy
-          </Link>
-        </p>
+      {/* FAQ */}
+      <section className="mx-auto max-w-[1400px] px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="display-text text-2xl font-semibold text-foreground sm:text-3xl">
+            Frequently asked questions
+          </h2>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            {FAQS.map(({ q, a }) => (
+              <div key={q} className="rounded-[var(--radius-inner)] border border-border bg-surface p-5">
+                <h3 className="text-sm font-semibold text-foreground">{q}</h3>
+                <p className="mt-2 text-sm leading-7 text-muted">{a}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-sm text-muted">
+            Still have questions? Email{" "}
+            <a href="mailto:support@invios.online" className="font-medium text-accent underline underline-offset-4 hover:text-accent-strong">
+              support@invios.online
+            </a>{" "}
+            or read our{" "}
+            <Link href="/refund" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Refund Policy
+            </Link>
+            {" · "}
+            <Link href="/terms" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Terms
+            </Link>
+            {" · "}
+            <Link href="/privacy" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Privacy
+            </Link>
+            .
+          </p>
+        </div>
       </section>
+
+      <PublicFooter />
     </main>
   );
 }

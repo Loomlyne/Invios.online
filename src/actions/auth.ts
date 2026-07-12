@@ -101,7 +101,9 @@ export async function signUpAction(
       data: {
         full_name: parsed.data.fullName,
       },
-      emailRedirectTo: `${env.siteUrl}/app`,
+      // Must point at the confirm route handler — it exchanges the token for a
+      // session. Redirecting straight to /app silently drops the verification.
+      emailRedirectTo: `${env.siteUrl}/auth/confirm?next=/app`,
     },
   });
 
@@ -161,7 +163,7 @@ export async function forgotPasswordAction(
     const supabase = await createSupabaseServerClient();
     if (supabase) {
       await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-        redirectTo: `${env.siteUrl}/update-password`,
+        redirectTo: `${env.siteUrl}/auth/confirm?next=/update-password`,
       });
     }
     return genericSuccess;
@@ -171,7 +173,7 @@ export async function forgotPasswordAction(
     type: "recovery",
     email: parsed.data.email,
     options: {
-      redirectTo: `${env.siteUrl}/update-password`,
+      redirectTo: `${env.siteUrl}/auth/confirm?next=/update-password`,
     },
   });
 
@@ -378,7 +380,7 @@ export async function changeEmailAction(data: {
 
   const { error } = await supabase.auth.updateUser(
     { email: data.newEmail },
-    { emailRedirectTo: `${env.siteUrl}/app` },
+    { emailRedirectTo: `${env.siteUrl}/auth/confirm?next=/app/settings` },
   );
 
   if (error) return { status: "error", message: error.message };

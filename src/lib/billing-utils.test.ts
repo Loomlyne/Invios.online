@@ -12,6 +12,7 @@ import {
   mapQuotationToInvoiceInput,
   normalizeLineItems,
 } from "./billing-utils";
+import { buildInvoicePreviewData, createDefaultUserState, getInvoiceTotals } from "./preview";
 
 describe("billing-utils", () => {
   it("computes subtotal, discount, tax, and total", () => {
@@ -94,6 +95,124 @@ describe("billing-utils", () => {
     });
     expect(invoiceInput.lineItems[0]?.total).toBe(500);
   });
+});
+
+// ---------------------------------------------------------------------------
+// computeDocumentTotals — rounding boundaries (D-2 / D-6)
+// ---------------------------------------------------------------------------
+
+describe("computeDocumentTotals rounding boundaries", () => {
+  it("rounds each line item before summing (3-decimal unit prices)", () => {
+    // 0.335 rounds up to 0.34 per line; summing raw (0.67) would round to 0.67,
+    // but per-line rounding yields 0.68.
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 0.335, total: 0 },
+        { id: "2", description: "B", notes: "", arabicDescription: "", quantity: 1, unitPrice: 0.335, total: 0 },
+      ]),
+      0,
+      0,
+    );
+
+    expect(totals).toEqual({ subtotal: 0.68, discountAmount: 0, taxAmount: 0, total: 0.68 });
+  });
+
+  it("rounds a discount that lands on a .005 half-cent boundary", () => {
+    // 5 * 2.5% = 0.125 -> rounds up to 0.13.
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 5, total: 0 },
+      ]),
+      0,
+      2.5,
+    );
+
+    expect(totals).toEqual({ subtotal: 5, discountAmount: 0.13, taxAmount: 0, total: 4.87 });
+  });
+
+  it("rounds tax on a .005 half-cent boundary", () => {
+    // 10.10 * 5% = 0.505 -> rounds up to 0.51.
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 10.1, total: 0 },
+      ]),
+      5,
+      0,
+    );
+
+    expect(totals).toEqual({ subtotal: 10.1, discountAmount: 0, taxAmount: 0.51, total: 10.61 });
+  });
+
+  it("rounds discount and tax independently in a combined case", () => {
+    // subtotal 100.10; discount 3% -> 3.003 -> 3.00; taxable 97.10;
+    // tax 5% -> 4.855 -> 4.86; total 101.96 (unrounded tax would give 101.955).
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 100.1, total: 0 },
+      ]),
+      5,
+      3,
+    );
+
+    expect(totals).toEqual({ subtotal: 100.1, discountAmount: 3, taxAmount: 4.86, total: 101.96 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getInvoiceTotals matches computeDocumentTotals (D-2 / D-6)
+// ---------------------------------------------------------------------------
+
+describe("getInvoiceTotals matches computeDocumentTotals", () => {
+  const fixtures = [
+    {
+      name: "3-decimal unit prices",
+      lineItems: [
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 0.335, total: 0 },
+        { id: "2", description: "B", notes: "", arabicDescription: "", quantity: 1, unitPrice: 0.335, total: 0 },
+      ],
+      taxRate: 0,
+      discount: 0,
+    },
+    {
+      name: "discount half-cent boundary",
+      lineItems: [
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 5, total: 0 },
+      ],
+      taxRate: 0,
+      discount: 2.5,
+    },
+    {
+      name: "combined discount + tax boundary",
+      lineItems: [
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 100.1, total: 0 },
+      ],
+      taxRate: 5,
+      discount: 3,
+    },
+  ];
+
+  for (const fixture of fixtures) {
+    it(`produces identical subtotal/discount/tax/total for ${fixture.name}`, () => {
+      const authoritative = computeDocumentTotals(
+        normalizeLineItems(fixture.lineItems),
+        fixture.taxRate,
+        fixture.discount,
+      );
+
+      const preview = buildInvoicePreviewData(createDefaultUserState("rounding@test.local"), {
+        lineItems: fixture.lineItems,
+        taxRate: fixture.taxRate,
+        taxEnabled: true,
+        discount: fixture.discount,
+      });
+      const previewTotals = getInvoiceTotals(preview);
+
+      expect(previewTotals.subtotal).toBe(authoritative.subtotal);
+      expect(previewTotals.discountAmount).toBe(authoritative.discountAmount);
+      expect(previewTotals.tax).toBe(authoritative.taxAmount);
+      expect(previewTotals.total).toBe(authoritative.total);
+    });
+  }
 });
 
 // ---------------------------------------------------------------------------
