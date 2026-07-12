@@ -25,13 +25,13 @@ export async function GET(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = supabaseRaw as any;
 
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
 
   // 1. Fetch users with reminders enabled (oldest-first for deterministic pagination)
   const { data: users, error: usersError } = await supabase
     .from("user_settings")
     .select(
-      "user_id, reminder_days_before, reminder_days_after, remind_on_due_date, second_reminder_days",
+      "user_id, reminder_days_before, reminder_days_after, remind_on_due_date, second_reminder_days, timezone",
     )
     .eq("reminder_enabled", true)
     .order("user_id")
@@ -52,6 +52,11 @@ export async function GET(request: NextRequest) {
 
   for (const userSettings of users) {
     try {
+      // D-3: Evaluate reminders against the user's LOCAL date, not UTC. A user in
+      // UTC+X can otherwise miss a same-day boundary that shouldSendReminder never
+      // recovers (it matches on exact-day equality).
+      const today = localDateForTimezone(now, userSettings.timezone as string | null);
+
       // 2. Fetch sent/overdue invoices for this user (with client email for sending)
       const { data: invoices, error: invoiceError } = await supabase
         .from("invoices")
@@ -158,6 +163,29 @@ export async function GET(request: NextRequest) {
     // true = another batch may remain; the next cron run will process it
     limited: users.length === BATCH_LIMIT,
   });
+}
+
+/**
+ * Helper: format a Date as the YYYY-MM-DD calendar date in the given IANA
+ * timezone. `en-CA` yields ISO-style YYYY-MM-DD. Invalid/unknown timezones fall
+ * back to UTC so a bad `user_settings.timezone` never throws the whole run.
+ */
+function localDateForTimezone(now: Date, timezone: string | null | undefined): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone ?? "UTC",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+  } catch {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "UTC",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+  }
 }
 
 /** Helper: sum payments for an invoice to get collected amount */

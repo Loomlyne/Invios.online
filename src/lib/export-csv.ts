@@ -20,7 +20,19 @@ export type CsvRow = CsvCell[];
 
 function escapeCell(value: CsvCell): string {
   if (value === null || value === undefined) return "";
-  const str = typeof value === "number" ? String(value) : String(value);
+  let str = String(value);
+  // D-5: Neutralize CSV/spreadsheet formula injection. A cell whose first char
+  // is = + - or @ is interpreted as a formula by Excel/Sheets, so prefix a single
+  // quote BEFORE quote-escaping. Only string inputs are user-controlled; numeric
+  // columns arrive as `number` (or numeric strings from `.toFixed()`), so a
+  // legitimate negative amount like "-12.00" is excluded and left intact.
+  if (
+    typeof value === "string" &&
+    /^[=+\-@]/.test(str) &&
+    !/^[+-]?\d/.test(str)
+  ) {
+    str = `'${str}`;
+  }
   if (/[",\n\r]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }

@@ -152,6 +152,7 @@ export function KanbanView<TItem, TStatus extends string>({
                       {config.getAddUrl ? (
                         <Link
                           href={config.getAddUrl(col.status) as Route}
+                          aria-label={`Add new item to ${col.label}`}
                           className="flex size-5 items-center justify-center rounded-md text-muted/60 transition-colors hover:bg-black/5 hover:text-foreground"
                         >
                           <Plus className="size-3.5" />
@@ -164,7 +165,7 @@ export function KanbanView<TItem, TStatus extends string>({
                   <div className="min-h-[120px] rounded-[1.25rem] border border-black/5 bg-black/[0.02] p-2 flex flex-col gap-2">
                     {colItems.length === 0 ? (
                       <div className="flex flex-1 items-center justify-center">
-                        <p className="text-xs text-muted/60">No items</p>
+                        <p className="text-xs text-muted">No items</p>
                       </div>
                     ) : (
                       colItems.map((item) => (

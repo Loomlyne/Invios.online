@@ -63,22 +63,24 @@ export function DataViewToolbar({
   }
 
   return (
-    <div className="flex flex-row items-center justify-between gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <input
         value={search}
         onChange={(e) => handleSearchChange(e.target.value)}
         placeholder={searchPlaceholder}
-        className="hidden sm:block h-12 flex-1 rounded-[1rem] border border-border bg-white px-4 text-sm"
+        className="h-12 w-full rounded-[1rem] border border-border bg-white px-4 text-sm sm:flex-1"
       />
-      <div className="flex-1 sm:flex-none sm:w-56">
-        <Select
-          options={statusOptions}
-          value={currentStatus}
-          onChange={(value) => navigate({ status: value })}
-          placeholder="All statuses"
-        />
+      <div className="flex flex-row items-center justify-between gap-3 sm:contents">
+        <div className="flex-1 sm:flex-none sm:w-56">
+          <Select
+            options={statusOptions}
+            value={currentStatus}
+            onChange={(value) => navigate({ status: value })}
+            placeholder="All statuses"
+          />
+        </div>
+        <ViewSwitcher value={currentView} onChange={handleViewChange} />
       </div>
-      <ViewSwitcher value={currentView} onChange={handleViewChange} />
     </div>
   );
 }

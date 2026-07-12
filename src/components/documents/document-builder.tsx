@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect, useCallback, useMemo } from "react";
-import type { FormEvent, ReactNode } from "react";
+import type { FormEvent, KeyboardEvent, ReactNode } from "react";
 import { ChevronDown, Loader2, Plus, Search, Trash2, UserPlus } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
@@ -27,11 +27,13 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type {
-  ClientRecord,
-  DocumentKind,
-  DocumentLineItem,
-  InvoiceFormInput,
+import {
+  invoiceFormSchema,
+  quotationFormSchema,
+  type ClientRecord,
+  type DocumentKind,
+  type DocumentLineItem,
+  type InvoiceFormInput,
 } from "@/lib/billing";
 import { createLineItem } from "@/lib/billing-utils";
 import type { RecurringFrequency } from "@/lib/cron-utils";
@@ -147,8 +149,112 @@ export function DocumentBuilder({
 
   const previewNode = useMemo(() => <InvoicePreview preview={preview} mode="page" />, [preview]);
 
+  // --- U-8: client-side validation (reuses the billing.ts zod schemas) ---
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const validate = useCallback((): Record<string, string> => {
+    const base = {
+      id: initialValue?.id,
+      clientId,
+      currency,
+      taxRate,
+      discount,
+      notes,
+      terms,
+      language,
+      trn,
+      lineItems,
+    };
+    const result =
+      kind === "invoice"
+        ? invoiceFormSchema.safeParse({
+            ...base,
+            issueDate: primaryDate,
+            dueDate: secondaryDate,
+            status: initialValue?.status ?? "draft",
+            invoiceType,
+          })
+        : quotationFormSchema.safeParse({
+            ...base,
+            quotationDate: primaryDate,
+            expiryDate: secondaryDate,
+            status: initialValue?.status ?? "draft",
+            validityDays,
+          });
+
+    if (result.success) return {};
+    const next: Record<string, string> = {};
+    for (const issue of result.error.issues) {
+      const key = issue.path.join(".");
+      if (key && !next[key]) next[key] = issue.message;
+    }
+    return next;
+  }, [
+    kind, clientId, currency, taxRate, discount, notes, terms, language, trn,
+    lineItems, primaryDate, secondaryDate, invoiceType, validityDays,
+    initialValue?.id, initialValue?.status,
+  ]);
+
+  const allErrors = useMemo(() => validate(), [validate]);
+  const visibleError = (key: string) =>
+    submitAttempted || touched[key] ? allErrors[key] : undefined;
+  const markTouched = (key: string) => setTouched((prev) => ({ ...prev, [key]: true }));
+
+  const focusField = useCallback((key: string) => {
+    let id = key;
+    if (key === "issueDate" || key === "quotationDate") id = "primaryDate";
+    else if (key === "dueDate" || key === "expiryDate") id = "secondaryDate";
+    else if (key === "clientId") id = "clientId-trigger";
+    else if (key.startsWith("lineItems.")) {
+      const [, indexStr, field] = key.split(".");
+      const item = lineItems[Number(indexStr)];
+      if (!item) return;
+      const prefix =
+        field === "description" ? "description" : field === "quantity" ? "quantity" : field === "unitPrice" ? "price" : null;
+      if (!prefix) return;
+      id = `${prefix}-${item.id}`;
+    }
+    const el = document.getElementById(id);
+    if (el) {
+      el.focus();
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }, [lineItems]);
+
+  // --- U-4: unsaved-changes protection ---
+  const [saved, setSaved] = useState(false);
+  const initialSnapshotRef = useRef<string | null>(null);
+  const currentSnapshot = JSON.stringify({
+    clientId, currency, taxRate, discount, language, notes, terms, trn,
+    invoiceType, primaryDate, secondaryDate, validityDays, lineItems,
+    isRecurring, recurringFrequency, recurringNextDate,
+  });
+  if (initialSnapshotRef.current === null) {
+    initialSnapshotRef.current = currentSnapshot;
+  }
+  const isDirty = !saved && initialSnapshotRef.current !== currentSnapshot;
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSubmitAttempted(true);
+    const validationErrors = validate();
+    const errorKeys = Object.keys(validationErrors);
+    if (errorKeys.length > 0) {
+      focusField(errorKeys[0]);
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
 
     startTransition(async () => {
@@ -163,6 +269,7 @@ export function DocumentBuilder({
       setState(result);
 
       if (result.status === "success" && result.redirectTo) {
+        setSaved(true); // clears dirty flag so beforeunload won't block the redirect
         router.push(result.redirectTo as Route);
       }
     });
@@ -197,7 +304,7 @@ export function DocumentBuilder({
             {/* Client & document type */}
             <section className="grid gap-3">
               <SectionTitle>Client & type</SectionTitle>
-              <Field label="Client" htmlFor="clientId">
+              <Field label="Client" htmlFor="clientId-trigger" required error={visibleError("clientId")}>
                 <input type="hidden" name="clientId" value={clientId} />
                 <ClientSelector
                   clients={localClients}
@@ -257,7 +364,12 @@ export function DocumentBuilder({
             <section className="grid gap-3">
               <SectionTitle>Dates</SectionTitle>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label={kind === "invoice" ? "Issue date" : "Quotation date"} htmlFor="primaryDate">
+                <Field
+                  label={kind === "invoice" ? "Issue date" : "Quotation date"}
+                  htmlFor="primaryDate"
+                  required
+                  error={visibleError(kind === "invoice" ? "issueDate" : "quotationDate")}
+                >
                   <DatePicker
                     id="primaryDate"
                     name={kind === "invoice" ? "issueDate" : "quotationDate"}
@@ -265,7 +377,12 @@ export function DocumentBuilder({
                     onChange={setPrimaryDate}
                   />
                 </Field>
-                <Field label={kind === "invoice" ? "Due date" : "Expiry date"} htmlFor="secondaryDate">
+                <Field
+                  label={kind === "invoice" ? "Due date" : "Expiry date"}
+                  htmlFor="secondaryDate"
+                  required
+                  error={visibleError(kind === "invoice" ? "dueDate" : "expiryDate")}
+                >
                   <DatePicker
                     id="secondaryDate"
                     name={kind === "invoice" ? "dueDate" : "expiryDate"}
@@ -295,10 +412,17 @@ export function DocumentBuilder({
                 {lineItems.map((item, index) => (
                   <Card key={item.id} className="border border-black/7 bg-[#FFF8EE] p-4 shadow-none">
                     <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
-                      <Field label="Title" htmlFor={`description-${item.id}`}>
+                      <Field
+                        label="Title"
+                        htmlFor={`description-${item.id}`}
+                        required
+                        error={visibleError(`lineItems.${index}.description`)}
+                      >
                         <Input
                           id={`description-${item.id}`}
                           value={item.description}
+                          aria-invalid={Boolean(visibleError(`lineItems.${index}.description`)) || undefined}
+                          onBlur={() => markTouched(`lineItems.${index}.description`)}
                           onChange={(event) =>
                             setLineItems((current) =>
                               current.map((line) =>
@@ -308,13 +432,20 @@ export function DocumentBuilder({
                           }
                         />
                       </Field>
-                      <Field label="Qty" htmlFor={`quantity-${item.id}`}>
+                      <Field
+                        label="Qty"
+                        htmlFor={`quantity-${item.id}`}
+                        required
+                        error={visibleError(`lineItems.${index}.quantity`)}
+                      >
                         <Input
                           id={`quantity-${item.id}`}
                           type="number"
                           min={0}
                           step="0.01"
                           value={item.quantity}
+                          aria-invalid={Boolean(visibleError(`lineItems.${index}.quantity`)) || undefined}
+                          onBlur={() => markTouched(`lineItems.${index}.quantity`)}
                           onChange={(event) =>
                             setLineItems((current) =>
                               current.map((line) =>
@@ -326,13 +457,20 @@ export function DocumentBuilder({
                           }
                         />
                       </Field>
-                      <Field label="Unit price" htmlFor={`price-${item.id}`}>
+                      <Field
+                        label="Unit price"
+                        htmlFor={`price-${item.id}`}
+                        required
+                        error={visibleError(`lineItems.${index}.unitPrice`)}
+                      >
                         <Input
                           id={`price-${item.id}`}
                           type="number"
                           min={0}
                           step="0.01"
                           value={item.unitPrice}
+                          aria-invalid={Boolean(visibleError(`lineItems.${index}.unitPrice`)) || undefined}
+                          onBlur={() => markTouched(`lineItems.${index}.unitPrice`)}
                           onChange={(event) =>
                             setLineItems((current) =>
                               current.map((line) =>
@@ -545,8 +683,11 @@ function ClientSelector({
   const [addOpen, setAddOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const selected = useMemo(() => clients.find((c) => c.id === value), [clients, value]);
   const filtered = useMemo(() => {
@@ -572,6 +713,49 @@ function ClientSelector({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open, handleClickOutside]);
 
+  // Reset keyboard highlight whenever the list opens or the query changes.
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [search, open]);
+
+  // Keep the highlighted option scrolled into view.
+  useEffect(() => {
+    if (!open) return;
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-index="${highlightedIndex}"]`);
+    el?.scrollIntoView({ block: "nearest" });
+  }, [highlightedIndex, open]);
+
+  const selectClient = useCallback(
+    (client: ClientRecord) => {
+      onChange(client.id);
+      setOpen(false);
+      setSearch("");
+      triggerRef.current?.focus();
+    },
+    [onChange],
+  );
+
+  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightedIndex((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightedIndex((i) => Math.max(i - 1, 0));
+    } else if (event.key === "Enter") {
+      const client = filtered[highlightedIndex];
+      if (client) {
+        event.preventDefault();
+        selectClient(client);
+      }
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+      setSearch("");
+      triggerRef.current?.focus();
+    }
+  };
+
   const handleQuickCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setCreating(true);
@@ -592,8 +776,19 @@ function ClientSelector({
   return (
     <div ref={containerRef} className="relative">
       <button
+        ref={triggerRef}
+        id="clientId-trigger"
         type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls="client-listbox"
         onClick={() => setOpen(!open)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" && !open) {
+            event.preventDefault();
+            setOpen(true);
+          }
+        }}
         className="flex h-12 w-full items-center justify-between rounded-[var(--radius-inner)] border border-border bg-white px-4 text-left text-sm transition hover:border-[#CAB9A2]"
       >
         <span className="flex items-center gap-2 truncate">
@@ -618,30 +813,44 @@ function ClientSelector({
               <input
                 ref={searchRef}
                 type="text"
+                role="combobox"
+                aria-expanded={open}
+                aria-controls="client-listbox"
+                aria-activedescendant={
+                  filtered[highlightedIndex] ? `client-option-${highlightedIndex}` : undefined
+                }
                 placeholder="Search clients..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-muted"
               />
             </div>
           </div>
 
-          <div className="max-h-48 overflow-y-auto p-1.5">
+          <div
+            ref={listRef}
+            id="client-listbox"
+            role="listbox"
+            aria-label="Clients"
+            className="max-h-48 overflow-y-auto p-1.5"
+          >
             {filtered.length === 0 ? (
               <p className="px-3 py-4 text-center text-sm text-muted">No clients found</p>
             ) : (
-              filtered.map((client) => (
+              filtered.map((client, index) => (
                 <button
                   key={client.id}
+                  id={`client-option-${index}`}
+                  data-index={index}
+                  role="option"
+                  aria-selected={client.id === value}
                   type="button"
-                  onClick={() => {
-                    onChange(client.id);
-                    setOpen(false);
-                    setSearch("");
-                  }}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                  onClick={() => selectClient(client)}
                   className={`flex w-full items-center gap-2.5 rounded-[0.6rem] px-3 py-2.5 text-left text-sm transition hover:bg-[#FFF7EA] ${
-                    client.id === value ? "bg-[#FFF1D6]" : ""
-                  }`}
+                    index === highlightedIndex ? "bg-[#FFF7EA]" : ""
+                  } ${client.id === value ? "bg-[#FFF1D6]" : ""}`}
                 >
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#FFF1D6] text-xs font-semibold text-[#92700C]">
                     {client.name.charAt(0).toUpperCase()}
@@ -718,15 +927,23 @@ function Field({
   label,
   htmlFor,
   children,
+  required,
+  error,
 }: {
   label: string;
   htmlFor: string;
   children: ReactNode;
+  required?: boolean;
+  error?: string;
 }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={htmlFor}>{label}</Label>
+      <Label htmlFor={htmlFor}>
+        {label}
+        {required ? <span className="ml-0.5 text-danger"> *</span> : null}
+      </Label>
       {children}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
     </div>
   );
 }
