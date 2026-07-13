@@ -5,10 +5,12 @@ import { FileText, ReceiptText } from "lucide-react";
 import { DocumentSummaryRow } from "@/components/documents/document-summary-row";
 import { ClientEditButton } from "@/components/clients/client-edit-sheet";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
+import { PaymentReliabilityBadge } from "@/components/clients/payment-reliability-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClientBySlug, listInvoicesForClient, listQuotationsForClient } from "@/lib/billing-data";
+import { getClientPaymentReliability } from "@/lib/client-intelligence";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function ClientDetailPage({
@@ -23,9 +25,10 @@ export default async function ClientDetailPage({
     notFound();
   }
 
-  const [invoices, quotations] = await Promise.all([
+  const [invoices, quotations, reliability] = await Promise.all([
     listInvoicesForClient(client.id),
     listQuotationsForClient(client.id),
+    getClientPaymentReliability(client.id),
   ]);
 
   const billedTotal = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
@@ -39,6 +42,7 @@ export default async function ClientDetailPage({
             <div className="flex flex-wrap items-center gap-3">
               <Badge className="border-white/12 bg-white/10 text-[#FFF9F0]">Client detail</Badge>
               <ClientStatusBadge status={client.status} />
+              {reliability && <PaymentReliabilityBadge reliability={reliability} />}
             </div>
             <h1 className="display-text mt-4 font-semibold text-[clamp(1.75rem,1.25rem+1.25vw,3rem)]">{client.name}</h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[#E9E0D5]">
