@@ -52,14 +52,6 @@ export function AppShell({
                 </div>
               </div>
             )}
-
-            <div className="mt-4 border-t border-black/6 pt-4 px-2">
-              <UserAvatarMenu
-                fullName={context.userState.profile.fullName}
-                email={context.email ?? ""}
-                avatarUrl={context.avatarUrl}
-              />
-            </div>
           </div>
         </aside>
 
