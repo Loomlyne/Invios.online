@@ -12,7 +12,7 @@
     },
     {
       "path": "/api/cron/pdf-keepalive",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 5 * * *"
     }
   ]
 }
