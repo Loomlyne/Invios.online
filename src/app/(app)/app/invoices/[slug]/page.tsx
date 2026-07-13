@@ -24,8 +24,10 @@ import { ProfitSummary } from "@/components/documents/profit-summary";
 import { FinancialQuickActions } from "@/components/documents/financial-quick-actions";
 import { InvoiceDeleteButton } from "@/components/documents/invoice-delete-button";
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
+import { env } from "@/lib/env";
 import { formatCurrency } from "@/lib/utils";
 import { VersionHistoryPanel } from "@/components/documents/version-history-panel";
+import { ShareButton } from "@/components/documents/share-button";
 import { ExportButton } from "./export-button";
 import { RecurringButton } from "./recurring-button";
 import { StatusButton } from "./status-button";
@@ -107,6 +109,12 @@ export default async function InvoiceDetailPage({
               </Button>
               <RecurringButton invoiceId={invoice.id} schedule={recurringSchedule} />
               <StatusButton invoiceId={invoice.id} currentStatus={invoice.status} />
+              <ShareButton
+                publicUrl={`${env.siteUrl}/invoices/public/${invoice.shareToken}`}
+                documentNumber={invoice.invoiceNumber}
+                amountLabel={formatCurrency(invoice.total, invoice.currency)}
+                documentKind="invoice"
+              />
               <ExportButton invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
             </div>
           </CardHeader>

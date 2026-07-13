@@ -16,7 +16,9 @@ import {
 import { isUuid } from "@/lib/billing-utils";
 import { getAppContext } from "@/lib/data";
 import { buildQuotationPreviewFromRecord } from "@/lib/document-preview-data";
+import { env } from "@/lib/env";
 import { formatCurrency } from "@/lib/utils";
+import { ShareButton } from "@/components/documents/share-button";
 import { ExportButton } from "./export-button";
 
 export default async function QuotationDetailPage({
@@ -97,6 +99,12 @@ export default async function QuotationDetailPage({
                   </Link>
                 </Button>
               )}
+              <ShareButton
+                publicUrl={`${env.siteUrl}/quotations/public/${quotation.shareToken}`}
+                documentNumber={quotation.quotationNumber}
+                amountLabel={formatCurrency(quotation.total, quotation.currency)}
+                documentKind="quotation"
+              />
               <ExportButton quotationId={quotation.id} quotationNumber={quotation.quotationNumber} />
             </div>
           </CardHeader>
