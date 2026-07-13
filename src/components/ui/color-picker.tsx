@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, Plus } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const PRESET_COLORS = [
@@ -53,10 +53,6 @@ export function ColorPicker({
     if (!isControlled) setInternalValue(next);
     onChange?.(next);
   };
-
-  const isPreset = PRESET_COLORS.some(
-    (c) => c.toLowerCase() === currentValue.toLowerCase(),
-  );
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -129,36 +125,6 @@ export function ColorPicker({
               </button>
             );
           })}
-
-          {/* Custom color indicator or add-custom button */}
-          {!isPreset ? (
-            <button
-              type="button"
-              aria-label="Edit custom color"
-              onClick={() => nativeRef.current?.click()}
-              className="relative size-8 shrink-0 cursor-pointer rounded-full ring-2 ring-accent ring-offset-2 ring-offset-surface scale-110 transition-all"
-              style={{ backgroundColor: currentValue }}
-            >
-              <Check
-                className="absolute inset-0 m-auto size-3.5"
-                style={{
-                  color: isLightColor(currentValue)
-                    ? "#1C1917"
-                    : "#FFFCF7",
-                }}
-                strokeWidth={3}
-              />
-            </button>
-          ) : (
-            <button
-              type="button"
-              aria-label="Custom color"
-              onClick={() => nativeRef.current?.click()}
-              className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-dashed border-border bg-surface transition-all hover:border-accent/50 hover:bg-surface-strong active:scale-95"
-            >
-              <Plus className="size-3.5 text-muted" />
-            </button>
-          )}
         </div>
       </div>
 

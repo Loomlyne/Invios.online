@@ -4,7 +4,7 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { LogOut, Palette, Settings2, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { signOutAction } from "@/actions/auth";
 import { cn } from "@/lib/utils";
 
@@ -19,8 +19,6 @@ function getInitials(name: string): string {
 
 const menuItems = [
   { label: "Profile", href: "/app/settings" as Route, icon: User },
-  { label: "Branding", href: "/app/branding" as Route, icon: Palette },
-  { label: "Settings", href: "/app/settings" as Route, icon: Settings2 },
 ] as const;
 
 export function UserAvatarMenu({
