@@ -83,27 +83,6 @@ export const fabMenuItems: AppNavItemConfig[] = [
     icon: "user-round-plus",
     description: "Add a new client.",
   },
-  {
-    key: "expense",
-    label: "Expense",
-    href: "/app/expenses" as unknown as import("next").Route,
-    icon: "credit-card",
-    description: "Record an expense.",
-  },
-  {
-    key: "project",
-    label: "Project",
-    href: "/app/projects" as unknown as import("next").Route,
-    icon: "folder-open",
-    description: "Start a new project.",
-  },
-  {
-    key: "notes",
-    label: "Notes",
-    href: "/app/notes",
-    icon: "notebook-pen",
-    description: "Quick notes and reminders.",
-  },
 ];
 
 export const appNavItems: AppNavItemConfig[] = [

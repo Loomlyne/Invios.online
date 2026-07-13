@@ -52,11 +52,19 @@ export function AppShell({
                 </div>
               </div>
             )}
+
+            <div className="mt-4 border-t border-black/6 pt-4 px-2">
+              <UserAvatarMenu
+                fullName={context.userState.profile.fullName}
+                email={context.email ?? ""}
+                avatarUrl={context.avatarUrl}
+              />
+            </div>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-[var(--space-grid)] pb-32 lg:pb-8">
-          <header className="glass-panel sticky top-4 z-20 rounded-[var(--radius-card)] border border-black/8 px-4 py-3 subtle-shadow">
+          <header className="glass-panel sticky top-4 z-20 rounded-[var(--radius-card)] border border-black/8 px-4 py-3 subtle-shadow lg:hidden">
             <div className="flex items-center justify-between gap-4">
               <Link href="/app" className="inline-flex items-center gap-2">
                 <InviosLogo markOnly className="h-5" />
@@ -66,6 +74,7 @@ export function AppShell({
               <UserAvatarMenu
                 fullName={context.userState.profile.fullName}
                 email={context.email ?? ""}
+                avatarUrl={context.avatarUrl}
               />
             </div>
           </header>

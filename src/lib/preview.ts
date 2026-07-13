@@ -23,7 +23,7 @@ export const defaultProfile: BusinessProfile = {
 
 export const defaultBranding: BrandingSettings = {
   primaryColor: "#CA8A04",
-  secondaryColor: "#44403C",
+  secondaryColor: "#FFFFFF",
   logoPath: null,
   faviconPath: null,
   baseFont: "DM Sans",

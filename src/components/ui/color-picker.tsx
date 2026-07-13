@@ -23,6 +23,7 @@ interface ColorPickerProps {
   defaultValue?: string;
   onChange?: (value: string) => void;
   className?: string;
+  hidePreview?: boolean;
 }
 
 function isLightColor(hex: string): boolean {
@@ -39,6 +40,7 @@ export function ColorPicker({
   defaultValue,
   onChange,
   className,
+  hidePreview,
 }: ColorPickerProps) {
   const [internalValue, setInternalValue] = React.useState(
     defaultValue ?? "#000000",
@@ -59,27 +61,29 @@ export function ColorPicker({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Large color preview — tap to open native picker */}
-      <button
-        type="button"
-        aria-label="Pick color"
-        className="group relative h-[4.5rem] w-full cursor-pointer overflow-hidden rounded-[1rem] border border-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] transition-all active:scale-[0.98]"
-        style={{ backgroundColor: currentValue }}
-        onClick={() => nativeRef.current?.click()}
-      >
-        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10 group-active:bg-black/15">
-          <span
-            className="rounded-full px-3 py-1 text-xs font-semibold tracking-wide opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100"
-            style={{
-              backgroundColor: isLightColor(currentValue)
-                ? "rgba(0,0,0,0.55)"
-                : "rgba(255,255,255,0.85)",
-              color: isLightColor(currentValue) ? "#fff" : "#1C1917",
-            }}
-          >
-            Tap to pick
-          </span>
-        </div>
-      </button>
+      {!hidePreview && (
+        <button
+          type="button"
+          aria-label="Pick color"
+          className="group relative h-[4.5rem] w-full cursor-pointer overflow-hidden rounded-[1rem] border border-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] transition-all active:scale-[0.98]"
+          style={{ backgroundColor: currentValue }}
+          onClick={() => nativeRef.current?.click()}
+        >
+          <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10 group-active:bg-black/15">
+            <span
+              className="rounded-full px-3 py-1 text-xs font-semibold tracking-wide opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100"
+              style={{
+                backgroundColor: isLightColor(currentValue)
+                  ? "rgba(0,0,0,0.55)"
+                  : "rgba(255,255,255,0.85)",
+                color: isLightColor(currentValue) ? "#fff" : "#1C1917",
+              }}
+            >
+              Tap to pick
+            </span>
+          </div>
+        </button>
+      )}
 
       <input
         ref={nativeRef}

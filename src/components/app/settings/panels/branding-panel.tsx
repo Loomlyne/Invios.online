@@ -1,12 +1,63 @@
 "use client";
 
 import { startTransition, useRef, useState } from "react";
-import { Loader2, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import type { AppContext } from "@/lib/types";
 import { saveIdentityAction, saveTemplateAction } from "@/actions/app";
 import { Section } from "../shared/settings-section";
 import { SaveButton } from "../shared/save-button";
 import { ColorPicker } from "@/components/ui/color-picker";
+import { cn } from "@/lib/utils";
+
+/** Curated accent+background pairs. */
+const THEME_PRESETS = [
+  { name: "Gold", accent: "#CA8A04", bg: "#FFFFFF" },
+  { name: "Midnight", accent: "#FBBF24", bg: "#0A0A0A" },
+  { name: "Forest", accent: "#059669", bg: "#FFFFFF" },
+  { name: "Ocean", accent: "#0284C7", bg: "#FFFFFF" },
+  { name: "Crimson", accent: "#DC2626", bg: "#FFFFFF" },
+  { name: "Violet", accent: "#7C3AED", bg: "#FFFFFF" },
+  { name: "Stone", accent: "#44403C", bg: "#FFFFFF" },
+  { name: "Slate Dark", accent: "#38BDF8", bg: "#1C1917" },
+];
+
+/** Pick readable foreground (dark/light) for a given background hex. */
+function fgOnBg(bgHex: string): string {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(bgHex.trim());
+  if (!m) return "#17120F";
+  const int = parseInt(m[1], 16);
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  return (r * 299 + g * 587 + b * 114) / 1000 > 140 ? "#17120F" : "#F5F3F0";
+}
+
+/** Compact color row: label + swatch trigger + hex input, expands to full picker. */
+function CompactColorRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-sm font-medium">{label}</p>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="size-4 rounded-full border border-black/10"
+            style={{ backgroundColor: value }}
+          />
+          <span className="text-xs font-medium tabular-nums text-muted">{value.toUpperCase()}</span>
+        </div>
+      </div>
+      <ColorPicker value={value} onChange={onChange} hidePreview />
+    </div>
+  );
+}
 
 export function BrandingPanel({ context }: { context: AppContext }) {
   const b = context.userState.branding;
@@ -121,34 +172,72 @@ export function BrandingPanel({ context }: { context: AppContext }) {
         </div>
       </Section>
 
-      <Section title="Invoice Colors">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm font-medium mb-2">Font</p>
-            <div
-              className="rounded-[var(--radius-md)] p-4 text-white text-sm"
-              style={{ backgroundColor: primaryColor }}
-            >
-              <p className="font-semibold">Font</p>
-              <p className="text-xs opacity-80">{primaryColor.toUpperCase()}</p>
+      <Section title="Invoice Colors" description="Accent text + canvas background">
+        {/* Live mini-preview — shows exactly how colors combine on the invoice */}
+        <div
+          className="mb-5 overflow-hidden rounded-[var(--radius-md)] border border-border"
+          style={{ backgroundColor: secondaryColor }}
+        >
+          <div className="flex items-center justify-between px-5 py-4">
+            <div>
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] opacity-60" style={{ color: fgOnBg(secondaryColor) }}>Invoice</p>
+              <p className="text-lg font-bold" style={{ color: primaryColor }}>INV-0001</p>
             </div>
-            <div className="mt-2">
-              <ColorPicker value={primaryColor} onChange={setPrimaryColor} />
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-medium mb-2">Background</p>
-            <div
-              className="rounded-[var(--radius-md)] p-4 text-sm border border-border"
-              style={{ backgroundColor: secondaryColor }}
-            >
-              <p className="font-semibold" style={{ color: primaryColor }}>Background</p>
-              <p className="text-xs opacity-60">{secondaryColor.toUpperCase()}</p>
-            </div>
-            <div className="mt-2">
-              <ColorPicker value={secondaryColor} onChange={setSecondaryColor} />
+            <div className="text-right">
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] opacity-60" style={{ color: fgOnBg(secondaryColor) }}>Total due</p>
+              <p className="text-lg font-semibold" style={{ color: primaryColor }}>AED 12,400</p>
             </div>
           </div>
+          <div className="flex gap-1 px-5 pb-4">
+            <div className="h-1 flex-1 rounded-full" style={{ backgroundColor: primaryColor, opacity: 0.9 }} />
+            <div className="h-1 flex-1 rounded-full" style={{ backgroundColor: primaryColor, opacity: 0.3 }} />
+            <div className="h-1 flex-1 rounded-full" style={{ backgroundColor: primaryColor, opacity: 0.15 }} />
+          </div>
+        </div>
+
+        {/* Curated theme presets */}
+        <div className="mb-5">
+          <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Themes</p>
+          <div className="flex flex-wrap gap-2">
+            {THEME_PRESETS.map((theme) => {
+              const isActive =
+                theme.accent.toLowerCase() === primaryColor.toLowerCase() &&
+                theme.bg.toLowerCase() === secondaryColor.toLowerCase();
+              return (
+                <button
+                  key={theme.name}
+                  type="button"
+                  onClick={() => { setPrimaryColor(theme.accent); setSecondaryColor(theme.bg); }}
+                  className={cn(
+                    "flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3 transition-all",
+                    isActive
+                      ? "border-accent ring-2 ring-accent/20"
+                      : "border-border hover:border-accent/40"
+                  )}
+                >
+                  <span className="flex -space-x-1">
+                    <span className="size-5 rounded-full border border-black/10" style={{ backgroundColor: theme.bg }} />
+                    <span className="size-5 rounded-full border border-black/10" style={{ backgroundColor: theme.accent }} />
+                  </span>
+                  <span className="text-xs font-medium">{theme.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Individual color controls */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <CompactColorRow
+            label="Accent (font)"
+            value={primaryColor}
+            onChange={setPrimaryColor}
+          />
+          <CompactColorRow
+            label="Background"
+            value={secondaryColor}
+            onChange={setSecondaryColor}
+          />
         </div>
       </Section>
 
