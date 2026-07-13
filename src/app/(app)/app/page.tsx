@@ -3,33 +3,28 @@ import type { Metadata } from "next";
 import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { DashboardRefresher } from "@/components/app/dashboard-refresher";
-import { ArrowUpRight, Plus } from "lucide-react";
+import { CircleAlert, FileClock, Plus } from "lucide-react";
 import { MetricCard } from "@/components/app/metric-card";
 import { DashboardRangeToggle } from "@/components/app/dashboard-range-toggle";
 import { ExportDataButton } from "@/components/app/export-button";
 import { PageHeader } from "@/components/app/page-header";
 import { SetupChecklist } from "@/components/app/setup-checklist";
 import { EmptyState } from "@/components/app/empty-state";
-import { RevenueChartCard, AgingChartCard } from "@/components/app/analytics-row";
+import { RevenueChartCard } from "@/components/app/analytics-row";
 import { DocumentSummaryRow } from "@/components/documents/document-summary-row";
-import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  dashboardMetricKeys,
   dashboardRangeKeys,
-  type DashboardMetricKey,
   type DashboardRangeKey,
 } from "@/lib/billing";
 import { getAppContext } from "@/lib/data";
 import { formatDateDisplay, formatCurrency } from "@/lib/utils";
 import {
   buildRevenueTrend,
-  buildAgingBuckets,
   buildMomDeltas,
 } from "@/lib/dashboard";
 import {
-  getDashboardDrilldown,
   getDashboardInsights,
   getDashboardMetrics,
   getDashboardRecentInvoices,
@@ -43,46 +38,11 @@ export const metadata: Metadata = {
   title: "Dashboard",
 };
 
-const dashboardMetricCopy: Record<
-  DashboardMetricKey,
-  { title: string; description: string; fullPageHref: Route }
-> = {
-  "total-billed": {
-    title: "Billed invoices",
-    description: "All non-draft invoices issued in the selected range.",
-    fullPageHref: "/app/invoices?view=table" as Route,
-  },
-  collected: {
-    title: "Collected invoices",
-    description: "Invoices with payment activity recorded in the selected range.",
-    fullPageHref: "/app/invoices?view=table" as Route,
-  },
-  outstanding: {
-    title: "Outstanding invoices",
-    description: "Open receivables still waiting on collection.",
-    fullPageHref: "/app/invoices?view=table&status=open" as Route,
-  },
-  "collection-rate": {
-    title: "Collection rate breakdown",
-    description: "Billed versus collected versus outstanding for invoices in range.",
-    fullPageHref: "/app/invoices?view=table" as Route,
-  },
-};
 
 function parseRange(value?: string): DashboardRangeKey {
   return dashboardRangeKeys.includes(value as DashboardRangeKey)
     ? (value as DashboardRangeKey)
     : "all";
-}
-
-function parseMetric(value?: string): DashboardMetricKey {
-  return dashboardMetricKeys.includes(value as DashboardMetricKey)
-    ? (value as DashboardMetricKey)
-    : "total-billed";
-}
-
-function buildDashboardHref(metric: DashboardMetricKey, range: DashboardRangeKey) {
-  return `/app?metric=${metric}&range=${range}`;
 }
 
 function formatMetricValue(value: number, currency: string) {
@@ -96,7 +56,6 @@ export default async function AppHomePage({
 }) {
   const params = (await searchParams) ?? {};
   const currentRange = parseRange(typeof params.range === "string" ? params.range : undefined);
-  const currentMetric = parseMetric(typeof params.metric === "string" ? params.metric : undefined);
   const context = await getAppContext();
 
   // Without a resolved user id, the dashboard queries below would run
@@ -109,9 +68,8 @@ export default async function AppHomePage({
   }
 
   const userId = context.userId;
-  const [metrics, drilldownRows, insights, recentInvoices, recentQuotations, analyticsData] = await Promise.all([
+  const [metrics, insights, recentInvoices, recentQuotations, analyticsData] = await Promise.all([
     getDashboardMetrics(userId, currentRange),
-    getDashboardDrilldown(userId, currentMetric, currentRange),
     getDashboardInsights(userId, currentRange),
     getDashboardRecentInvoices(userId, currentRange),
     getDashboardRecentQuotations(userId, currentRange),
@@ -120,7 +78,6 @@ export default async function AppHomePage({
 
   const today = new Date().toISOString().split("T")[0];
   const revenueTrend = buildRevenueTrend(analyticsData.rows, analyticsData.payments, today);
-  const agingBuckets = buildAgingBuckets(analyticsData.rows, today);
   const momDeltas = buildMomDeltas(analyticsData.rows, currentRange, today);
   const hasChartData = analyticsData.rows.some((r) => r.status !== "draft");
 
@@ -133,8 +90,6 @@ export default async function AppHomePage({
     : hasData
       ? "Billing, receivables, and follow-up at a glance."
       : "Workspace is ready. Create your first invoice to start tracking.";
-  const drilldownCopy = dashboardMetricCopy[currentMetric];
-  const emphasizeCollectionRate = currentMetric === "collection-rate";
 
   return (
     <div className="grid gap-[var(--space-section)]">
@@ -143,7 +98,7 @@ export default async function AppHomePage({
         description={pageDescription}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <DashboardRangeToggle currentRange={currentRange} currentMetric={currentMetric} />
+            <DashboardRangeToggle currentRange={currentRange} />
             <ExportDataButton href={`/api/export/dashboard?range=${currentRange}`} />
             <Button asChild variant="accent">
               <Link href={"/app/invoices/new" as Route}>
@@ -160,27 +115,18 @@ export default async function AppHomePage({
         <MetricCard
           label="Total billed"
           value={formatMetricValue(metrics.totalBilled, currency)}
-          interactive
-          active={currentMetric === "total-billed"}
-          href={buildDashboardHref("total-billed", currentRange)}
           currency={currency}
           momBadge={momDeltas.totalBilled !== null ? { delta: momDeltas.totalBilled, unit: "percent" } : undefined}
         />
         <MetricCard
           label="Collected"
           value={formatMetricValue(metrics.totalCollected, currency)}
-          interactive
-          active={currentMetric === "collected"}
-          href={buildDashboardHref("collected", currentRange)}
           currency={currency}
           momBadge={momDeltas.totalCollected !== null ? { delta: momDeltas.totalCollected, unit: "percent" } : undefined}
         />
         <MetricCard
           label="Outstanding"
           value={formatMetricValue(metrics.outstanding, currency)}
-          interactive
-          active={currentMetric === "outstanding"}
-          href={buildDashboardHref("outstanding", currentRange)}
           currency={currency}
           momBadge={momDeltas.outstanding !== null ? { delta: momDeltas.outstanding, unit: "percent" } : undefined}
         />
@@ -188,9 +134,6 @@ export default async function AppHomePage({
           label="Collection rate"
           value={metrics.collectionRate !== null ? `${metrics.collectionRate}%` : "—"}
           accent={metrics.collectionRate === 100}
-          interactive
-          active={currentMetric === "collection-rate"}
-          href={buildDashboardHref("collection-rate", currentRange)}
           currency={currency}
           momBadge={momDeltas.collectionRate !== null ? { delta: momDeltas.collectionRate, unit: "pp" } : undefined}
         />
@@ -213,8 +156,8 @@ export default async function AppHomePage({
         ))}
       </div>
 
-      {/* Analytics row */}
-      <div className="grid gap-[var(--space-grid)] md:grid-cols-[3fr_2fr]">
+      {/* Revenue and automated action center */}
+      <div className="grid gap-[var(--space-grid)] xl:grid-cols-[1.2fr_0.8fr]">
         <Card>
           <CardHeader>
             <CardTitle>Revenue trend</CardTitle>
@@ -230,173 +173,50 @@ export default async function AppHomePage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Receivables aging</CardTitle>
-            <CardDescription>Outstanding amounts by how overdue they are.</CardDescription>
+            <CardTitle>Action center</CardTitle>
+            <CardDescription>Live priorities calculated from your invoices and quotations.</CardDescription>
           </CardHeader>
-          <CardContent className="min-h-[240px] md:min-h-[280px]">
-            <AgingChartCard
-              buckets={agingBuckets}
-              currency={currency}
-              hasChartData={hasChartData}
-            />
+          <CardContent className="grid gap-3">
+            {[
+              {
+                icon: CircleAlert,
+                title: "Open receivables",
+                description: metrics.outstanding > 0
+                  ? `${formatCurrency(metrics.outstanding, currency)} currently waiting for collection.`
+                  : "No money is currently waiting for collection.",
+                href: "/app/invoices?view=table&status=open" as Route,
+                action: "Review invoices",
+              },
+              {
+                icon: FileClock,
+                title: "Quotes awaiting a reply",
+                description: insights.quotationPipeline.count > 0
+                  ? `${insights.quotationPipeline.count} quote${insights.quotationPipeline.count === 1 ? "" : "s"} worth ${formatCurrency(insights.quotationPipeline.total, currency)} await a decision${insights.quotationPipeline.expiresSoonCount > 0 ? ` · ${insights.quotationPipeline.expiresSoonCount} expiring soon` : ""}.`
+                  : "No quotations are waiting for a client decision.",
+                href: "/app/quotations?view=table&status=sent" as Route,
+                action: "Review quotations",
+              },
+            ].map(({ icon: Icon, title, description, href, action }) => (
+              <Link
+                key={title}
+                href={href}
+                className="group rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] p-4 transition hover:border-border-brand hover:bg-[#FFF4E3]"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-accent-strong shadow-[0_4px_14px_rgba(202,138,4,0.12)]">
+                    <Icon className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{title}</p>
+                    <p className="mt-1 text-sm leading-6 text-muted-strong">{description}</p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-accent-strong group-hover:text-foreground">{action}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </CardContent>
         </Card>
       </div>
-
-      {/* Drilldown */}
-      <Card>
-        <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle>{drilldownCopy.title}</CardTitle>
-            <CardDescription>{drilldownCopy.description}</CardDescription>
-          </div>
-          <Button asChild size="sm" variant="secondary">
-            <Link href={drilldownCopy.fullPageHref}>
-              View all
-              <ArrowUpRight className="size-4" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {drilldownRows.length === 0 ? (
-            <EmptyState
-              title="No matching invoices in this view."
-              description="Switch the range or select another metric to inspect a different slice of the pipeline."
-            />
-          ) : (
-            <>
-            {/* Mobile card list */}
-            <div className="grid gap-2 xl:hidden">
-              {drilldownRows.map((row) => (
-                <Link
-                  key={row.id}
-                  href={`/app/invoices/${row.slug}` as Route}
-                  className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] px-4 py-4 transition hover:border-[#D7C4A7] hover:bg-[#FFF4E3]"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-foreground">
-                        {row.invoiceNumber}
-                      </p>
-                      <p className="mt-1 truncate text-sm text-muted-strong">
-                        {row.client.name}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">
-                        {formatCurrency(row.total, row.currency)}
-                      </span>
-                      <DocumentStatusBadge status={row.status} />
-                    </div>
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-                    <span>Due {formatDateDisplay(row.dueDate)}</span>
-                    {emphasizeCollectionRate ? (
-                      <>
-                        <span className="font-semibold text-[#6B4A0D]">
-                          Collected {formatCurrency(row.collectedAmount, row.currency)}
-                        </span>
-                        <span className="font-semibold text-[#8D3D2E]">
-                          Owed {formatCurrency(row.outstandingAmount, row.currency)}
-                        </span>
-                      </>
-                    ) : (
-                      <span>Outstanding {formatCurrency(row.outstandingAmount, row.currency)}</span>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Desktop table */}
-            <div className="hidden overflow-x-auto rounded-[var(--radius-card)] border border-black/7 xl:block">
-              <table className="min-w-full border-collapse text-sm">
-                <thead>
-                  <tr className="bg-[#FFF7EA]">
-                    {[
-                      "Invoice",
-                      "Client",
-                      "Status",
-                      "Issued",
-                      "Due",
-                      "Billed",
-                      "Collected",
-                      "Outstanding",
-                      "Profit",
-                    ].map((label) => (
-                      <th
-                        key={label}
-                        className="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted"
-                      >
-                        {label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {drilldownRows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-t border-black/5 bg-[#FFF8EE] transition hover:bg-[#FFF4E3]"
-                    >
-                      <td className="px-3 py-2.5">
-                        <Link
-                          href={`/app/invoices/${row.slug}` as Route}
-                          className="font-semibold text-foreground hover:text-[#8A5E12]"
-                        >
-                          {row.invoiceNumber}
-                        </Link>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div>
-                          <p className="font-medium text-foreground">{row.client.name}</p>
-                          {row.client.company ? (
-                            <p className="text-xs text-muted">{row.client.company}</p>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <DocumentStatusBadge status={row.status} />
-                      </td>
-                      <td className="px-3 py-2.5 text-muted-strong">
-                        {formatDateDisplay(row.issueDate)}
-                      </td>
-                      <td className="px-3 py-2.5 text-muted-strong">
-                        {formatDateDisplay(row.dueDate)}
-                      </td>
-                      <td className="px-3 py-2.5 font-medium text-foreground">
-                        {formatCurrency(row.total, row.currency)}
-                      </td>
-                      <td
-                        className={
-                          emphasizeCollectionRate
-                            ? "px-3 py-2.5 font-semibold text-[#6B4A0D]"
-                            : "px-3 py-2.5 text-muted-strong"
-                        }
-                      >
-                        {formatCurrency(row.collectedAmount, row.currency)}
-                      </td>
-                      <td
-                        className={
-                          emphasizeCollectionRate
-                            ? "px-3 py-2.5 font-semibold text-[#8D3D2E]"
-                            : "px-3 py-2.5 text-muted-strong"
-                        }
-                      >
-                        {formatCurrency(row.outstandingAmount, row.currency)}
-                      </td>
-                      <td className="px-3 py-2.5 text-muted-strong">
-                        {formatCurrency(row.profitAmount, row.currency)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Needs attention */}
       <div>

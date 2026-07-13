@@ -7,19 +7,27 @@ import type { ReactNode } from "react";
 import {
   DndContext,
   DragOverlay,
+  closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
+  type DragCancelEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DraggableCard } from "./draggable-card";
 import { DroppableColumn } from "./droppable-column";
+import {
+  applyKanbanStatusChange,
+  createKanbanUndo,
+  type KanbanUndo,
+} from "./kanban-state";
 import type { DataViewConfig } from "./types";
 
-export function KanbanView<TItem, TStatus extends string>({
+export function KanbanView<TItem extends { id: string; status: TStatus }, TStatus extends string>({
   items: initialItems,
   config,
   emptyState,
@@ -32,13 +40,22 @@ export function KanbanView<TItem, TStatus extends string>({
 }) {
   const [items, setItems] = useState(initialItems);
   const [activeItem, setActiveItem] = useState<TItem | null>(null);
+  const [lastUndo, setLastUndo] = useState<KanbanUndo<TStatus> | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [activeColIndex, setActiveColIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const columnRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const confirmedItemsRef = useRef(initialItems);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
+
+  useEffect(() => {
+    confirmedItemsRef.current = initialItems;
+    setItems(initialItems);
+    setLastUndo(null);
+  }, [initialItems]);
 
   // Track active column via IntersectionObserver for dot indicators
   useEffect(() => {
@@ -72,34 +89,69 @@ export function KanbanView<TItem, TStatus extends string>({
     [items, config],
   );
 
-  const handleDragEnd = useCallback(
-    async (event: DragEndEvent) => {
-      setActiveItem(null);
-      const { active, over } = event;
-      if (!over) return;
+  const persistStatusChange = useCallback(
+    async (change: KanbanUndo<TStatus>, direction: "forward" | "undo") => {
+      const nextStatus = direction === "forward" ? change.to : change.from;
+      const previousItems = confirmedItemsRef.current;
 
-      const itemId = active.id as string;
-      const newStatus = over.id as TStatus;
-      const item = items.find((i) => config.getId(i) === itemId);
-      if (!item || config.getStatus(item) === newStatus) return;
+      setIsUpdating(true);
+      setItems((current) => applyKanbanStatusChange(current, change.id, nextStatus));
 
-      setItems((prev) =>
-        prev.map((i) => {
-          if (config.getId(i) !== itemId) return i;
-          return { ...i, status: newStatus };
-        }),
-      );
-
-      if (onStatusChange) {
-        try {
-          await onStatusChange(itemId, newStatus);
-        } catch {
-          setItems(initialItems);
-        }
+      try {
+        await onStatusChange?.(change.id, nextStatus);
+        confirmedItemsRef.current = applyKanbanStatusChange(previousItems, change.id, nextStatus);
+        setLastUndo(direction === "forward" ? change : null);
+      } catch {
+        setItems(previousItems);
+      } finally {
+        setIsUpdating(false);
       }
     },
-    [items, config, onStatusChange, initialItems],
+    [onStatusChange],
   );
+
+  const handleUndo = useCallback(() => {
+    if (!lastUndo || isUpdating) return;
+    void persistStatusChange(lastUndo, "undo");
+  }, [isUpdating, lastUndo, persistStatusChange]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const isUndoShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z";
+      const target = event.target as HTMLElement | null;
+      const isEditing = Boolean(target?.closest("input, textarea, [contenteditable='true']"));
+
+      if (!isUndoShortcut || event.shiftKey || isEditing || !lastUndo || isUpdating) return;
+
+      event.preventDefault();
+      handleUndo();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleUndo, isUpdating, lastUndo]);
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setActiveItem(null);
+      if (isUpdating) return;
+
+      const { active, over } = event;
+      const itemId = active.id as string;
+      const newStatus = config.kanbanColumns.find((column) => column.status === over?.id)?.status;
+      if (!newStatus) return;
+
+      const change = createKanbanUndo(items, itemId, newStatus);
+      if (!change) return;
+
+      void persistStatusChange(change, "forward");
+    },
+    [config.kanbanColumns, isUpdating, items, persistStatusChange],
+  );
+
+  const handleDragCancel = useCallback((_event: DragCancelEvent) => {
+    setActiveItem(null);
+  }, []);
 
   if (items.length === 0) {
     return <div className="py-4">{emptyState}</div>;
@@ -118,8 +170,10 @@ export function KanbanView<TItem, TStatus extends string>({
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
       <div
         ref={scrollRef}
@@ -129,47 +183,50 @@ export function KanbanView<TItem, TStatus extends string>({
           {config.kanbanColumns.map((col, colIdx) => {
             const colItems = grouped.get(col.status) ?? [];
             return (
-              <DroppableColumn key={col.status} id={col.status}>
-                <div
-                  ref={(el) => { columnRefs.current[colIdx] = el; }}
-                  className="w-[min(280px,85vw)] shrink-0 snap-start flex flex-col gap-2"
-                >
-                  {/* Column header */}
-                  <div className="flex items-center justify-between px-1 py-1.5">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="size-2.5 rounded-full shrink-0"
-                        style={{ background: col.color ?? "#d4c5a9" }}
-                      />
-                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-strong">
-                        {col.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium text-muted tabular-nums">
-                        {colItems.length}
-                      </span>
-                      {config.getAddUrl ? (
-                        <Link
-                          href={config.getAddUrl(col.status) as Route}
-                          aria-label={`Add new item to ${col.label}`}
-                          className="flex size-5 items-center justify-center rounded-md text-muted/60 transition-colors hover:bg-black/5 hover:text-foreground"
-                        >
-                          <Plus className="size-3.5" />
-                        </Link>
-                      ) : null}
-                    </div>
+              <div
+                key={col.status}
+                ref={(el) => { columnRefs.current[colIdx] = el; }}
+                className="w-[min(280px,85vw)] shrink-0 snap-start flex flex-col gap-2"
+              >
+                {/* Column header */}
+                <div className="flex items-center justify-between px-1 py-1.5">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="size-2.5 rounded-full shrink-0"
+                      style={{ background: col.color ?? "#d4c5a9" }}
+                    />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-strong">
+                      {col.label}
+                    </span>
                   </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-medium text-muted tabular-nums">
+                      {colItems.length}
+                    </span>
+                    {config.getAddUrl ? (
+                      <Link
+                        href={config.getAddUrl(col.status) as Route}
+                        aria-label={`Add new item to ${col.label}`}
+                        className="flex size-5 items-center justify-center rounded-md text-muted/60 transition-colors hover:bg-black/5 hover:text-foreground"
+                      >
+                        <Plus className="size-3.5" />
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
 
-                  {/* Cards container */}
-                  <div className="min-h-[120px] rounded-[1.25rem] border border-black/5 bg-black/[0.02] p-2 flex flex-col gap-2">
+                <DroppableColumn id={col.status}>
                     {colItems.length === 0 ? (
                       <div className="flex flex-1 items-center justify-center">
                         <p className="text-xs text-muted">No items</p>
                       </div>
                     ) : (
                       colItems.map((item) => (
-                        <DraggableCard key={config.getId(item)} id={config.getId(item)}>
+                        <DraggableCard
+                          key={config.getId(item)}
+                          id={config.getId(item)}
+                          disabled={isUpdating}
+                        >
                           <Link
                             href={config.getHref(item) as Route}
                             className="block cursor-pointer rounded-[1rem] border border-black/7 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:border-border-brand hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
@@ -182,13 +239,24 @@ export function KanbanView<TItem, TStatus extends string>({
                         </DraggableCard>
                       ))
                     )}
-                  </div>
-                </div>
-              </DroppableColumn>
+                </DroppableColumn>
+              </div>
             );
           })}
         </div>
       </div>
+
+      {lastUndo ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-inner)] border border-border-brand bg-surface-subtle px-4 py-3">
+          <p className="text-sm text-muted-strong">
+            Moved card to {config.kanbanColumns.find((column) => column.status === lastUndo.to)?.label ?? "a new column"}.
+            <span className="ml-2 font-medium text-foreground">Press ⌘/Ctrl + Z to undo.</span>
+          </p>
+          <Button type="button" size="sm" variant="secondary" onClick={handleUndo} disabled={isUpdating}>
+            Undo move
+          </Button>
+        </div>
+      ) : null}
 
       {/* Dot indicators — mobile only */}
       {config.kanbanColumns.length > 1 && (
@@ -222,9 +290,9 @@ export function KanbanView<TItem, TStatus extends string>({
       )}
 
       {/* Drag overlay */}
-      <DragOverlay dropAnimation={null}>
+      <DragOverlay adjustScale={false} dropAnimation={null}>
         {activeItem ? (
-          <div className="rounded-[1rem] border border-[#D7C4A7] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.12)] opacity-90 rotate-[2deg] w-[240px]">
+          <div className="pointer-events-none w-[min(280px,85vw)] rounded-[1rem] border border-[#D7C4A7] bg-white px-4 py-3 shadow-[0_14px_32px_rgba(0,0,0,0.16)] opacity-95 -rotate-1">
             {config.renderKanbanCard(activeItem)}
           </div>
         ) : null}

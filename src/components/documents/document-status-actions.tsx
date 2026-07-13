@@ -104,13 +104,13 @@ export function DocumentStatusActions({
     }
 
     return (
-      <div className={hideDelete ? "grid gap-3" : "grid gap-3 sm:grid-cols-2"}>
+      <div className="flex flex-wrap items-center gap-3">
         {status === "draft" && (
           <Button
             onClick={() => handleSetInvoiceStatus("sent")}
             disabled={isPending}
             variant="accent"
-            className="w-full"
+            className="min-w-[11rem]"
           >
             <Send className="size-4" />
             {isPending ? "Sending..." : "Mark as sent"}
@@ -122,7 +122,7 @@ export function DocumentStatusActions({
             onClick={handleDeleteInvoice}
             disabled={isPending}
             variant="danger"
-            className="w-full"
+            className="min-w-[11rem]"
           >
             <Trash2 className="size-4" />
             {isPending ? "Deleting..." : "Delete invoice"}
@@ -133,13 +133,13 @@ export function DocumentStatusActions({
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="flex flex-wrap items-center gap-3">
       {status === "draft" && (
         <Button
           onClick={() => handleSetQuotationStatus("sent")}
           disabled={isPending}
           variant="accent"
-          className="w-full"
+          className="min-w-[11rem]"
         >
           <Send className="size-4" />
           {isPending ? "Sending..." : "Mark as sent"}
@@ -151,7 +151,7 @@ export function DocumentStatusActions({
           onClick={() => handleSetQuotationStatus("accepted")}
           disabled={isPending}
           variant="secondary"
-          className="w-full"
+          className="min-w-[11rem]"
         >
           {isPending ? "Processing..." : "Mark as accepted"}
         </Button>
@@ -162,7 +162,7 @@ export function DocumentStatusActions({
           onClick={() => handleSetQuotationStatus("rejected")}
           disabled={isPending}
           variant="secondary"
-          className="w-full"
+          className="min-w-[11rem]"
         >
           {isPending ? "Processing..." : "Mark as rejected"}
         </Button>
@@ -173,14 +173,14 @@ export function DocumentStatusActions({
           onClick={handleConvertQuotation}
           disabled={isPending}
           variant="accent"
-          className="w-full"
+          className="min-w-[11rem]"
         >
           <ArrowRight className="size-4" />
           {isPending ? "Converting..." : "Convert to invoice"}
         </Button>
       )}
 
-      <div className="grid gap-2 sm:col-span-2">
+      <div className="contents">
         {isConfirmingDelete ? (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-foreground">Confirm delete?</span>
@@ -205,7 +205,7 @@ export function DocumentStatusActions({
             }}
             disabled={isPending}
             variant="danger"
-            className="w-full"
+            className="min-w-[11rem]"
           >
             <Trash2 className="size-4" />
             Delete quotation

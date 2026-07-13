@@ -14,7 +14,6 @@ interface ClientEditButtonProps {
 
 export function ClientEditButton({ client }: ClientEditButtonProps) {
   const [open, setOpen] = useState(false);
-  const archiveWithId = archiveClientAction.bind(null, client.id);
 
   return (
     <>
@@ -30,14 +29,34 @@ export function ClientEditButton({ client }: ClientEditButtonProps) {
             description="Changes here update the shared client record that invoices and quotations point at."
           />
           <ClientForm action={updateClientAction} submitLabel="Update client" initialValue={client} />
-          <form action={archiveWithId} className="mt-4">
-            <Button type="submit" variant="danger" size="sm">
-              <Trash2 className="size-4" />
-              Archive client
-            </Button>
-          </form>
         </MobileSheetContent>
       </MobileSheet>
     </>
+  );
+}
+
+export function ClientDeleteButton({
+  clientId,
+  clientName,
+}: {
+  clientId: string;
+  clientName: string;
+}) {
+  const archiveWithId = archiveClientAction.bind(null, clientId);
+
+  return (
+    <form
+      action={archiveWithId}
+      onSubmit={(event) => {
+        if (!window.confirm(`Delete ${clientName}? Existing invoices and quotations will be kept.`)) {
+          event.preventDefault();
+        }
+      }}
+    >
+      <Button type="submit" variant="danger">
+        <Trash2 className="size-4" />
+        Delete client
+      </Button>
+    </form>
   );
 }

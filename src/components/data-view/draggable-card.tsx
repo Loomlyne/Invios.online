@@ -7,12 +7,15 @@ import { cn } from "@/lib/utils";
 export function DraggableCard({
   id,
   children,
+  disabled = false,
 }: {
   id: string;
   children: ReactNode;
+  disabled?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id,
+    disabled,
   });
 
   return (
@@ -21,8 +24,9 @@ export function DraggableCard({
       {...listeners}
       {...attributes}
       className={cn(
-        "touch-none",
+        "touch-none select-none cursor-grab active:cursor-grabbing",
         isDragging && "opacity-30",
+        disabled && "cursor-wait",
       )}
     >
       {children}

@@ -32,7 +32,7 @@ export function DataViewRenderer({
   view,
   emptyState,
 }: {
-  items: unknown[];
+  items: Array<{ id: string; status: string }>;
   configKey: ConfigKey;
   view: ViewMode;
   emptyState: ReactNode;

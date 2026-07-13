@@ -357,6 +357,31 @@ describe("dashboard selectors", () => {
     expect(insights.topClients[0]?.clientId).toBe("client-2");
     expect(insights.recentActivity[0]?.kind).toBe("payment");
   });
+
+  it("summarises the pending quotation pipeline without being limited by the visible queue", () => {
+    const rows = buildDashboardInvoiceRows({
+      invoices,
+      payments,
+      expenses,
+      range: "30d",
+      today: "2026-04-08",
+    });
+
+    const insights = buildDashboardInsights({
+      rows,
+      quotations,
+      payments,
+      expenses,
+      range: "30d",
+      today: "2026-04-08",
+    });
+
+    expect(insights.quotationPipeline).toEqual({
+      count: 1,
+      total: 1260,
+      expiresSoonCount: 1,
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------

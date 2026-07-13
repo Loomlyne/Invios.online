@@ -52,6 +52,12 @@ export interface DashboardAnalytics {
   averageInvoice: number;
 }
 
+export interface DashboardQuotationPipeline {
+  count: number;
+  total: number;
+  expiresSoonCount: number;
+}
+
 export interface DashboardActivityItem {
   id: string;
   kind: "invoice" | "quotation" | "payment" | "expense";
@@ -67,6 +73,7 @@ export interface DashboardInsights {
   analytics: DashboardAnalytics;
   followUpQueue: DashboardInvoiceRow[];
   pendingQuotations: DashboardQuotationRow[];
+  quotationPipeline: DashboardQuotationPipeline;
   topClients: DashboardClientInsight[];
   recentActivity: DashboardActivityItem[];
 }
@@ -262,7 +269,7 @@ export function buildDashboardInsights(params: {
     })
     .slice(0, 6);
 
-  const pendingQuotations = quotations
+  const pendingQuotationPipeline = quotations
     .filter((quotation) => quotation.status === "sent")
     .filter(
       (quotation) =>
@@ -277,7 +284,13 @@ export function buildDashboardInsights(params: {
         daysToExpiry,
         expiresSoon: daysToExpiry !== null && daysToExpiry <= 7,
       };
-    })
+    });
+  const quotationPipeline = {
+    count: pendingQuotationPipeline.length,
+    total: sum(pendingQuotationPipeline.map((quotation) => quotation.total)),
+    expiresSoonCount: pendingQuotationPipeline.filter((quotation) => quotation.expiresSoon).length,
+  };
+  const pendingQuotations = [...pendingQuotationPipeline]
     .sort((a, b) => {
       const aDays = a.daysToExpiry ?? Number.MAX_SAFE_INTEGER;
       const bDays = b.daysToExpiry ?? Number.MAX_SAFE_INTEGER;
@@ -398,6 +411,7 @@ export function buildDashboardInsights(params: {
     },
     followUpQueue,
     pendingQuotations,
+    quotationPipeline,
     topClients,
     recentActivity,
   };
