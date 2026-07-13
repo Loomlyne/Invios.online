@@ -5,6 +5,7 @@ import {
   computeDocumentTotals,
   computePaymentStatus,
   computeProfit,
+  createLineItem,
   formatDocumentNumber,
   formatTrnDisplay,
   getArabicDescription,
@@ -437,5 +438,148 @@ describe("getArabicDescription", () => {
     expect(
       getArabicDescription({ description: "Web Design" }),
     ).toBe("Web Design");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeDocumentTotals — discount + tax + multi-line edge cases (Slice 5)
+// ---------------------------------------------------------------------------
+
+describe("computeDocumentTotals discount + tax edge cases", () => {
+  it("returns all zeros for an empty line items array", () => {
+    const totals = computeDocumentTotals([], 5, 10);
+    expect(totals).toEqual({ subtotal: 0, discountAmount: 0, taxAmount: 0, total: 0 });
+  });
+
+  it("applies zero discount when discount rate is 0%", () => {
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 2, unitPrice: 100, total: 0 },
+      ]),
+      5,
+      0,
+    );
+    expect(totals.discountAmount).toBe(0);
+    expect(totals.subtotal).toBe(200);
+    expect(totals.taxAmount).toBe(10);
+    expect(totals.total).toBe(210);
+  });
+
+  it("zeroes the taxable base at 100% discount (tax computed on 0)", () => {
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 500, total: 0 },
+      ]),
+      5,
+      100,
+    );
+    expect(totals.subtotal).toBe(500);
+    expect(totals.discountAmount).toBe(500);
+    expect(totals.taxAmount).toBe(0);
+    expect(totals.total).toBe(0);
+  });
+
+  it("computes zero tax for a tax-exempt invoice (0% tax rate)", () => {
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 3, unitPrice: 200, total: 0 },
+      ]),
+      0,
+      0,
+    );
+    expect(totals.subtotal).toBe(600);
+    expect(totals.taxAmount).toBe(0);
+    expect(totals.total).toBe(600);
+  });
+
+  it("combines 3 multi-line items with global discount + tax", () => {
+    // Lines: (2×100=200), (1×50=50), (5×10=50) → subtotal 300
+    // 10% discount → 30 off → taxable 270; 5% tax → 13.50 → total 283.50
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "Design", notes: "", arabicDescription: "", quantity: 2, unitPrice: 100, total: 0 },
+        { id: "2", description: "Dev", notes: "", arabicDescription: "", quantity: 1, unitPrice: 50, total: 0 },
+        { id: "3", description: "Hosting", notes: "", arabicDescription: "", quantity: 5, unitPrice: 10, total: 0 },
+      ]),
+      5,
+      10,
+    );
+    expect(totals.subtotal).toBe(300);
+    expect(totals.discountAmount).toBe(30);
+    expect(totals.taxAmount).toBe(13.5);
+    expect(totals.total).toBe(283.5);
+  });
+
+  it("never produces a negative taxable base (clamped at 0)", () => {
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 100, total: 0 },
+      ]),
+      20,
+      100,
+    );
+    expect(totals.taxAmount).toBe(0);
+    expect(totals.total).toBe(0);
+  });
+
+  it("discount and tax compound correctly on a high-value multi-line invoice", () => {
+    // subtotal 10000; 15% discount → 1500 off → taxable 8500; 5% tax → 425 → total 8925
+    const totals = computeDocumentTotals(
+      normalizeLineItems([
+        { id: "1", description: "License", notes: "", arabicDescription: "", quantity: 10, unitPrice: 500, total: 0 },
+        { id: "2", description: "Setup", notes: "", arabicDescription: "", quantity: 1, unitPrice: 5000, total: 0 },
+      ]),
+      5,
+      15,
+    );
+    expect(totals.subtotal).toBe(10000);
+    expect(totals.discountAmount).toBe(1500);
+    expect(totals.taxAmount).toBe(425);
+    expect(totals.total).toBe(8925);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// normalizeLineItems + createLineItem (Slice 5)
+// ---------------------------------------------------------------------------
+
+describe("normalizeLineItems", () => {
+  it("recomputes total from quantity × unitPrice for each line", () => {
+    const items = normalizeLineItems([
+      { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 3, unitPrice: 33.33, total: 999 },
+      { id: "2", description: "B", notes: "", arabicDescription: "", quantity: 2, unitPrice: 10, total: 999 },
+    ]);
+    expect(items[0].total).toBe(99.99);
+    expect(items[1].total).toBe(20);
+  });
+
+  it("handles fractional unit prices with rounding", () => {
+    const items = normalizeLineItems([
+      { id: "1", description: "A", notes: "", arabicDescription: "", quantity: 1, unitPrice: 0.335, total: 0 },
+    ]);
+    expect(items[0].total).toBe(0.34);
+  });
+});
+
+describe("createLineItem", () => {
+  it("generates an id and computes total when no overrides given", () => {
+    const item = createLineItem({ description: "Test", quantity: 4, unitPrice: 25 });
+    expect(item.id).toBeTruthy();
+    expect(item.description).toBe("Test");
+    expect(item.total).toBe(100);
+    expect(item.notes).toBe("");
+    expect(item.arabicDescription).toBe("");
+  });
+
+  it("preserves provided total override", () => {
+    const item = createLineItem({ description: "Fixed", quantity: 1, unitPrice: 0, total: 42 });
+    expect(item.total).toBe(42);
+  });
+
+  it("defaults quantity to 1 and unitPrice to 0", () => {
+    const item = createLineItem({ description: "Blank" });
+    expect(item.quantity).toBe(1);
+    expect(item.unitPrice).toBe(0);
+    expect(item.total).toBe(0);
   });
 });
