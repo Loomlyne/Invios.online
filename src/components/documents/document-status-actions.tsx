@@ -133,57 +133,59 @@ export function DocumentStatusActions({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      {status === "draft" && (
-        <Button
-          onClick={() => handleSetQuotationStatus("sent")}
-          disabled={isPending}
-          variant="accent"
-          className="min-w-[11rem]"
-        >
-          <Send className="size-4" />
-          {isPending ? "Sending..." : "Mark as sent"}
-        </Button>
-      )}
+    <div className="grid gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        {status === "draft" && (
+          <Button
+            onClick={() => handleSetQuotationStatus("sent")}
+            disabled={isPending}
+            variant="accent"
+            className="w-full sm:min-w-[11rem] sm:w-auto"
+          >
+            <Send className="size-4" />
+            {isPending ? "Sending..." : "Mark as sent"}
+          </Button>
+        )}
 
-      {status === "sent" && (
-        <Button
-          onClick={() => handleSetQuotationStatus("accepted")}
-          disabled={isPending}
-          variant="secondary"
-          className="min-w-[11rem]"
-        >
-          {isPending ? "Processing..." : "Mark as accepted"}
-        </Button>
-      )}
+        {status === "sent" && (
+          <Button
+            onClick={() => handleSetQuotationStatus("accepted")}
+            disabled={isPending}
+            variant="accent"
+            className="w-full sm:min-w-[11rem] sm:w-auto"
+          >
+            {isPending ? "Processing..." : "Mark as accepted"}
+          </Button>
+        )}
 
-      {status === "sent" && (
-        <Button
-          onClick={() => handleSetQuotationStatus("rejected")}
-          disabled={isPending}
-          variant="secondary"
-          className="min-w-[11rem]"
-        >
-          {isPending ? "Processing..." : "Mark as rejected"}
-        </Button>
-      )}
+        {status === "sent" && (
+          <Button
+            onClick={() => handleSetQuotationStatus("rejected")}
+            disabled={isPending}
+            variant="secondary"
+            className="w-full sm:min-w-[11rem] sm:w-auto"
+          >
+            {isPending ? "Processing..." : "Mark as rejected"}
+          </Button>
+        )}
 
-      {status === "accepted" && convertedToInvoiceId === null && (
-        <Button
-          onClick={handleConvertQuotation}
-          disabled={isPending}
-          variant="accent"
-          className="min-w-[11rem]"
-        >
-          <ArrowRight className="size-4" />
-          {isPending ? "Converting..." : "Convert to invoice"}
-        </Button>
-      )}
+        {status === "accepted" && convertedToInvoiceId === null && (
+          <Button
+            onClick={handleConvertQuotation}
+            disabled={isPending}
+            variant="accent"
+            className="w-full sm:min-w-[11rem] sm:w-auto"
+          >
+            <ArrowRight className="size-4" />
+            {isPending ? "Converting..." : "Convert to invoice"}
+          </Button>
+        )}
+      </div>
 
-      <div className="contents">
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
         {isConfirmingDelete ? (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-foreground">Confirm delete?</span>
+            <span className="basis-full text-sm font-medium text-foreground">Delete this quotation permanently?</span>
             <Button onClick={handleDeleteQuotation} disabled={isPending} variant="danger" size="sm">
               <Trash2 className="size-4" />
               {isPending ? "Deleting..." : "Confirm"}
@@ -204,8 +206,9 @@ export function DocumentStatusActions({
               setIsConfirmingDelete(true);
             }}
             disabled={isPending}
-            variant="danger"
-            className="min-w-[11rem]"
+            variant="secondary"
+            size="sm"
+            className="border-danger/40 text-danger hover:border-danger hover:bg-danger/10"
           >
             <Trash2 className="size-4" />
             Delete quotation

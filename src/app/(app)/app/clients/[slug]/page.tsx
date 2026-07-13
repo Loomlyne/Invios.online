@@ -1,11 +1,10 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { notFound } from "next/navigation";
-import { FileText, Mail, MapPin, Phone, ReceiptText } from "lucide-react";
+import { FileText, Mail, MapPin, MoveLeft, Phone, ReceiptText } from "lucide-react";
 import { DocumentSummaryRow } from "@/components/documents/document-summary-row";
 import { ClientDeleteButton, ClientEditButton } from "@/components/clients/client-edit-sheet";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
-import { PaymentReliabilityBadge } from "@/components/clients/payment-reliability-badge";
 import { ClientIntelligenceCard } from "@/components/clients/client-intelligence-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,8 +31,6 @@ export default async function ClientDetailPage({
     getClientIntelligence(client.id),
   ]);
 
-  const reliability = intelligence?.reliability ?? null;
-
   const billedTotal = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   const quotedTotal = quotations.reduce((sum, quotation) => sum + quotation.total, 0);
   const openInvoiceCount = invoices.filter((invoice) =>
@@ -42,37 +39,53 @@ export default async function ClientDetailPage({
 
   return (
     <div className="grid gap-[var(--space-section)]">
-      <section className="grid gap-[var(--space-grid)] xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.7fr)] xl:items-start">
-        <Card className="overflow-hidden border-black/10 bg-[#17120F] p-0 text-[#FFF9F0]">
+      <Button asChild variant="ghost" className="w-fit">
+        <Link href={"/app/clients" as Route}>
+          <MoveLeft className="size-4" />
+          Back to clients
+        </Link>
+      </Button>
+
+      <section className="grid gap-[var(--space-grid)] 2xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.7fr)] 2xl:items-start">
+        <Card className="overflow-hidden border-border bg-foreground p-0 text-on-dark">
           <div className="bg-[radial-gradient(circle_at_top_left,rgba(202,138,4,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_30%)] px-6 py-7 sm:px-8 lg:px-10 lg:py-9">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge className="border-white/12 bg-white/10 text-[#FFF9F0]">Client workspace</Badge>
+            <div className="flex items-center gap-3">
               <ClientStatusBadge status={client.status} />
-              {reliability && <PaymentReliabilityBadge reliability={reliability} />}
             </div>
 
-            <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)] lg:items-end">
+            <div className="mt-6 grid gap-8 2xl:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)] 2xl:items-end">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#D7C4A7]">Client overview</p>
-                <h1 className="display-text mt-3 font-semibold text-[clamp(2.25rem,1.5rem+2vw,4rem)] leading-none">{client.name}</h1>
-                <p className="mt-4 max-w-xl text-base text-[#E9E0D5]">{client.company || "Independent client"}</p>
+                <h1 className="display-text font-semibold text-[clamp(2.25rem,1.5rem+2vw,4rem)] leading-none">{client.name}</h1>
+                <p className="mt-4 max-w-xl text-base text-on-dark/80">{client.company || "Independent client"}</p>
               </div>
 
-              <div className="grid gap-3 rounded-[var(--radius-inner)] border border-white/12 bg-black/15 p-5 text-sm text-[#E9E0D5]">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D7C4A7]">Billing contact</p>
+              <div className="grid gap-3 rounded-[var(--radius-inner)] border border-white/12 bg-black/15 p-5 text-sm text-on-dark/85">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-on-dark/65">Billing contact</p>
                 <div className="flex min-w-0 items-center gap-2">
-                  <Mail className="size-4 shrink-0 text-[#D7C4A7]" />
-                  <span className="truncate">{client.email || "No email yet"}</span>
+                  <Mail className="size-4 shrink-0 text-on-dark/65" />
+                  {client.email ? (
+                    <a href={`mailto:${client.email}`} className="truncate hover:text-accent">
+                      {client.email}
+                    </a>
+                  ) : (
+                    <span>No email yet</span>
+                  )}
                 </div>
                 <div className="flex min-w-0 items-center gap-2">
-                  <Phone className="size-4 shrink-0 text-[#D7C4A7]" />
-                  <span className="truncate">{client.phone || "No phone yet"}</span>
+                  <Phone className="size-4 shrink-0 text-on-dark/65" />
+                  {client.phone ? (
+                    <a href={`tel:${client.phone}`} className="truncate hover:text-accent">
+                      {client.phone}
+                    </a>
+                  ) : (
+                    <span>No phone yet</span>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="mt-10 border-t border-white/12 pt-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D7C4A7]">Quick actions</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-on-dark/65">Quick actions</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <Button asChild variant="accent" className="w-full justify-between sm:justify-center">
                   <Link href={`/app/quotations/new?clientId=${client.id}` as Route}>
@@ -88,7 +101,7 @@ export default async function ClientDetailPage({
                 </Button>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/12 pt-4">
-                <p className="mr-auto text-xs font-semibold uppercase tracking-[0.18em] text-[#D7C4A7]">Manage record</p>
+                <p className="mr-auto text-xs font-semibold uppercase tracking-[0.18em] text-on-dark/65">Manage record</p>
                 <ClientEditButton client={client} />
                 <ClientDeleteButton clientId={client.id} clientName={client.name} />
               </div>
@@ -112,10 +125,12 @@ export default async function ClientDetailPage({
               </CardHeader>
             </Card>
           )}
-          <div className="grid grid-cols-3 gap-3">
-            <MetricCard label="Invoices" value={String(invoices.length)} detail={formatCurrency(billedTotal)} />
-            <MetricCard label="Open" value={String(openInvoiceCount)} detail="Awaiting payment" />
-            <MetricCard label="Quotes" value={String(quotations.length)} detail={formatCurrency(quotedTotal)} />
+          <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-white/84 subtle-shadow">
+            <div className="grid divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+              <MetricCard label="Invoices" value={String(invoices.length)} detail={formatCurrency(billedTotal)} />
+              <MetricCard label="Open invoices" value={String(openInvoiceCount)} detail="Awaiting payment" />
+              <MetricCard label="Quotations" value={String(quotations.length)} detail={formatCurrency(quotedTotal)} />
+            </div>
           </div>
         </div>
       </section>
@@ -129,20 +144,37 @@ export default async function ClientDetailPage({
           <CardDescription>Client since {formatDateDisplay(client.createdAt)}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] p-4">
+          <div className="rounded-[var(--radius-inner)] border border-border bg-surface-subtle p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Company</p>
-            <p className="mt-2 text-sm font-semibold text-foreground">{client.company || "Independent client"}</p>
+            <p className="mt-2 break-words text-sm font-semibold text-foreground">{client.company || "Independent client"}</p>
           </div>
-          <div className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] p-4">
+          <div className="rounded-[var(--radius-inner)] border border-border bg-surface-subtle p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Primary contact</p>
             <div className="mt-2 grid gap-1.5 text-sm text-muted-strong">
-              <span className="flex min-w-0 items-center gap-2"><Mail className="size-4 shrink-0" />{client.email || "No email yet"}</span>
-              <span className="flex min-w-0 items-center gap-2"><Phone className="size-4 shrink-0" />{client.phone || "No phone yet"}</span>
+              {client.email ? (
+                <a href={`mailto:${client.email}`} className="flex min-w-0 items-center gap-2 break-words hover:text-accent-strong">
+                  <Mail className="size-4 shrink-0" />
+                  <span className="min-w-0 break-words">{client.email}</span>
+                </a>
+              ) : (
+                <span className="flex min-w-0 items-center gap-2"><Mail className="size-4 shrink-0" />No email yet</span>
+              )}
+              {client.phone ? (
+                <a href={`tel:${client.phone}`} className="flex min-w-0 items-center gap-2 break-words hover:text-accent-strong">
+                  <Phone className="size-4 shrink-0" />
+                  <span className="min-w-0 break-words">{client.phone}</span>
+                </a>
+              ) : (
+                <span className="flex min-w-0 items-center gap-2"><Phone className="size-4 shrink-0" />No phone yet</span>
+              )}
             </div>
           </div>
-          <div className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] p-4">
+          <div className="rounded-[var(--radius-inner)] border border-border bg-surface-subtle p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Billing address</p>
-            <p className="mt-2 flex items-start gap-2 text-sm text-muted-strong"><MapPin className="mt-0.5 size-4 shrink-0" />{client.address || "No billing address recorded"}</p>
+            <p className="mt-2 flex min-w-0 items-start gap-2 text-sm text-muted-strong">
+              <MapPin className="mt-0.5 size-4 shrink-0" />
+              <span className="min-w-0 break-words">{client.address || "No billing address recorded"}</span>
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -216,13 +248,11 @@ function MetricCard({
   detail: string;
 }) {
   return (
-    <Card className="overflow-hidden p-0">
-      <CardHeader className="gap-1 p-4 pb-0">
-        <CardDescription>{label}</CardDescription>
-        <CardTitle className="truncate text-xl">{value}</CardTitle>
-      </CardHeader>
-      <CardContent className="mt-4 truncate px-4 pb-4 text-xs text-muted-strong" title={detail}>{detail}</CardContent>
-    </Card>
+    <div className="min-w-0 p-4">
+      <p className="text-sm text-muted">{label}</p>
+      <p className="mt-1 text-xl font-semibold tracking-tight text-foreground">{value}</p>
+      <p className="mt-2 break-words text-sm text-muted-strong">{detail}</p>
+    </div>
   );
 }
 
@@ -236,7 +266,7 @@ function EmptyDocumentState({
   body: string;
 }) {
   return (
-    <div className="rounded-[var(--radius-inner)] border border-dashed border-black/10 bg-[#FFF8EE] px-4 py-5">
+    <div className="rounded-[var(--radius-inner)] border border-dashed border-border bg-surface-subtle px-4 py-5">
       <p className="text-sm leading-7 text-muted-strong">{body}</p>
       <Button asChild variant="secondary" className="mt-4">
         <Link href={href}>{label}</Link>
