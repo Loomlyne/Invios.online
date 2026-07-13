@@ -22,25 +22,6 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
-  {
-    // Per-tenant <style> injection and Recharts inline styles need 'unsafe-inline'.
-    // nonce-based CSP would require Next.js middleware nonce threading — deferred.
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.supabase.co https://*.supabase.net wss://*.supabase.co",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      // 'self' for app forms; creem.io so the checkout/billing-portal form POSTs
-      // can redirect out to Creem's hosted pages (form-action gates the whole
-      // redirect chain in Chromium, so the external target must be allowlisted).
-      "form-action 'self' https://creem.io https://*.creem.io",
-    ].join("; "),
-  },
 ];
 
 // Derive the Supabase storage host so next/image can optimize tenant logos

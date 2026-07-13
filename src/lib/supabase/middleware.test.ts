@@ -49,6 +49,10 @@ describe("updateSession middleware", () => {
     const response = await updateSession(mockRequest("/app/dashboard"));
 
     expect(response.headers.get("location")).toBeNull();
+    const csp = response.headers.get("content-security-policy");
+    expect(csp).toMatch(/script-src 'self' 'nonce-[^']+' 'strict-dynamic'/);
+    expect(csp).not.toContain("unsafe-eval");
+    expect(csp).not.toContain("script-src 'self' 'unsafe-inline'");
   });
 
   it("Test 2: redirects unauthenticated /app request to /sign-in with ?next= param", async () => {

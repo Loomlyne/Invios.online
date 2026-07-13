@@ -33,13 +33,32 @@ const CANONICAL_HOST = (() => {
 
 type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
 
+function buildContentSecurityPolicy(nonce: string) {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https://*.supabase.co https://*.supabase.net wss://*.supabase.co",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self' https://creem.io https://*.creem.io",
+  ].join("; ");
+}
+
+function applyContentSecurityPolicy(response: NextResponse, csp: string) {
+  response.headers.set("Content-Security-Policy", csp);
+  return response;
+}
+
 // Apply refreshed Supabase auth cookies to a response.
 // Must be called on EVERY response path so rotated refresh tokens are not dropped.
-function applyCookies(response: NextResponse, cookies: PendingCookie[]) {
+function applyCookies(response: NextResponse, cookies: PendingCookie[], csp: string) {
   cookies.forEach(({ name, value, options }) => {
     response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
   });
-  return response;
+  return applyContentSecurityPolicy(response, csp);
 }
 
 function createAdminClient() {
@@ -68,8 +87,20 @@ async function checkPaidSubscription(userId: string): Promise<boolean> {
 }
 
 export async function updateSession(request: NextRequest) {
+  // Next.js reads a nonce-bearing CSP from forwarded request headers and applies
+  // it to framework-injected scripts. The same policy is emitted on every
+  // response below, including redirects and 404s.
+  const nonce = btoa(crypto.randomUUID());
+  const csp = buildContentSecurityPolicy(nonce);
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", csp);
+
   if (!isSupabaseConfigured()) {
-    return NextResponse.next({ request });
+    return applyContentSecurityPolicy(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      csp,
+    );
   }
 
   // Redirect www → apex so auth cookies are always on a single domain.
@@ -77,7 +108,7 @@ export async function updateSession(request: NextRequest) {
   if (host.startsWith("www.")) {
     const url = request.nextUrl.clone();
     url.host = host.slice(4); // strip "www."
-    return NextResponse.redirect(url, { status: 308 });
+    return applyContentSecurityPolicy(NextResponse.redirect(url, { status: 308 }), csp);
   }
 
   // Bounce retired Vercel aliases to the canonical domain (converge on invios.online).
@@ -86,11 +117,10 @@ export async function updateSession(request: NextRequest) {
     url.protocol = "https:";
     url.hostname = CANONICAL_HOST;
     url.port = "";
-    return NextResponse.redirect(url, { status: 308 });
+    return applyContentSecurityPolicy(NextResponse.redirect(url, { status: 308 }), csp);
   }
 
   // Strip any client-supplied spoofed auth headers before trusting them downstream.
-  const requestHeaders = new Headers(request.headers);
   requestHeaders.delete("x-middleware-user-id");
   requestHeaders.delete("x-middleware-user-email");
 
@@ -142,7 +172,7 @@ export async function updateSession(request: NextRequest) {
   // The admin layout re-checks via requireAdmin() (defense in depth).
   if (pathname.startsWith("/admin")) {
     if (!user || !isAdminEmail(user.email)) {
-      return applyCookies(new NextResponse(null, { status: 404 }), pendingCookies);
+      return applyCookies(new NextResponse(null, { status: 404 }), pendingCookies, csp);
     }
   }
 
@@ -152,7 +182,7 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/sign-in";
     redirectUrl.searchParams.set("next", pathname);
-    return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies);
+    return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies, csp);
   }
 
   // Authenticated users on auth pages → send to app.
@@ -161,7 +191,7 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/app";
     redirectUrl.search = "";
-    return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies);
+    return applyCookies(NextResponse.redirect(redirectUrl), pendingCookies, csp);
   }
 
   // Premium API routes require an active paid subscription — but only once Pro
@@ -177,10 +207,11 @@ export async function updateSession(request: NextRequest) {
           { status: 402 },
         ),
         pendingCookies,
+        csp,
       );
     }
   }
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
-  return applyCookies(response, pendingCookies);
+  return applyCookies(response, pendingCookies, csp);
 }
