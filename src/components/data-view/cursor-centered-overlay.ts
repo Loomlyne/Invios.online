@@ -1,5 +1,6 @@
 import type { ClientRect, Modifier } from "@dnd-kit/core";
-import type { Transform } from "@dnd-kit/utilities";
+
+type Transform = Parameters<Modifier>[0]["transform"];
 
 type CursorCenteredOverlayArgs = {
   activatorEvent: Event | null;
