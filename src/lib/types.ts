@@ -3,7 +3,6 @@ import type { Route } from "next";
 export type OnboardingStep = "business-profile" | "branding" | "defaults" | "preview";
 
 export type SignatureMode = "none" | "upload" | "draw" | "typed";
-export type DocumentTemplateId = "classic" | "executive" | "minimal";
 
 export const SETTINGS_SECTIONS = [
   "profile",
@@ -103,8 +102,6 @@ export interface BrandingSettings {
   primaryColor: string;
   secondaryColor: string;
   logoPath?: string | null;
-  headerCoverPath?: string | null;
-  pageBackground?: string | null;
   faviconPath?: string | null;
   baseFont?: string | null;
   arabicBusinessName?: string | null;
@@ -131,7 +128,6 @@ export interface UserSettings {
   timezone: string;
   invoicePrefix: string;
   quotationPrefix: string;
-  documentTemplate: DocumentTemplateId;
   reminderEnabled: boolean;
   reminderDaysBefore: number;
   reminderDaysAfter: number;
@@ -157,7 +153,6 @@ export interface InvoicePreviewLineItem {
 }
 
 export interface InvoicePreviewData {
-  templateId: DocumentTemplateId;
   kind?: "invoice" | "quotation";
   title?: string;
   businessName: string;
@@ -201,7 +196,6 @@ export interface InvoicePreviewData {
   spacing?: string | null;
   headerLayout?: string | null;
   lineItemsStyle?: string | null;
-  pageBackground?: string | null;
 }
 
 export interface AppUserState {
@@ -218,7 +212,6 @@ export interface AppContext {
   userId?: string;
   email?: string;
   avatarUrl?: string | null;
-  headerCoverUrl?: string | null;
   userState: AppUserState;
   previewData: InvoicePreviewData;
   onboardingComplete: boolean;

@@ -17,7 +17,7 @@ export const InvoicePreview = memo(function InvoicePreview({
   const totals = getInvoiceTotals(preview);
   const documentTitle = preview.title || (preview.kind === "quotation" ? "Quotation" : "Invoice");
   const recipientName = preview.recipientCompany || preview.recipientName || "Client";
-  const template = getDocumentTemplate(preview.templateId);
+  const template = getDocumentTemplate();
   const bankFields = parseBankDetails(preview.bankDetails);
   const showDurationColumn =
     preview.kind === "quotation" &&
@@ -57,7 +57,6 @@ export const InvoicePreview = memo(function InvoicePreview({
           : isRtl || isBilingual
             ? { fontFamily: "var(--font-arabic, var(--font-sans)), var(--font-sans), sans-serif" }
             : {}),
-        ...(preview.pageBackground ? { backgroundColor: preview.pageBackground } : {}),
       }}
       data-document-kind={preview.kind ?? "invoice"}
       data-document-mode={mode}
