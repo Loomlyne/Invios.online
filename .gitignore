@@ -44,3 +44,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local agent tracking artifacts
+.gsd/
+.bg-shell/
+.hermes/
+
+# Keep the non-secret environment template in version control.
+!.env.example

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui/button";
 
 export default function RootError({
@@ -12,8 +13,9 @@ export default function RootError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface the error to the browser console / monitoring without exposing
-    // internals in the UI.
+    // Surface the error to Sentry and the browser console / monitoring without
+    // exposing internals in the UI.
+    Sentry.captureException(error);
     console.error(error);
   }, [error]);
 

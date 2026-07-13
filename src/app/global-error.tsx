@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Global error boundary. This replaces the ROOT layout when an error is thrown
@@ -15,6 +16,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("[app/global-error]", error);
   }, [error]);
 
