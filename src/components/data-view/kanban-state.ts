@@ -28,3 +28,14 @@ export function applyKanbanStatusChange<TItem extends KanbanItem>(
 ): TItem[] {
   return items.map((item) => (item.id === id ? { ...item, status } : item));
 }
+
+export function isKanbanUndoEditingTarget(
+  target: Pick<HTMLElement, "tagName" | "isContentEditable"> | null,
+) {
+  return Boolean(
+    target?.isContentEditable ||
+      target?.tagName === "INPUT" ||
+      target?.tagName === "TEXTAREA" ||
+      target?.tagName === "SELECT",
+  );
+}

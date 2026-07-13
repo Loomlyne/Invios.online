@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import type { ReactNode } from "react";
 import {
@@ -23,6 +24,7 @@ import { DroppableColumn } from "./droppable-column";
 import {
   applyKanbanStatusChange,
   createKanbanUndo,
+  isKanbanUndoEditingTarget,
   type KanbanUndo,
 } from "./kanban-state";
 import type { DataViewConfig } from "./types";
@@ -38,6 +40,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
   emptyState: ReactNode;
   onStatusChange?: (id: string, newStatus: TStatus) => Promise<void>;
 }) {
+  const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [activeItem, setActiveItem] = useState<TItem | null>(null);
   const [lastUndo, setLastUndo] = useState<KanbanUndo<TStatus> | null>(null);
@@ -103,11 +106,12 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
         setLastUndo(direction === "forward" ? change : null);
       } catch {
         setItems(previousItems);
+        router.refresh();
       } finally {
         setIsUpdating(false);
       }
     },
-    [onStatusChange],
+    [onStatusChange, router],
   );
 
   const handleUndo = useCallback(() => {
@@ -119,7 +123,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
     const handleKeyDown = (event: KeyboardEvent) => {
       const isUndoShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z";
       const target = event.target as HTMLElement | null;
-      const isEditing = Boolean(target?.closest("input, textarea, [contenteditable='true']"));
+      const isEditing = isKanbanUndoEditingTarget(target);
 
       if (!isUndoShortcut || event.shiftKey || isEditing || !lastUndo || isUpdating) return;
 

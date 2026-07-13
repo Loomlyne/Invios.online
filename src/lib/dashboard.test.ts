@@ -382,6 +382,38 @@ describe("dashboard selectors", () => {
       expiresSoonCount: 1,
     });
   });
+
+  it("does not count expired quotations as expiring soon", () => {
+    const rows = buildDashboardInvoiceRows({
+      invoices,
+      payments,
+      expenses,
+      range: "30d",
+      today: "2026-04-08",
+    });
+    const expiredQuotation: QuotationRecord = {
+      ...quotations[0]!,
+      id: "quotation-expired",
+      quotationNumber: "QUO-EXPIRED",
+      slug: "quo-expired",
+      expiryDate: "2026-04-01",
+    };
+
+    const insights = buildDashboardInsights({
+      rows,
+      quotations: [...quotations, expiredQuotation],
+      payments,
+      expenses,
+      range: "30d",
+      today: "2026-04-08",
+    });
+
+    expect(insights.quotationPipeline).toEqual({
+      count: 2,
+      total: 2520,
+      expiresSoonCount: 1,
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------

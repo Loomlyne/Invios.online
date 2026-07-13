@@ -282,7 +282,7 @@ export function buildDashboardInsights(params: {
       return {
         ...quotation,
         daysToExpiry,
-        expiresSoon: daysToExpiry !== null && daysToExpiry <= 7,
+        expiresSoon: daysToExpiry !== null && daysToExpiry >= 0 && daysToExpiry <= 7,
       };
     });
   const quotationPipeline = {
