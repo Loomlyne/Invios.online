@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DraggableCard } from "./draggable-card";
 import { DroppableColumn } from "./droppable-column";
+import { centerDragOverlayOnCursorModifier } from "./cursor-centered-overlay";
 import {
   applyKanbanStatusChange,
   createKanbanUndo,
@@ -312,7 +313,11 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
       )}
 
       {/* Drag overlay */}
-      <DragOverlay adjustScale={false} dropAnimation={null}>
+      <DragOverlay
+        adjustScale={false}
+        dropAnimation={null}
+        modifiers={[centerDragOverlayOnCursorModifier]}
+      >
         {activeItem ? (
           <div className="pointer-events-none w-[min(280px,85vw)] rounded-[1rem] border border-[#D7C4A7] bg-white px-4 py-3 shadow-[0_14px_32px_rgba(0,0,0,0.16)] opacity-95 -rotate-1">
             {config.renderKanbanCard(activeItem)}
