@@ -8,7 +8,6 @@ import type { ReactNode } from "react";
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
@@ -21,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DraggableCard } from "./draggable-card";
 import { DroppableColumn } from "./droppable-column";
+import { pointerFirstKanbanCollision } from "./kanban-collision";
 import { centerDragOverlayOnCursorModifier } from "./cursor-centered-overlay";
 import {
   applyKanbanStatusChange,
@@ -184,7 +184,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={pointerFirstKanbanCollision}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
