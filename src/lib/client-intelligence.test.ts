@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { computePaymentReliability, type ReliabilityInput } from "./client-intelligence";
+import {
+  computePaymentReliability,
+  computeClientLTV,
+  computeClientHealth,
+  type ReliabilityInput,
+  type LTVInput,
+  type HealthInput,
+} from "./client-intelligence";
 
 const baseInput = (over: Partial<ReliabilityInput>): ReliabilityInput => ({
   paidInvoices: [],
@@ -69,5 +76,61 @@ describe("computePaymentReliability", () => {
       }),
     );
     expect(result).toBeNull();
+  });
+});
+
+describe("computeClientLTV", () => {
+  it("sums total of all paid invoices", () => {
+    const result = computeClientLTV({
+      paidInvoices: [{ total: 1000 }, { total: 2500 }],
+    } satisfies LTVInput);
+    expect(result).toBe(3500);
+  });
+
+  it("returns 0 when no paid invoices", () => {
+    expect(computeClientLTV({ paidInvoices: [] })).toBe(0);
+  });
+});
+
+describe("computeClientHealth", () => {
+  it("returns 'healthy' when LTV high and pays fast", () => {
+    const result = computeClientHealth({
+      ltv: 50000,
+      reliability: { avgDaysToPay: 5, tier: "fast" },
+      outstandingCount: 0,
+      totalInvoices: 10,
+    } satisfies HealthInput);
+    expect(result.score).toBeGreaterThanOrEqual(80);
+    expect(result.label).toBe("healthy");
+  });
+
+  it("returns 'at-risk' when slow payer with outstanding invoices", () => {
+    const result = computeClientHealth({
+      ltv: 5000,
+      reliability: { avgDaysToPay: 40, tier: "slow" },
+      outstandingCount: 3,
+      totalInvoices: 8,
+    } satisfies HealthInput);
+    expect(result.label).toBe("at-risk");
+  });
+
+  it("returns 'critical' when late payer with high outstanding ratio", () => {
+    const result = computeClientHealth({
+      ltv: 2000,
+      reliability: { avgDaysToPay: 60, tier: "late" },
+      outstandingCount: 5,
+      totalInvoices: 6,
+    } satisfies HealthInput);
+    expect(result.label).toBe("critical");
+  });
+
+  it("returns 'new' when fewer than 2 invoices", () => {
+    const result = computeClientHealth({
+      ltv: 0,
+      reliability: null,
+      outstandingCount: 1,
+      totalInvoices: 1,
+    } satisfies HealthInput);
+    expect(result.label).toBe("new");
   });
 });

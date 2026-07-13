@@ -6,11 +6,12 @@ import { DocumentSummaryRow } from "@/components/documents/document-summary-row"
 import { ClientEditButton } from "@/components/clients/client-edit-sheet";
 import { ClientStatusBadge } from "@/components/clients/client-status-badge";
 import { PaymentReliabilityBadge } from "@/components/clients/payment-reliability-badge";
+import { ClientIntelligenceCard } from "@/components/clients/client-intelligence-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClientBySlug, listInvoicesForClient, listQuotationsForClient } from "@/lib/billing-data";
-import { getClientPaymentReliability } from "@/lib/client-intelligence";
+import { getClientIntelligence } from "@/lib/client-intelligence";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function ClientDetailPage({
@@ -25,11 +26,13 @@ export default async function ClientDetailPage({
     notFound();
   }
 
-  const [invoices, quotations, reliability] = await Promise.all([
+  const [invoices, quotations, intelligence] = await Promise.all([
     listInvoicesForClient(client.id),
     listQuotationsForClient(client.id),
-    getClientPaymentReliability(client.id),
+    getClientIntelligence(client.id),
   ]);
+
+  const reliability = intelligence?.reliability ?? null;
 
   const billedTotal = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   const quotedTotal = quotations.reduce((sum, quotation) => sum + quotation.total, 0);
@@ -67,6 +70,13 @@ export default async function ClientDetailPage({
         </Card>
 
         <div className="grid gap-4">
+          {intelligence ? (
+            <ClientIntelligenceCard
+              ltv={intelligence.ltv}
+              reliability={intelligence.reliability}
+              health={intelligence.health}
+            />
+          ) : null}
           <MetricCard label="Invoices" value={String(invoices.length)} detail={formatCurrency(billedTotal)} />
           <MetricCard label="Quotations" value={String(quotations.length)} detail={formatCurrency(quotedTotal)} />
         </div>
