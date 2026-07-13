@@ -325,17 +325,11 @@ function EditorialHeader({
         </div>
       </div>
 
-      {/* Two-column sender / recipient contact grid */}
-      <div className="mt-6 grid gap-6 sm:grid-cols-2 text-sm text-[#78716C]">
-        <div className="space-y-1">
-          <p>{preview.businessEmail}</p>
-          <p>{preview.phone}</p>
-          <p>{preview.address}</p>
-        </div>
-        <div className="space-y-1">
-          {preview.recipientCompany && <p className="font-medium text-foreground">{preview.recipientCompany}</p>}
-          <p>{preview.recipientAddress}</p>
-        </div>
+      {/* Sender contact block — recipient shown once, in the "Billed to" meta below */}
+      <div className="mt-6 space-y-1 text-sm text-[#78716C]">
+        <p>{preview.businessEmail}</p>
+        <p>{preview.phone}</p>
+        <p>{preview.address}</p>
       </div>
     </div>
   );
@@ -481,6 +475,9 @@ function ContactGridMeta({ preview, template, recipientName, totals, px, py, bil
           <p className="mt-2 font-semibold text-foreground">{recipientName}</p>
           {preview.recipientAddress ? <p className="text-[#78716C]">{preview.recipientAddress}</p> : null}
           {preview.recipientPhone ? <p className="text-[#78716C]">{preview.recipientPhone}</p> : null}
+          {preview.recipientTrn && formatTrnDisplay(preview.recipientTrn) && (
+            <p className="text-[#78716C]">{formatTrnDisplay(preview.recipientTrn)}</p>
+          )}
         </div>
         <div className="space-y-3">
           <div>

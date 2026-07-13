@@ -1,5 +1,5 @@
 export type DocumentTemplateConfig = {
-  id: "classic";
+  id: "minimal";
   name: string;
   description: string;
   canvasClassName: string;
@@ -25,28 +25,28 @@ export type DocumentTemplateConfig = {
 };
 
 const documentTemplate: DocumentTemplateConfig = {
-  id: "classic",
-  name: "Classic",
-  description: "Clean professional layout with warm table hierarchy.",
-  canvasClassName: "border-black/8 bg-white",
+  id: "minimal",
+  name: "Minimal",
+  description: "Editorial whitespace with typography-driven hierarchy.",
+  canvasClassName: "border-black/6 bg-white",
   headerClassName: "bg-white",
   headerSurfaceClassName: "",
-  metaSurfaceClassName: "bg-[#f8f8f6]",
+  metaSurfaceClassName: "",
   recipientSurfaceClassName: "",
-  tableHeadClassName: "bg-[#f5f5f3] text-[#78716C]",
+  tableHeadClassName: "text-[#78716C] border-b border-black/10",
   notesSurfaceClassName: "",
   totalsSurfaceClassName: "bg-transparent text-foreground",
   totalsMutedClassName: "text-[#78716C]",
   signatureSurfaceClassName: "",
-  footerSurfaceClassName: "border-t border-black/8",
-  numberClassName: "display-text text-3xl font-semibold",
+  footerSurfaceClassName: "",
+  numberClassName: "text-2xl font-bold uppercase tracking-tight",
   totalsStyle: "rows",
-  sectionDivider: "surface",
-  headerVariant: "standard",
-  metaVariant: "grid-3col",
-  footerLayout: "stacked",
-  hrClassName: "border-black/8",
-  totalsDividerClassName: "border-black/10",
+  sectionDivider: "none",
+  headerVariant: "editorial",
+  metaVariant: "contact-grid",
+  footerLayout: "side-by-side",
+  hrClassName: "",
+  totalsDividerClassName: "border-black/8",
 };
 
 export function getDocumentTemplate(): DocumentTemplateConfig {
