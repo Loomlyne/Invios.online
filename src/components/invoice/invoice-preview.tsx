@@ -823,9 +823,9 @@ function SideBySideFooter({
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b6359]">{bilingualLabel("Bank Details", "تفاصيل البنك")}</p>
           <div className="mt-3 flex flex-wrap gap-x-6 gap-y-3">
             {bankFields.map((f, i) => (
-              <div key={i}>
+              <div key={i} className="min-w-0 max-w-full basis-[180px] grow">
                 <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#6b6359]">{f.label}</p>
-                <p className="mt-0.5 text-sm font-medium text-foreground">{f.value}</p>
+                <p className="mt-0.5 break-words text-sm font-medium text-foreground">{f.value}</p>
               </div>
             ))}
           </div>
