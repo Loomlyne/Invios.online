@@ -28,6 +28,7 @@ import { env } from "@/lib/env";
 import { formatCurrency } from "@/lib/utils";
 import { VersionHistoryPanel } from "@/components/documents/version-history-panel";
 import { ShareButton } from "@/components/documents/share-button";
+import { EmailPdfButton } from "@/components/documents/email-pdf-button";
 import { ExportButton } from "./export-button";
 import { RecurringButton } from "./recurring-button";
 import { StatusButton } from "./status-button";
@@ -116,6 +117,7 @@ export default async function InvoiceDetailPage({
                 documentKind="invoice"
               />
               <ExportButton invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
+              <EmailPdfButton endpoint={`/api/invoices/${invoice.id}/email-pdf`} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">

@@ -3,7 +3,7 @@ import { chromium as playwright } from "playwright-core";
 
 export async function renderDocumentUrlToPdf(url: string) {
   const browser = await playwright.launch({
-    args: chromium.args,
+    args: [...chromium.args, "--single-process"],
     executablePath: await chromium.executablePath(),
     headless: true,
   });
@@ -15,11 +15,13 @@ export async function renderDocumentUrlToPdf(url: string) {
 
     await page.setViewportSize({ width: 794, height: 1123 }); // A4 at 96 DPI
     await page.emulateMedia({ media: "screen" });
+    // "domcontentloaded" is sufficient for ?print=1 server-rendered pages and
+    // avoids the long "networkidle" wait that compounds cold-start latency.
     await page.goto(url, {
-      waitUntil: "networkidle",
-      timeout: 30_000,
+      waitUntil: "domcontentloaded",
+      timeout: 15_000,
     });
-    await page.waitForSelector("[data-document-template]", { timeout: 15_000 });
+    await page.waitForSelector("[data-document-template]", { timeout: 10_000 });
     await page.evaluate(async () => {
       await document.fonts.ready;
     });

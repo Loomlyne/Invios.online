@@ -19,6 +19,7 @@ import { buildQuotationPreviewFromRecord } from "@/lib/document-preview-data";
 import { env } from "@/lib/env";
 import { formatCurrency } from "@/lib/utils";
 import { ShareButton } from "@/components/documents/share-button";
+import { EmailPdfButton } from "@/components/documents/email-pdf-button";
 import { ExportButton } from "./export-button";
 
 export default async function QuotationDetailPage({
@@ -106,6 +107,7 @@ export default async function QuotationDetailPage({
                 documentKind="quotation"
               />
               <ExportButton quotationId={quotation.id} quotationNumber={quotation.quotationNumber} />
+              <EmailPdfButton endpoint={`/api/quotations/${quotation.id}/email-pdf`} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">

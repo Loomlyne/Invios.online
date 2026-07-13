@@ -277,3 +277,40 @@ export function sendSubscriptionCanceledEmail(email: string, accessUntil: string
     })
     .catch((err: unknown) => console.error("[email] Failed to send subscription canceled email:", err));
 }
+
+/**
+ * Email a generated PDF as an attachment. Used by the async "Email PDF"
+ * fallback so the user is never blocked waiting on a slow cold-start export.
+ * Throws on Resend failure so the caller can surface a 5xx response.
+ */
+export async function sendPdfEmail({
+  to,
+  documentNumber,
+  pdfBuffer,
+  kind,
+}: {
+  to: string;
+  documentNumber: string;
+  pdfBuffer: Buffer;
+  kind: "invoice" | "quotation";
+}): Promise<void> {
+  const client = getResend();
+  if (!client) throw new Error("Email is not configured.");
+
+  const { data, error } = await client.emails.send({
+    from: env.emailFrom,
+    to,
+    subject: `Your ${kind} ${documentNumber}`,
+    html: `<p>Your ${kind} ${documentNumber} is attached.</p>`,
+    attachments: [
+      {
+        filename: `${documentNumber}.pdf`,
+        content: pdfBuffer,
+      },
+    ],
+  });
+
+  if (error) throw new Error(`Resend error: ${error.message}`);
+  // data is unused but referenced to satisfy the destructure; keep for clarity.
+  void data;
+}
