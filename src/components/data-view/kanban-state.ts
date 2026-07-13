@@ -29,6 +29,16 @@ export function applyKanbanStatusChange<TItem extends KanbanItem>(
   return items.map((item) => (item.id === id ? { ...item, status } : item));
 }
 
+export function reconcileKanbanUndo<TStatus extends string>(
+  items: KanbanItem<TStatus>[],
+  undo: KanbanUndo<TStatus> | null,
+): KanbanUndo<TStatus> | null {
+  if (!undo) return null;
+
+  const refreshedItem = items.find((item) => item.id === undo.id);
+  return refreshedItem?.status === undo.to ? undo : null;
+}
+
 export function isKanbanUndoEditingTarget(
   target: Pick<HTMLElement, "tagName" | "isContentEditable"> | null,
 ) {

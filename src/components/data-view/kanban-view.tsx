@@ -25,6 +25,7 @@ import {
   applyKanbanStatusChange,
   createKanbanUndo,
   isKanbanUndoEditingTarget,
+  reconcileKanbanUndo,
   type KanbanUndo,
 } from "./kanban-state";
 import type { DataViewConfig } from "./types";
@@ -58,7 +59,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
   useEffect(() => {
     confirmedItemsRef.current = initialItems;
     setItems(initialItems);
-    setLastUndo(null);
+    setLastUndo((currentUndo) => reconcileKanbanUndo(initialItems, currentUndo));
   }, [initialItems]);
 
   // Track active column via IntersectionObserver for dot indicators

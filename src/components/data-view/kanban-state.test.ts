@@ -3,6 +3,7 @@ import {
   applyKanbanStatusChange,
   createKanbanUndo,
   isKanbanUndoEditingTarget,
+  reconcileKanbanUndo,
 } from "@/components/data-view/kanban-state";
 
 type Item = { id: string; status: "lead" | "active" | "approved" };
@@ -30,6 +31,15 @@ describe("kanban status state", () => {
       { id: "client-1", status: "approved" },
       { id: "client-2", status: "active" },
     ]);
+  });
+
+  it("keeps a completed undo when a server refresh confirms the moved status", () => {
+    const undo = createKanbanUndo<Item>(items, "client-1", "approved");
+    const refreshedItems = applyKanbanStatusChange<Item>(items, "client-1", "approved");
+
+    expect(reconcileKanbanUndo<Item["status"]>(refreshedItems, undo)).toEqual(undo);
+    expect(reconcileKanbanUndo<Item["status"]>(items, undo)).toBeNull();
+    expect(reconcileKanbanUndo<Item["status"]>([], undo)).toBeNull();
   });
 
   it("does not capture the undo shortcut from a select or text editor", () => {
