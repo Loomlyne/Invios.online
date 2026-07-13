@@ -16,7 +16,7 @@ import {
   type DragCancelEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { Plus } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DraggableCard } from "./draggable-card";
@@ -45,6 +45,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
   const [activeItem, setActiveItem] = useState<TItem | null>(null);
   const [lastUndo, setLastUndo] = useState<KanbanUndo<TStatus> | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
   const [activeColIndex, setActiveColIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const columnRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -97,6 +98,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
       const nextStatus = direction === "forward" ? change.to : change.from;
       const previousItems = confirmedItemsRef.current;
 
+      setUpdateError(null);
       setIsUpdating(true);
       setItems((current) => applyKanbanStatusChange(current, change.id, nextStatus));
 
@@ -106,6 +108,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
         setLastUndo(direction === "forward" ? change : null);
       } catch {
         setItems(previousItems);
+        setUpdateError("This move was not saved. Your board has been restored.");
         router.refresh();
       } finally {
         setIsUpdating(false);
@@ -144,6 +147,11 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
       const itemId = active.id as string;
       const newStatus = config.kanbanColumns.find((column) => column.status === over?.id)?.status;
       if (!newStatus) return;
+
+      const item = items.find((candidate) => config.getId(candidate) === itemId);
+      if (!item || (config.canChangeStatus && !config.canChangeStatus(item, newStatus))) {
+        return;
+      }
 
       const change = createKanbanUndo(items, itemId, newStatus);
       if (!change) return;
@@ -186,6 +194,8 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
         <div className="inline-flex gap-3 snap-x snap-mandatory">
           {config.kanbanColumns.map((col, colIdx) => {
             const colItems = grouped.get(col.status) ?? [];
+            const canDropHere = !activeItem || !config.canChangeStatus || config.canChangeStatus(activeItem, col.status);
+
             return (
               <div
                 key={col.status}
@@ -219,7 +229,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
                   </div>
                 </div>
 
-                <DroppableColumn id={col.status}>
+                <DroppableColumn id={col.status} disabled={!canDropHere}>
                     {colItems.length === 0 ? (
                       <div className="flex flex-1 items-center justify-center">
                         <p className="text-xs text-muted">No items</p>
@@ -249,6 +259,13 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
           })}
         </div>
       </div>
+
+      {updateError ? (
+        <div role="alert" className="mt-3 flex items-start gap-2 rounded-[var(--radius-inner)] border border-danger/25 bg-red-50 px-4 py-3 text-sm text-danger">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <p>{updateError}</p>
+        </div>
+      ) : null}
 
       {lastUndo ? (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-inner)] border border-border-brand bg-surface-subtle px-4 py-3">

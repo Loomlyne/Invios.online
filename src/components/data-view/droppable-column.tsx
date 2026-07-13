@@ -7,18 +7,22 @@ import { cn } from "@/lib/utils";
 export function DroppableColumn({
   id,
   children,
+  disabled = false,
 }: {
   id: string;
   children: ReactNode;
+  disabled?: boolean;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id });
+  const { setNodeRef, isOver } = useDroppable({ id, disabled });
 
   return (
     <div
       ref={setNodeRef}
+      aria-disabled={disabled || undefined}
       className={cn(
         "flex min-h-[120px] flex-col gap-2 rounded-[1.25rem] border border-black/5 bg-black/[0.02] p-2 transition-colors duration-150",
         isOver && "border-border-brand bg-surface-subtle/70 ring-2 ring-accent/20",
+        disabled && "opacity-45",
       )}
     >
       {children}

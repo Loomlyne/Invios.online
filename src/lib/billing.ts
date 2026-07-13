@@ -124,6 +124,31 @@ export type DocumentKind = (typeof documentKinds)[number];
 export type DashboardMetricKey = (typeof dashboardMetricKeys)[number];
 export type DashboardRangeKey = (typeof dashboardRangeKeys)[number];
 
+/**
+ * Payment and due-date automation own `partial_paid`, `overpaid`, and `overdue`.
+ * Manual flows may only move draft and sent invoices between one another, or
+ * mark an eligible sent, overdue, or partially paid invoice as paid.
+ */
+export function isManualInvoiceStatusTransitionAllowed(
+  from: InvoiceStatus,
+  to: InvoiceStatus,
+): boolean {
+  if (from === to) return true;
+
+  switch (to) {
+    case "draft":
+    case "sent":
+      return from === "draft" || from === "sent";
+    case "paid":
+      return from === "sent" || from === "overdue" || from === "partial_paid";
+    case "overpaid":
+    case "partial_paid":
+    case "overdue":
+    default:
+      return false;
+  }
+}
+
 export type DocumentLineItem = z.infer<typeof documentLineItemSchema>;
 export type ClientFormInput = z.infer<typeof clientFormSchema>;
 export type InvoiceFormInput = z.infer<typeof invoiceFormSchema>;

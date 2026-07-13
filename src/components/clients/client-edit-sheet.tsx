@@ -17,7 +17,7 @@ export function ClientEditButton({ client }: ClientEditButtonProps) {
 
   return (
     <>
-      <Button variant="inverse" onClick={() => setOpen(true)}>
+      <Button variant="inverse" size="sm" onClick={() => setOpen(true)}>
         <PencilLine className="size-4" />
         Edit client
       </Button>
@@ -53,7 +53,12 @@ export function ClientDeleteButton({
         }
       }}
     >
-      <Button type="submit" variant="danger">
+      <Button
+        type="submit"
+        variant="inverse"
+        size="sm"
+        className="border-danger/50 bg-danger/20 text-on-dark shadow-none hover:border-danger hover:bg-danger"
+      >
         <Trash2 className="size-4" />
         Delete client
       </Button>

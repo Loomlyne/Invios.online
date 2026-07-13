@@ -26,6 +26,7 @@ export interface DataViewConfig<TItem, TStatus extends string> {
   getId: (item: TItem) => string;
   getHref: (item: TItem) => string;
   getStatus: (item: TItem) => TStatus;
+  canChangeStatus?: (item: TItem, status: TStatus) => boolean;
   kanbanColumns: KanbanColumn<TStatus>[];
   tableColumns: TableColumn<TItem>[];
   statusOptions: StatusOption[];

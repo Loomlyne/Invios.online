@@ -42,7 +42,7 @@ export default async function ClientDetailPage({
 
   return (
     <div className="grid gap-[var(--space-section)]">
-      <section className="grid gap-[var(--space-grid)] xl:grid-cols-[1.2fr_0.8fr] xl:items-start">
+      <section className="grid gap-[var(--space-grid)] xl:grid-cols-[minmax(0,1.3fr)_minmax(22rem,0.7fr)] xl:items-start">
         <Card className="overflow-hidden border-black/10 bg-[#17120F] p-0 text-[#FFF9F0]">
           <div className="bg-[radial-gradient(circle_at_top_left,rgba(202,138,4,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_30%)] px-6 py-7 sm:px-8 lg:px-10 lg:py-9">
             <div className="flex flex-wrap items-center gap-3">
@@ -51,14 +51,14 @@ export default async function ClientDetailPage({
               {reliability && <PaymentReliabilityBadge reliability={reliability} />}
             </div>
 
-            <div className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+            <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)] lg:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#D7C4A7]">Client overview</p>
                 <h1 className="display-text mt-3 font-semibold text-[clamp(2.25rem,1.5rem+2vw,4rem)] leading-none">{client.name}</h1>
-                <p className="mt-4 text-base text-[#E9E0D5]">{client.company || "Independent client"}</p>
+                <p className="mt-4 max-w-xl text-base text-[#E9E0D5]">{client.company || "Independent client"}</p>
               </div>
 
-              <div className="grid gap-3 rounded-[var(--radius-inner)] border border-white/12 bg-white/[0.08] p-4 text-sm text-[#E9E0D5]">
+              <div className="grid gap-3 rounded-[var(--radius-inner)] border border-white/12 bg-black/15 p-5 text-sm text-[#E9E0D5]">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D7C4A7]">Billing contact</p>
                 <div className="flex min-w-0 items-center gap-2">
                   <Mail className="size-4 shrink-0 text-[#D7C4A7]" />
@@ -71,21 +71,27 @@ export default async function ClientDetailPage({
               </div>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild variant="accent">
-                <Link href={`/app/quotations/new?clientId=${client.id}` as Route}>
-                  New quotation
-                  <FileText className="size-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="secondary">
-                <Link href={`/app/invoices/new?clientId=${client.id}` as Route}>
-                  New invoice
-                  <ReceiptText className="size-4" />
-                </Link>
-              </Button>
-              <ClientEditButton client={client} />
-              <ClientDeleteButton clientId={client.id} clientName={client.name} />
+            <div className="mt-10 border-t border-white/12 pt-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D7C4A7]">Quick actions</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Button asChild variant="accent" className="w-full justify-between sm:justify-center">
+                  <Link href={`/app/quotations/new?clientId=${client.id}` as Route}>
+                    New quotation
+                    <FileText className="size-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="inverse" className="w-full justify-between shadow-none sm:justify-center">
+                  <Link href={`/app/invoices/new?clientId=${client.id}` as Route}>
+                    New invoice
+                    <ReceiptText className="size-4" />
+                  </Link>
+                </Button>
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/12 pt-4">
+                <p className="mr-auto text-xs font-semibold uppercase tracking-[0.18em] text-[#D7C4A7]">Manage record</p>
+                <ClientEditButton client={client} />
+                <ClientDeleteButton clientId={client.id} clientName={client.name} />
+              </div>
             </div>
           </div>
         </Card>
@@ -210,12 +216,12 @@ function MetricCard({
   detail: string;
 }) {
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="gap-1 p-4">
+    <Card className="overflow-hidden p-0">
+      <CardHeader className="gap-1 p-4 pb-0">
         <CardDescription>{label}</CardDescription>
         <CardTitle className="truncate text-xl">{value}</CardTitle>
       </CardHeader>
-      <CardContent className="truncate px-4 pb-4 pt-0 text-xs text-muted-strong" title={detail}>{detail}</CardContent>
+      <CardContent className="mt-4 truncate px-4 pb-4 text-xs text-muted-strong" title={detail}>{detail}</CardContent>
     </Card>
   );
 }

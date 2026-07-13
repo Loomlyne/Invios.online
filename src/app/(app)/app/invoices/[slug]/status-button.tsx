@@ -6,7 +6,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { setInvoiceStatusAction } from "@/actions/invoices";
-import type { InvoiceStatus } from "@/lib/billing";
+import { isManualInvoiceStatusTransitionAllowed, type InvoiceStatus } from "@/lib/billing";
 
 const STATUS_LABELS: Record<InvoiceStatus, string> = {
   draft: "Draft",
@@ -18,27 +18,6 @@ const STATUS_LABELS: Record<InvoiceStatus, string> = {
 };
 
 const ALL_STATUSES: InvoiceStatus[] = ["draft", "sent", "partial_paid", "paid", "overpaid", "overdue"];
-
-/**
- * Mirrors isManualStatusTransitionAllowed in src/actions/invoices.ts so the menu
- * only offers transitions the server will accept. The current status always
- * satisfies `from === to`, so it stays visible (and selected) in the list.
- */
-function isManualStatusTransitionAllowed(from: InvoiceStatus, to: InvoiceStatus): boolean {
-  if (from === to) return true;
-  switch (to) {
-    case "draft":
-    case "sent":
-      return from === "draft" || from === "sent";
-    case "paid":
-      return from === "sent" || from === "overdue" || from === "partial_paid";
-    case "overpaid":
-    case "partial_paid":
-    case "overdue":
-    default:
-      return false;
-  }
-}
 
 export function StatusButton({
   invoiceId,
@@ -53,7 +32,7 @@ export function StatusButton({
   const router = useRouter();
 
   const options = ALL_STATUSES.filter((status) =>
-    isManualStatusTransitionAllowed(currentStatus, status),
+    isManualInvoiceStatusTransitionAllowed(currentStatus, status),
   );
 
   const handleSelect = (status: InvoiceStatus) => {
