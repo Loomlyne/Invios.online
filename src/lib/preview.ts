@@ -56,7 +56,6 @@ export function buildInvoicePreviewData(
   overrides?: Partial<InvoicePreviewData>,
 ) {
   const base: InvoicePreviewData = {
-    templateId: userState.settings.documentTemplate || defaultSettings.documentTemplate,
     kind: "invoice",
     title: "Invoice",
     businessName: userState.profile.businessName || defaultProfile.businessName,
@@ -99,7 +98,6 @@ export function buildInvoicePreviewData(
     spacing: userState.branding.spacing || defaultBranding.spacing,
     headerLayout: userState.branding.headerLayout || defaultBranding.headerLayout,
     lineItemsStyle: userState.branding.lineItemsStyle || defaultBranding.lineItemsStyle,
-    pageBackground: userState.branding.pageBackground ?? null,
   };
 
   return { ...base, ...overrides };

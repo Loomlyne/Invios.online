@@ -47,7 +47,6 @@ type SettingsRow = {
   default_notes: string | null;
   default_terms: string | null;
   timezone: string | null;
-  document_template: "classic" | "executive" | "minimal" | null;
 };
 
 export async function getOwnerUserState(userId: string) {
@@ -68,7 +67,7 @@ export async function getOwnerUserState(userId: string) {
     supabase
       .from("user_settings")
       .select(
-        "default_currency,default_language,default_tax_rate,tax_enabled,default_notes,default_terms,timezone,document_template",
+        "default_currency,default_language,default_tax_rate,tax_enabled,default_notes,default_terms,timezone",
       )
       .eq("user_id", userId)
       .maybeSingle<SettingsRow>(),
@@ -112,7 +111,6 @@ export async function getOwnerUserState(userId: string) {
     state.settings.defaultNotes = settingsResult.data.default_notes ?? state.settings.defaultNotes;
     state.settings.defaultTerms = settingsResult.data.default_terms ?? state.settings.defaultTerms;
     state.settings.timezone = settingsResult.data.timezone ?? state.settings.timezone;
-    state.settings.documentTemplate = settingsResult.data.document_template ?? state.settings.documentTemplate;
   }
 
   return state;

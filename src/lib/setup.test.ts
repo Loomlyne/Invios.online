@@ -34,7 +34,6 @@ const baseSettings: UserSettings = {
   timezone: "Asia/Dubai",
   invoicePrefix: "INV",
   quotationPrefix: "QUO",
-  documentTemplate: "classic",
   reminderEnabled: false,
   reminderDaysBefore: 3,
   reminderDaysAfter: 7,

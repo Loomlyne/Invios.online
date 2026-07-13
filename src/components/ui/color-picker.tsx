@@ -57,16 +57,16 @@ export function ColorPicker({
   );
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("space-y-4", className)}>
       {/* Large color preview — tap to open native picker */}
       <button
         type="button"
         aria-label="Pick color"
-        className="group relative h-[4.5rem] w-full cursor-pointer overflow-hidden rounded-[1rem] border border-border shadow-sm transition-all active:scale-[0.98]"
+        className="group relative h-[4.5rem] w-full cursor-pointer overflow-hidden rounded-[1rem] border border-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] transition-all active:scale-[0.98]"
         style={{ backgroundColor: currentValue }}
         onClick={() => nativeRef.current?.click()}
       >
-        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/8 group-active:bg-black/12">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10 group-active:bg-black/15">
           <span
             className="rounded-full px-3 py-1 text-xs font-semibold tracking-wide opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100"
             style={{
@@ -91,87 +91,93 @@ export function ColorPicker({
       />
 
       {/* Preset swatches */}
-      <div className="flex flex-wrap items-center gap-2">
-        {PRESET_COLORS.map((color) => {
-          const isActive =
-            color.toLowerCase() === currentValue.toLowerCase();
-          return (
-            <button
-              key={color}
-              type="button"
-              aria-label={`Select ${color}`}
-              onClick={() => handleChange(color)}
-              className={cn(
-                "relative size-8 shrink-0 cursor-pointer rounded-full transition-all",
-                isActive
-                  ? "ring-2 ring-foreground ring-offset-2 ring-offset-surface scale-110"
-                  : "border border-black/10 hover:scale-110 hover:shadow-md active:scale-95",
-              )}
-              style={{ backgroundColor: color }}
-            >
-              {isActive ? (
-                <Check
-                  className="absolute inset-0 m-auto size-3.5"
-                  style={{
-                    color: isLightColor(color)
-                      ? "#1C1917"
-                      : "#FFFCF7",
-                  }}
-                  strokeWidth={3}
-                />
-              ) : null}
-            </button>
-          );
-        })}
+      <div>
+        <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Presets</p>
+        <div className="flex flex-wrap items-center gap-2">
+          {PRESET_COLORS.map((color) => {
+            const isActive =
+              color.toLowerCase() === currentValue.toLowerCase();
+            return (
+              <button
+                key={color}
+                type="button"
+                aria-label={`Select ${color}`}
+                onClick={() => handleChange(color)}
+                className={cn(
+                  "relative size-8 shrink-0 cursor-pointer rounded-full transition-all",
+                  isActive
+                    ? "ring-2 ring-accent ring-offset-2 ring-offset-surface scale-110"
+                    : "border border-black/10 hover:scale-110 hover:shadow-md active:scale-95",
+                )}
+                style={{ backgroundColor: color }}
+              >
+                {isActive ? (
+                  <Check
+                    className="absolute inset-0 m-auto size-3.5"
+                    style={{
+                      color: isLightColor(color)
+                        ? "#1C1917"
+                        : "#FFFCF7",
+                    }}
+                    strokeWidth={3}
+                  />
+                ) : null}
+              </button>
+            );
+          })}
 
-        {/* Custom color indicator or add-custom button */}
-        {!isPreset ? (
-          <button
-            type="button"
-            aria-label="Edit custom color"
-            onClick={() => nativeRef.current?.click()}
-            className="relative size-8 shrink-0 cursor-pointer rounded-full ring-2 ring-foreground ring-offset-2 ring-offset-surface scale-110 transition-all"
-            style={{ backgroundColor: currentValue }}
-          >
-            <Check
-              className="absolute inset-0 m-auto size-3.5"
-              style={{
-                color: isLightColor(currentValue)
-                  ? "#1C1917"
-                  : "#FFFCF7",
-              }}
-              strokeWidth={3}
-            />
-          </button>
-        ) : (
-          <button
-            type="button"
-            aria-label="Custom color"
-            onClick={() => nativeRef.current?.click()}
-            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-dashed border-border bg-surface transition-all hover:border-muted hover:bg-surface-strong active:scale-95"
-          >
-            <Plus className="size-3.5 text-muted" />
-          </button>
-        )}
+          {/* Custom color indicator or add-custom button */}
+          {!isPreset ? (
+            <button
+              type="button"
+              aria-label="Edit custom color"
+              onClick={() => nativeRef.current?.click()}
+              className="relative size-8 shrink-0 cursor-pointer rounded-full ring-2 ring-accent ring-offset-2 ring-offset-surface scale-110 transition-all"
+              style={{ backgroundColor: currentValue }}
+            >
+              <Check
+                className="absolute inset-0 m-auto size-3.5"
+                style={{
+                  color: isLightColor(currentValue)
+                    ? "#1C1917"
+                    : "#FFFCF7",
+                }}
+                strokeWidth={3}
+              />
+            </button>
+          ) : (
+            <button
+              type="button"
+              aria-label="Custom color"
+              onClick={() => nativeRef.current?.click()}
+              className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-dashed border-border bg-surface transition-all hover:border-accent/50 hover:bg-surface-strong active:scale-95"
+            >
+              <Plus className="size-3.5 text-muted" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Hex input */}
-      <input
-        type="text"
-        name={name}
-        value={currentValue.toUpperCase()}
-        onChange={(e) => {
-          const v = e.target.value;
-          if (/^#[0-9a-fA-F]{0,6}$/.test(v) || v === "#" || v === "") {
-            handleChange(v || "#");
-          }
-        }}
-        className="h-10 w-full rounded-[0.75rem] border border-border bg-white/85 px-3 text-xs font-medium uppercase tracking-widest text-muted-strong shadow-[0_1px_0_rgba(255,255,255,0.6)_inset] outline-none transition-colors focus:border-accent"
-        placeholder="#000000"
-        maxLength={7}
-        spellCheck={false}
-        autoComplete="off"
-      />
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted">#</span>
+        <input
+          type="text"
+          name={name}
+          value={currentValue.replace(/^#/, "").toUpperCase()}
+          onChange={(e) => {
+            const v = e.target.value.replace(/^#/, "");
+            if (/^[0-9a-fA-F]{0,6}$/.test(v)) {
+              handleChange(`#${v}`);
+            }
+          }}
+          className="h-10 w-full rounded-[0.75rem] border border-border bg-surface pl-6 pr-3 text-xs font-medium uppercase tracking-widest text-muted-strong outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20"
+          placeholder="000000"
+          maxLength={6}
+          spellCheck={false}
+          autoComplete="off"
+        />
+      </div>
     </div>
   );
 }
