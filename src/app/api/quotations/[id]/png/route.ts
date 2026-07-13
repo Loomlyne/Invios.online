@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getQuotationById } from "@/lib/billing-data";
-import { renderDocumentUrlToPdf } from "@/lib/document-pdf";
+import { renderDocumentUrlToPng } from "@/lib/document-png";
 import { requireSession } from "@/lib/require-session";
 
 export const runtime = "nodejs";
@@ -23,20 +23,19 @@ export async function GET(
   }
 
   const quotation = await getQuotationById(id);
-
   if (!quotation || quotation.userId !== userId) {
     return NextResponse.json({ error: "Quotation not found." }, { status: 404 });
   }
 
   const origin = new URL(request.url).origin;
-  const pdfBuffer = await renderDocumentUrlToPdf(
+  const pngBuffer = await renderDocumentUrlToPng(
     `${origin}/quotations/public/${quotation.shareToken}?print=1`,
   );
 
-  return new NextResponse(pdfBuffer, {
+  return new NextResponse(pngBuffer, {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${quotation.quotationNumber}.pdf"`,
+      "Content-Type": "image/png",
+      "Content-Disposition": `inline; filename="${quotation.quotationNumber}.png"`,
     },
   });
 }
