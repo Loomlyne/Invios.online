@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DataViewToolbar, DataViewRenderer, invoiceConfig } from "@/components/data-view";
 import { listInvoices } from "@/lib/billing-data";
+import { getAppContext } from "@/lib/data";
 import type { ViewMode } from "@/components/data-view";
 
 export default async function InvoicesPage({
@@ -28,8 +29,10 @@ export default async function InvoicesPage({
     : "kanban";
   const hasFilters = search.trim().length > 0 || status !== "all";
 
+  const context = await getAppContext();
   const invoices = await listInvoices({
     search,
+    userId: context.userId,
     status:
       status === "all"
         ? "all"

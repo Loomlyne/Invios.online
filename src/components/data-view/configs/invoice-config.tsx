@@ -1,6 +1,5 @@
 import { ArrowRight } from "lucide-react";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
-import { isManualInvoiceStatusTransitionAllowed } from "@/lib/billing";
 import { formatCurrency } from "@/lib/utils";
 import type { InvoiceRecord, InvoiceStatus } from "@/lib/billing";
 import type { DataViewConfig } from "../types";
@@ -9,8 +8,6 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
   getId: (inv) => inv.id,
   getHref: (inv) => `/app/invoices/${inv.slug}`,
   getStatus: (inv) => inv.status,
-  canChangeStatus: (inv, status) => isManualInvoiceStatusTransitionAllowed(inv.status, status),
-  isReversible: (from, to) => isManualInvoiceStatusTransitionAllowed(to, from),
 
   statusOptions: [
     { value: "all", label: "All statuses" },

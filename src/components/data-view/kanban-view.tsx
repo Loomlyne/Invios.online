@@ -8,7 +8,10 @@ import type { ReactNode } from "react";
 import {
   DndContext,
   DragOverlay,
+  KeyboardSensor,
   PointerSensor,
+  TouchSensor,
+  defaultKeyboardCoordinateGetter,
   useSensor,
   useSensors,
   type DragStartEvent,
@@ -55,6 +58,10 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 6 },
+    }),
+    useSensor(KeyboardSensor, { coordinateGetter: defaultKeyboardCoordinateGetter }),
   );
 
   useEffect(() => {
@@ -117,7 +124,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
         setIsUpdating(false);
       }
     },
-    [onStatusChange, router],
+    [config, onStatusChange, router],
   );
 
   const handleUndo = useCallback(() => {
@@ -152,9 +159,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
       if (!newStatus) return;
 
       const item = items.find((candidate) => config.getId(candidate) === itemId);
-      if (!item || (config.canChangeStatus && !config.canChangeStatus(item, newStatus))) {
-        return;
-      }
+      if (!item) return;
 
       const change = createKanbanUndo(items, itemId, newStatus);
       if (!change) return;
@@ -197,7 +202,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
         <div className="inline-flex gap-3 snap-x snap-mandatory">
           {config.kanbanColumns.map((col, colIdx) => {
             const colItems = grouped.get(col.status) ?? [];
-            const canDropHere = !activeItem || !config.canChangeStatus || config.canChangeStatus(activeItem, col.status);
+            const canDropHere = true;
 
             return (
               <div
@@ -246,7 +251,7 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
                         >
                           <Link
                             href={config.getHref(item) as Route}
-                            className="block cursor-pointer rounded-[1rem] border border-black/7 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:border-border-brand hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                            className="block cursor-pointer transition hover:text-foreground"
                             onClick={(e) => {
                               if (activeItem) e.preventDefault();
                             }}

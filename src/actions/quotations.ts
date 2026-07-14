@@ -268,17 +268,13 @@ export async function setQuotationStatusAction(id: string, status: QuotationStat
 
   const { data: current, error: fetchError } = await supabase
     .from("quotations")
-    .select("status,converted_to_invoice_id,sent_date,accepted_date,rejected_date")
+    .select("status,sent_date,accepted_date,rejected_date")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
   if (fetchError) {
     throw new Error(fetchError.message);
-  }
-
-  if (current.converted_to_invoice_id !== null) {
-    throw new Error("Converted quotations are locked and cannot change status.");
   }
 
   if (current.status === status) return;

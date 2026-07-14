@@ -319,6 +319,39 @@ describe("computePaymentStatus", () => {
     });
     expect(result).toBe("paid");
   });
+
+  it("reverts 'paid' to 'sent' when collected drops to 0 and not past due", () => {
+    const result = computePaymentStatus({
+      currentStatus: "paid",
+      total: 5000,
+      collected: 0,
+      dueDate: "2026-05-01",
+      today: "2026-04-08",
+    });
+    expect(result).toBe("sent");
+  });
+
+  it("reverts 'partial_paid' to 'overdue' when collected drops to 0 and past due", () => {
+    const result = computePaymentStatus({
+      currentStatus: "partial_paid",
+      total: 5000,
+      collected: 0,
+      dueDate: "2026-03-01",
+      today: "2026-04-08",
+    });
+    expect(result).toBe("overdue");
+  });
+
+  it("reverts 'overpaid' to 'sent' when collected drops to 0 and not past due", () => {
+    const result = computePaymentStatus({
+      currentStatus: "overpaid",
+      total: 5000,
+      collected: 0,
+      dueDate: "2026-05-01",
+      today: "2026-04-08",
+    });
+    expect(result).toBe("sent");
+  });
 });
 
 // ---------------------------------------------------------------------------

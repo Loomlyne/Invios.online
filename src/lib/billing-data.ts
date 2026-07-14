@@ -309,14 +309,21 @@ export async function getClientBySlug(slug: string) {
 export async function listInvoices({
   search,
   status,
+  userId,
 }: {
   search?: string;
   status?: InvoiceStatus | "all" | "open";
+  userId?: string;
 }) {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
     return [] as InvoiceRecord[];
+  }
+
+  // Sync overdue statuses before fetching so the board reflects reality.
+  if (userId) {
+    await syncOverdueStatuses(userId);
   }
 
   let query = supabase
@@ -638,11 +645,15 @@ export async function computeAndWriteInvoiceStatus(
   });
 
   if (newStatus !== invoice.status) {
-    await supabase
+    const { error: updateError } = await supabase
       .from("invoices")
       .update({ status: newStatus })
       .eq("id", invoiceId)
       .eq("user_id", userId);
+
+    if (updateError) {
+      throw new Error(`Failed to sync invoice status: ${updateError.message}`);
+    }
   }
 }
 

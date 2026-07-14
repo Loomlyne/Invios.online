@@ -153,8 +153,13 @@ export function computePaymentStatus(params: {
     return isPastDue ? "overdue" : "partial_paid";
   }
 
-  // No payments yet
-  return isPastDue ? "overdue" : currentStatus;
+  // No payments yet — if the previous status was payment-derived,
+  // fall back to sent or overdue, not the stale payment status.
+  const paymentDerivedStatuses: InvoiceStatus[] = ["paid", "overpaid", "partial_paid"];
+  const shouldRevert = paymentDerivedStatuses.includes(currentStatus);
+  if (isPastDue) return "overdue";
+  if (shouldRevert) return "sent";
+  return currentStatus;
 }
 
 /**

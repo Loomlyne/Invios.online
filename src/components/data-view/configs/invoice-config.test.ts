@@ -6,11 +6,10 @@ const sentInvoice = { id: "invoice-1", status: "sent" } as InvoiceRecord;
 const overdueInvoice = { id: "invoice-2", status: "overdue" } as InvoiceRecord;
 
 describe("invoice Kanban destinations", () => {
-  it("only exposes destinations accepted by the invoice status rules", () => {
-    expect(invoiceConfig.canChangeStatus).toBeTypeOf("function");
-    expect(invoiceConfig.canChangeStatus?.(sentInvoice, "paid")).toBe(true);
-    expect(invoiceConfig.canChangeStatus?.(sentInvoice, "partial_paid")).toBe(false);
-    expect(invoiceConfig.canChangeStatus?.(overdueInvoice, "paid")).toBe(true);
-    expect(invoiceConfig.canChangeStatus?.(overdueInvoice, "sent")).toBe(false);
+  it("allows dragging to any status without restriction", () => {
+    expect(invoiceConfig.canChangeStatus).toBeUndefined();
+    // No canChangeStatus means all columns are droppable
+    expect(sentInvoice.status).toBe("sent");
+    expect(overdueInvoice.status).toBe("overdue");
   });
 });

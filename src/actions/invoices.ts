@@ -7,7 +7,6 @@ import { z } from "zod";
 import {
   documentLineItemSchema,
   invoiceFormSchema,
-  isManualInvoiceStatusTransitionAllowed,
   type InvoiceStatus,
 } from "@/lib/billing";
 import {
@@ -298,24 +297,6 @@ export async function updateInvoiceAction(
 
 export async function setInvoiceStatusAction(id: string, status: InvoiceStatus) {
   const { supabase, user } = await requireSession();
-
-  const { data: current, error: fetchError } = await supabase
-    .from("invoices")
-    .select("status")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
-
-  if (fetchError) {
-    throw new Error(fetchError.message);
-  }
-
-  const from = current.status as InvoiceStatus;
-  if (!isManualInvoiceStatusTransitionAllowed(from, status)) {
-    throw new Error(
-      `Cannot change status from "${from}" to "${status}". "paid" can only be set from sent, overdue, or partial paid; "overpaid", "partial paid", and "overdue" are set automatically from payments and due dates.`,
-    );
-  }
 
   const { data, error } = await supabase
     .from("invoices")
