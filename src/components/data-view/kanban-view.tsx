@@ -199,64 +199,66 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
             const canDropHere = !activeItem || !config.canChangeStatus || config.canChangeStatus(activeItem, col.status);
 
             return (
-              <div
+              <DroppableColumn
                 key={col.status}
-                ref={(el) => { columnRefs.current[colIdx] = el; }}
-                className="w-[min(280px,85vw)] shrink-0 snap-start flex flex-col gap-2"
-              >
-                {/* Column header */}
-                <div className="flex items-center justify-between px-1 py-1.5">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="size-2.5 rounded-full shrink-0"
-                      style={{ background: col.color ?? "#d4c5a9" }}
-                    />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-strong">
-                      {col.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-medium text-muted tabular-nums">
-                      {colItems.length}
-                    </span>
-                    {config.getAddUrl ? (
-                      <Link
-                        href={config.getAddUrl(col.status) as Route}
-                        aria-label={`Add new item to ${col.label}`}
-                        className="flex size-5 items-center justify-center rounded-md text-muted/60 transition-colors hover:bg-black/5 hover:text-foreground"
-                      >
-                        <Plus className="size-3.5" />
-                      </Link>
-                    ) : null}
-                  </div>
-                </div>
-
-                <DroppableColumn id={col.status} disabled={!canDropHere}>
-                    {colItems.length === 0 ? (
-                      <div className="flex flex-1 items-center justify-center">
-                        <p className="text-xs text-muted">No items</p>
-                      </div>
-                    ) : (
-                      colItems.map((item) => (
-                        <DraggableCard
-                          key={config.getId(item)}
-                          id={config.getId(item)}
-                          disabled={isUpdating}
+                id={col.status}
+                disabled={!canDropHere}
+                className="w-[min(280px,85vw)] shrink-0 snap-start"
+                header={(
+                  <div
+                    ref={(el) => { columnRefs.current[colIdx] = el; }}
+                    className="flex items-center justify-between px-1 py-1.5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="size-2.5 rounded-full shrink-0"
+                        style={{ background: col.color ?? "#d4c5a9" }}
+                      />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-strong">
+                        {col.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium text-muted tabular-nums">
+                        {colItems.length}
+                      </span>
+                      {config.getAddUrl ? (
+                        <Link
+                          href={config.getAddUrl(col.status) as Route}
+                          aria-label={`Add new item to ${col.label}`}
+                          className="flex size-5 items-center justify-center rounded-md text-muted/60 transition-colors hover:bg-black/5 hover:text-foreground"
                         >
-                          <Link
-                            href={config.getHref(item) as Route}
-                            className="block cursor-pointer rounded-[1rem] border border-black/7 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:border-border-brand hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-                            onClick={(e) => {
-                              if (activeItem) e.preventDefault();
-                            }}
-                          >
-                            {config.renderKanbanCard(item)}
-                          </Link>
-                        </DraggableCard>
-                      ))
-                    )}
-                </DroppableColumn>
-              </div>
+                          <Plus className="size-3.5" />
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+              >
+                {colItems.length === 0 ? (
+                  <div className="flex flex-1 items-center justify-center">
+                    <p className="text-xs text-muted">No items</p>
+                  </div>
+                ) : (
+                  colItems.map((item) => (
+                    <DraggableCard
+                      key={config.getId(item)}
+                      id={config.getId(item)}
+                      disabled={isUpdating}
+                    >
+                      <Link
+                        href={config.getHref(item) as Route}
+                        className="block cursor-pointer rounded-[1rem] border border-black/7 bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:border-border-brand hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                        onClick={(e) => {
+                          if (activeItem) e.preventDefault();
+                        }}
+                      >
+                        {config.renderKanbanCard(item)}
+                      </Link>
+                    </DraggableCard>
+                  ))
+                )}
+              </DroppableColumn>
             );
           })}
         </div>
