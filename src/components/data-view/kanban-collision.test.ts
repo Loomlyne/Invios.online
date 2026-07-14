@@ -26,6 +26,10 @@ describe("pointerFirstKanbanCollision", () => {
     expect(pointerFirstKanbanCollision(createArgs({ x: 210, y: 80 })).map(({ id }) => id)).toEqual(["right"]);
   });
 
+  it("does not choose a nearby column when the pointer is in the gutter", () => {
+    expect(pointerFirstKanbanCollision(createArgs({ x: 150, y: 80 }))).toEqual([]);
+  });
+
   it("falls back to nearest-center detection when no pointer coordinates exist", () => {
     expect(pointerFirstKanbanCollision(createArgs(null))[0]?.id).toBe("left");
   });
