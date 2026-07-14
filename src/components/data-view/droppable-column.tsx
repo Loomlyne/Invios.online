@@ -18,6 +18,7 @@ export function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
+      data-kanban-column={id}
       aria-disabled={disabled || undefined}
       className={cn(
         "flex min-h-[120px] flex-col gap-2 rounded-[1.25rem] border border-black/5 bg-black/[0.02] p-2 transition-colors duration-150",

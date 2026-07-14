@@ -361,3 +361,18 @@ Kanban is healthy only when all of the following are true:
 ## Recommended release decision
 
 Do not call the Kanban fully healthy yet. The pointer mechanics can stay. Prioritize the quotation conversion lock, quotation timestamp normalization, and truthful invoice undo before treating the board as reliable for production workflows. Add the browser regression suite in the same repair so this cycle does not repeat.
+
+## Follow-up (2026-07-14 evening)
+
+Product override shipped in `8e2ca3b`: **invoice and quotation Kanban moves are unrestricted** (any column). Converted-quotation lock and invoice transition matrix were removed from UI and server Kanban paths.
+
+Also shipped:
+
+- Payment-derived status revert when collected hits zero (`billing-utils.ts`).
+- Overdue sync on `/app/invoices` list load.
+- `KeyboardSensor`, `TouchSensor`, grip drag handle (`data-kanban-card` / `data-kanban-column` hooks).
+- Dev-only CSP `unsafe-eval` (from `8967a30`).
+- Maintained Playwright spec: `e2e/kanban-drag.spec.ts` (client pointer move + gutter no-op + Supabase assert).
+- Playwright `webServer` uses `npm run dev` (not `pnpm`).
+
+**Still open:** run and gate CI on `kanban-drag.spec.ts` locally or against `PLAYWRIGHT_BASE_URL`; quotation full-field undo; optional optimistic race guards on status writes.

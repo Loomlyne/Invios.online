@@ -28,6 +28,7 @@ export function DraggableCard({
   return (
     <div
       ref={setNodeRef}
+      data-kanban-card={id}
       className={cn(
         "select-none rounded-[1rem] border border-black/7 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition hover:border-border-brand hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
         isDragging && "opacity-30",
