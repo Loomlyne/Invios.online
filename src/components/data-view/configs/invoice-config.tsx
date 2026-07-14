@@ -10,6 +10,7 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
   getHref: (inv) => `/app/invoices/${inv.slug}`,
   getStatus: (inv) => inv.status,
   canChangeStatus: (inv, status) => isManualInvoiceStatusTransitionAllowed(inv.status, status),
+  isReversible: (from, to) => isManualInvoiceStatusTransitionAllowed(to, from),
 
   statusOptions: [
     { value: "all", label: "All statuses" },

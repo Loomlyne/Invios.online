@@ -107,7 +107,8 @@ export function KanbanView<TItem extends { id: string; status: TStatus }, TStatu
       try {
         await onStatusChange?.(change.id, nextStatus);
         confirmedItemsRef.current = applyKanbanStatusChange(previousItems, change.id, nextStatus);
-        setLastUndo(direction === "forward" ? change : null);
+        const reversible = !config.isReversible || config.isReversible(change.from, change.to);
+        setLastUndo(direction === "forward" && reversible ? change : null);
       } catch {
         setItems(previousItems);
         setUpdateError("This move was not saved. Your board has been restored.");

@@ -265,20 +265,40 @@ export async function updateQuotationAction(
 
 export async function setQuotationStatusAction(id: string, status: QuotationStatus) {
   const { supabase, user } = await requireSession();
-  const now = new Date().toISOString();
-  const update: Record<string, string | null> = { status };
 
-  if (status === "sent") {
-    update.sent_date = now;
+  const { data: current, error: fetchError } = await supabase
+    .from("quotations")
+    .select("status,converted_to_invoice_id,sent_date,accepted_date,rejected_date")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (fetchError) {
+    throw new Error(fetchError.message);
   }
-  if (status === "accepted") {
-    update.accepted_date = now;
-    update.rejected_date = null;
+
+  if (current.converted_to_invoice_id !== null) {
+    throw new Error("Converted quotations are locked and cannot change status.");
   }
-  if (status === "rejected") {
-    update.rejected_date = now;
-    update.accepted_date = null;
-  }
+
+  if (current.status === status) return;
+
+  const now = new Date().toISOString();
+  const update: Record<string, string | null> = {
+    status,
+    sent_date:
+      status === "sent"
+        ? current.sent_date ?? now
+        : current.sent_date,
+    accepted_date:
+      status === "accepted"
+        ? current.accepted_date ?? now
+        : null,
+    rejected_date:
+      status === "rejected"
+        ? current.rejected_date ?? now
+        : null,
+  };
 
   const { data, error } = await supabase
     .from("quotations")

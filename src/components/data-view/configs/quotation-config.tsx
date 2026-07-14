@@ -8,6 +8,8 @@ export const quotationConfig: DataViewConfig<QuotationRecord, QuotationStatus> =
   getId: (q) => q.id,
   getHref: (q) => `/app/quotations/${q.slug}`,
   getStatus: (q) => q.status,
+  canChangeStatus: (q, status) =>
+    q.convertedToInvoiceId === null || status === q.status,
 
   statusOptions: [
     { value: "all", label: "All statuses" },
