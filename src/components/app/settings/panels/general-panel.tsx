@@ -14,20 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { CURRENCY_SELECT_OPTIONS } from "@/lib/currencies";
 
 const LANGUAGE_OPTIONS = [
   { value: "en", label: "🇬🇧 English" },
   { value: "ar", label: "🇦🇪 Arabic" },
   { value: "bilingual", label: "🇬🇧/🇦🇪 Bilingual" },
-];
-
-const CURRENCY_OPTIONS = [
-  { value: "AED", label: "🇦🇪 AED (د.إ)" },
-  { value: "USD", label: "🇺🇸 USD ($)" },
-  { value: "EUR", label: "🇪🇺 EUR (€)" },
-  { value: "GBP", label: "🇬🇧 GBP (£)" },
-  { value: "SAR", label: "🇸🇦 SAR (﷼)" },
-  { value: "INR", label: "🇮🇳 INR (₹)" },
 ];
 
 const DATE_FORMAT_OPTIONS = [
@@ -132,7 +124,7 @@ export function GeneralPanel({ context }: { context: AppContext }) {
           <Field label="Currency" htmlFor="currency">
             <Select
               id="currency"
-              options={CURRENCY_OPTIONS}
+              options={CURRENCY_SELECT_OPTIONS}
               value={values.defaultCurrency}
               onChange={(v) => update("defaultCurrency", v)}
             />

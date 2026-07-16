@@ -24,6 +24,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CurrencySelect } from "@/components/ui/currency-select";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -574,7 +575,12 @@ export function DocumentBuilder({
               <SectionTitle>Pricing</SectionTitle>
               <div className="grid gap-3 sm:grid-cols-3">
                 <Field label="Currency" htmlFor="currency">
-                  <Input id="currency" name="currency" value={currency} onChange={(event) => setCurrency(event.target.value)} />
+                  <CurrencySelect
+                    id="currency"
+                    name="currency"
+                    value={currency}
+                    onChange={setCurrency}
+                  />
                 </Field>
                 <Field label="Tax %" htmlFor="taxRate">
                   <Input id="taxRate" name="taxRate" type="number" min={0} max={100} step="0.01" value={taxRate} onChange={(event) => setTaxRate(event.target.value)} />

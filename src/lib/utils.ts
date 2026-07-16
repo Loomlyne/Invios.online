@@ -6,11 +6,21 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(value: number, currency = "AED") {
-  return new Intl.NumberFormat("en-AE", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(value);
+  const code = (currency || "AED").trim().toUpperCase();
+  try {
+    return new Intl.NumberFormat("en-AE", {
+      style: "currency",
+      currency: /^[A-Z]{3}$/.test(code) ? code : "AED",
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    // Invalid ISO currency codes throw RangeError and must not crash previews.
+    return new Intl.NumberFormat("en-AE", {
+      style: "currency",
+      currency: "AED",
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
 }
 
 export function toSlug(value: string) {

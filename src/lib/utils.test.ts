@@ -21,6 +21,14 @@ describe("formatCurrency", () => {
   it("includes fractional cents", () => {
     expect(formatCurrency(12.5)).toContain("12.5");
   });
+
+  it("does not throw on partial or invalid currency codes", () => {
+    expect(() => formatCurrency(100, "U")).not.toThrow();
+    expect(() => formatCurrency(100, "US")).not.toThrow();
+    expect(() => formatCurrency(100, "XXX")).not.toThrow();
+    expect(() => formatCurrency(100, "")).not.toThrow();
+    expect(formatCurrency(100, "U")).toContain("100");
+  });
 });
 
 describe("formatDateDisplay", () => {
