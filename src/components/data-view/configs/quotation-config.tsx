@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
-import { formatCurrency } from "@/lib/utils";
+import { formatReportingCurrency } from "@/lib/fx";
 import type { QuotationRecord, QuotationStatus } from "@/lib/billing";
 import type { DataViewConfig } from "../types";
 
@@ -74,10 +74,10 @@ export const quotationConfig: DataViewConfig<QuotationRecord, QuotationStatus> =
     },
     {
       key: "total",
-      label: "Total",
+      label: "Total (AED)",
       render: (q) => (
         <span className="font-semibold text-foreground">
-          {formatCurrency(q.total, q.currency)}
+          {formatReportingCurrency(q.total, q.currency)}
         </span>
       ),
       sortable: true,
@@ -99,13 +99,14 @@ export const quotationConfig: DataViewConfig<QuotationRecord, QuotationStatus> =
         </p>
         <p className="text-sm text-muted">
           Scoped {q.quotationDate} · Expires {q.expiryDate}
+          {q.currency !== "AED" ? ` · Doc ${q.currency}` : ""}
         </p>
       </div>
       <div className="flex items-center gap-4">
         <div className="text-right">
           <p className="text-sm text-muted">Total</p>
           <p className="text-base font-semibold text-foreground">
-            {formatCurrency(q.total, q.currency)}
+            {formatReportingCurrency(q.total, q.currency)}
           </p>
         </div>
         <ArrowRight className="size-4 text-muted" />
@@ -123,7 +124,7 @@ export const quotationConfig: DataViewConfig<QuotationRecord, QuotationStatus> =
       </div>
       <p className="text-xs text-muted-strong truncate">{q.client.name}</p>
       <p className="text-sm font-medium text-foreground">
-        {formatCurrency(q.total, q.currency)}
+        {formatReportingCurrency(q.total, q.currency)}
       </p>
       <p className="text-xs text-muted">Expires {q.expiryDate}</p>
     </div>

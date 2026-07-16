@@ -17,6 +17,7 @@ import { isUuid } from "@/lib/billing-utils";
 import { getAppContext } from "@/lib/data";
 import { buildQuotationPreviewFromRecord } from "@/lib/document-preview-data";
 import { env } from "@/lib/env";
+import { formatReportingCurrency } from "@/lib/fx";
 import { formatCurrency } from "@/lib/utils";
 import { ShareButton } from "@/components/documents/share-button";
 import { EmailPdfButton } from "@/components/documents/email-pdf-button";
@@ -121,9 +122,13 @@ export default async function QuotationDetailPage({
               <InfoCard label="Quotation date" value={quotation.quotationDate} />
               <InfoCard label="Expiry date" value={quotation.expiryDate} />
               <InfoCard label="Validity" value={`${quotation.validityDays} days`} />
-              <InfoCard label="Currency" value={quotation.currency} />
+              <InfoCard label="Doc currency" value={quotation.currency} />
               <InfoCard label="Client" value={quotation.client.name} />
-              <InfoCard label="Total" value={formatCurrency(quotation.total, quotation.currency)} emphasize />
+              <InfoCard
+                label="Total (AED)"
+                value={formatReportingCurrency(quotation.total, quotation.currency)}
+                emphasize
+              />
             </div>
 
             <div className="border-t border-border pt-4">

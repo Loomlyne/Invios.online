@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClientBySlug, listInvoicesForClient, listQuotationsForClient } from "@/lib/billing-data";
 import { getClientIntelligence } from "@/lib/client-intelligence";
-import { formatCurrency, formatDateDisplay } from "@/lib/utils";
+import { formatReportingCurrency, toReportingAmount } from "@/lib/fx";
+import { formatDateDisplay } from "@/lib/utils";
 
 export default async function ClientDetailPage({
   params,
@@ -31,8 +32,14 @@ export default async function ClientDetailPage({
     getClientIntelligence(client.id),
   ]);
 
-  const billedTotal = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
-  const quotedTotal = quotations.reduce((sum, quotation) => sum + quotation.total, 0);
+  const billedTotal = invoices.reduce(
+    (sum, invoice) => sum + toReportingAmount(invoice.total, invoice.currency),
+    0,
+  );
+  const quotedTotal = quotations.reduce(
+    (sum, quotation) => sum + toReportingAmount(quotation.total, quotation.currency),
+    0,
+  );
   const openInvoiceCount = invoices.filter((invoice) =>
     ["sent", "overdue", "partial_paid"].includes(invoice.status),
   ).length;
@@ -127,9 +134,9 @@ export default async function ClientDetailPage({
           )}
           <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-white/84 subtle-shadow">
             <div className="grid divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-              <MetricCard label="Invoices" value={String(invoices.length)} detail={formatCurrency(billedTotal)} />
+              <MetricCard label="Invoices" value={String(invoices.length)} detail={formatReportingCurrency(billedTotal)} />
               <MetricCard label="Open invoices" value={String(openInvoiceCount)} detail="Awaiting payment" />
-              <MetricCard label="Quotations" value={String(quotations.length)} detail={formatCurrency(quotedTotal)} />
+              <MetricCard label="Quotations" value={String(quotations.length)} detail={formatReportingCurrency(quotedTotal)} />
             </div>
           </div>
         </div>
@@ -199,7 +206,7 @@ export default async function ClientDetailPage({
                   key={invoice.id}
                   href={`/app/invoices/${invoice.slug}`}
                   documentNumber={invoice.invoiceNumber}
-                  subtitle={`Due ${invoice.dueDate} \u00b7 ${formatCurrency(invoice.total, invoice.currency)}`}
+                  subtitle={`Due ${invoice.dueDate} · ${formatReportingCurrency(invoice.total, invoice.currency)}`}
                   status={invoice.status}
                 />
               ))
@@ -226,7 +233,7 @@ export default async function ClientDetailPage({
                   key={quotation.id}
                   href={`/app/quotations/${quotation.slug}`}
                   documentNumber={quotation.quotationNumber}
-                  subtitle={`Expires ${quotation.expiryDate} \u00b7 ${formatCurrency(quotation.total, quotation.currency)}`}
+                  subtitle={`Expires ${quotation.expiryDate} · ${formatReportingCurrency(quotation.total, quotation.currency)}`}
                   status={quotation.status}
                 />
               ))

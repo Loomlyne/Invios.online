@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { DocumentStatusBadge } from "@/components/documents/document-status-badge";
-import { formatCurrency } from "@/lib/utils";
+import { formatReportingCurrency } from "@/lib/fx";
 import type { InvoiceRecord, InvoiceStatus } from "@/lib/billing";
 import type { DataViewConfig } from "../types";
 
@@ -77,10 +77,10 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
     },
     {
       key: "total",
-      label: "Total",
+      label: "Total (AED)",
       render: (inv) => (
         <span className="font-semibold text-foreground">
-          {formatCurrency(inv.total, inv.currency)}
+          {formatReportingCurrency(inv.total, inv.currency)}
         </span>
       ),
       sortable: true,
@@ -102,13 +102,14 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
         </p>
         <p className="text-sm text-muted">
           Issued {inv.issueDate} · Due {inv.dueDate}
+          {inv.currency !== "AED" ? ` · Doc ${inv.currency}` : ""}
         </p>
       </div>
       <div className="flex items-center gap-4">
         <div className="text-right">
           <p className="text-sm text-muted">Total</p>
           <p className="text-base font-semibold text-foreground">
-            {formatCurrency(inv.total, inv.currency)}
+            {formatReportingCurrency(inv.total, inv.currency)}
           </p>
         </div>
         <ArrowRight className="size-4 text-muted" />
@@ -126,7 +127,7 @@ export const invoiceConfig: DataViewConfig<InvoiceRecord, InvoiceStatus> = {
       </div>
       <p className="text-xs text-muted-strong truncate">{inv.client.name}</p>
       <p className="text-sm font-medium text-foreground">
-        {formatCurrency(inv.total, inv.currency)}
+        {formatReportingCurrency(inv.total, inv.currency)}
       </p>
       <p className="text-xs text-muted">Due {inv.dueDate}</p>
     </div>

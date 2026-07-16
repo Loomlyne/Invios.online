@@ -19,6 +19,7 @@ import {
   type DashboardRangeKey,
 } from "@/lib/billing";
 import { getAppContext } from "@/lib/data";
+import { REPORTING_CURRENCY, formatReportingCurrency } from "@/lib/fx";
 import { formatDateDisplay, formatCurrency } from "@/lib/utils";
 import {
   buildRevenueTrend,
@@ -81,7 +82,7 @@ export default async function AppHomePage({
   const momDeltas = buildMomDeltas(analyticsData.rows, currentRange, today);
   const hasChartData = analyticsData.rows.some((r) => r.status !== "draft");
 
-  const currency = context.userState.settings.defaultCurrency;
+  const currency = REPORTING_CURRENCY;
   const hasData = recentInvoices.length > 0 || recentQuotations.length > 0;
   const setupItems = context.setupProgress.items;
   const nextItem = setupItems.find((item) => !item.complete) ?? setupItems[setupItems.length - 1];
@@ -246,7 +247,7 @@ export default async function AppHomePage({
                     documentNumber={row.invoiceNumber}
                     subtitle={`${row.client.name} · due ${formatDateDisplay(row.dueDate)}`}
                     status={row.status}
-                    amount={formatCurrency(row.outstandingAmount, row.currency)}
+                    amount={formatCurrency(row.outstandingAmount, currency)}
                   />
                 ))
               )}
@@ -277,7 +278,7 @@ export default async function AppHomePage({
                     documentNumber={quotation.quotationNumber}
                     subtitle={`${quotation.client.name} · expires ${formatDateDisplay(quotation.expiryDate)}`}
                     status={quotation.status}
-                    amount={formatCurrency(quotation.total, quotation.currency)}
+                    amount={formatReportingCurrency(quotation.total, quotation.currency)}
                   />
                 ))
               )}
@@ -309,7 +310,7 @@ export default async function AppHomePage({
                       documentNumber={invoice.invoiceNumber}
                       subtitle={invoice.client.name}
                       status={invoice.status}
-                      amount={formatCurrency(invoice.total, invoice.currency)}
+                      amount={formatReportingCurrency(invoice.total, invoice.currency)}
                     />
                   ))}
                   <Link
@@ -342,7 +343,7 @@ export default async function AppHomePage({
                       documentNumber={quotation.quotationNumber}
                       subtitle={quotation.client.name}
                       status={quotation.status}
-                      amount={formatCurrency(quotation.total, quotation.currency)}
+                      amount={formatReportingCurrency(quotation.total, quotation.currency)}
                     />
                   ))}
                   <Link

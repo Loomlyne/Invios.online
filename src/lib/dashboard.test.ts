@@ -431,6 +431,7 @@ function makeRow(overrides: Partial<DashboardInvoiceRow>): DashboardInvoiceRow {
     issueDate: "2026-04-01",
     dueDate: "2026-04-30",
     currency: "AED",
+    documentCurrency: "AED",
     taxRate: 5,
     discount: 0,
     subtotal: 1000,

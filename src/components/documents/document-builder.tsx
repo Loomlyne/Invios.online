@@ -409,19 +409,19 @@ export function DocumentBuilder({
                   Add line
                 </Button>
               </div>
-              <div className="grid gap-3">
+              <div className="grid gap-2">
                 {lineItems.map((item, index) => (
-                  <Card key={item.id} className="border border-black/7 bg-[#FFF8EE] p-4 shadow-none">
-                    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_72px_120px_auto]">
-                      <Field
-                        label="Title"
-                        htmlFor={`description-${item.id}`}
-                        required
-                        error={visibleError(`lineItems.${index}.description`)}
-                      >
+                  <div
+                    key={item.id}
+                    className="rounded-[var(--radius-inner)] border border-border bg-white/70 p-3"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="min-w-0 flex-1 space-y-2">
                         <Input
                           id={`description-${item.id}`}
                           value={item.description}
+                          placeholder="What was delivered"
+                          aria-label={`Line ${index + 1} title`}
                           aria-invalid={Boolean(visibleError(`lineItems.${index}.description`)) || undefined}
                           onBlur={() => markTouched(`lineItems.${index}.description`)}
                           onChange={(event) =>
@@ -432,78 +432,56 @@ export function DocumentBuilder({
                             )
                           }
                         />
-                      </Field>
-                      <Field
-                        label="Qty"
-                        htmlFor={`quantity-${item.id}`}
-                        required
-                        error={visibleError(`lineItems.${index}.quantity`)}
-                      >
+                        {visibleError(`lineItems.${index}.description`) ? (
+                          <p className="text-xs text-danger">{visibleError(`lineItems.${index}.description`)}</p>
+                        ) : null}
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[5.5rem_minmax(0,1fr)]">
+                          <Input
+                            id={`quantity-${item.id}`}
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={item.quantity}
+                            placeholder="Qty"
+                            aria-label={`Line ${index + 1} quantity`}
+                            aria-invalid={Boolean(visibleError(`lineItems.${index}.quantity`)) || undefined}
+                            onBlur={() => markTouched(`lineItems.${index}.quantity`)}
+                            onChange={(event) =>
+                              setLineItems((current) =>
+                                current.map((line) =>
+                                  line.id === item.id
+                                    ? { ...line, quantity: Number(event.target.value) }
+                                    : line,
+                                ),
+                              )
+                            }
+                          />
+                          <Input
+                            id={`price-${item.id}`}
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={item.unitPrice}
+                            placeholder="Unit price"
+                            aria-label={`Line ${index + 1} unit price`}
+                            aria-invalid={Boolean(visibleError(`lineItems.${index}.unitPrice`)) || undefined}
+                            onBlur={() => markTouched(`lineItems.${index}.unitPrice`)}
+                            onChange={(event) =>
+                              setLineItems((current) =>
+                                current.map((line) =>
+                                  line.id === item.id
+                                    ? { ...line, unitPrice: Number(event.target.value) }
+                                    : line,
+                                ),
+                              )
+                            }
+                          />
+                        </div>
                         <Input
-                          id={`quantity-${item.id}`}
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          value={item.quantity}
-                          aria-invalid={Boolean(visibleError(`lineItems.${index}.quantity`)) || undefined}
-                          onBlur={() => markTouched(`lineItems.${index}.quantity`)}
-                          onChange={(event) =>
-                            setLineItems((current) =>
-                              current.map((line) =>
-                                line.id === item.id
-                                  ? { ...line, quantity: Number(event.target.value) }
-                                  : line,
-                              ),
-                            )
-                          }
-                        />
-                      </Field>
-                      <Field
-                        label="Unit price"
-                        htmlFor={`price-${item.id}`}
-                        required
-                        error={visibleError(`lineItems.${index}.unitPrice`)}
-                      >
-                        <Input
-                          id={`price-${item.id}`}
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          value={item.unitPrice}
-                          aria-invalid={Boolean(visibleError(`lineItems.${index}.unitPrice`)) || undefined}
-                          onBlur={() => markTouched(`lineItems.${index}.unitPrice`)}
-                          onChange={(event) =>
-                            setLineItems((current) =>
-                              current.map((line) =>
-                                line.id === item.id
-                                  ? { ...line, unitPrice: Number(event.target.value) }
-                                  : line,
-                              ),
-                            )
-                          }
-                        />
-                      </Field>
-                      <div className="flex items-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            setLineItems((current) =>
-                              current.length === 1 ? current : current.filter((line) => line.id !== item.id),
-                            )
-                          }
-                          aria-label={`Remove line item ${index + 1}`}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <Field label="Notes" htmlFor={`notes-${item.id}`}>
-                        <Textarea
                           id={`notes-${item.id}`}
                           value={item.notes ?? ""}
+                          placeholder="Notes (optional)"
+                          aria-label={`Line ${index + 1} notes`}
                           onChange={(event) =>
                             setLineItems((current) =>
                               current.map((line) =>
@@ -512,60 +490,70 @@ export function DocumentBuilder({
                             )
                           }
                         />
-                      </Field>
-                    </div>
-                    {kind === "quotation" && (
-                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                        <Field label="Duration" htmlFor={`durationValue-${item.id}`}>
-                          <Input
-                            id={`durationValue-${item.id}`}
-                            type="number"
-                            min={1}
-                            step={1}
-                            placeholder="e.g. 3"
-                            value={item.durationValue ?? ""}
-                            onChange={(event) =>
-                              setLineItems((current) =>
-                                current.map((line) =>
-                                  line.id === item.id
-                                    ? {
-                                        ...line,
-                                        durationValue:
-                                          event.target.value === ""
-                                            ? undefined
-                                            : Number(event.target.value),
-                                      }
-                                    : line,
-                                ),
-                              )
-                            }
-                          />
-                        </Field>
-                        <Field label="Unit" htmlFor={`durationUnit-${item.id}`}>
-                          <Select
-                            id={`durationUnit-${item.id}`}
-                            value={item.durationUnit ?? ""}
-                            placeholder="Unit"
-                            onChange={(v) =>
-                              setLineItems((current) =>
-                                current.map((line) =>
-                                  line.id === item.id
-                                    ? { ...line, durationUnit: v as DocumentLineItem["durationUnit"] }
-                                    : line,
-                                ),
-                              )
-                            }
-                            options={[
-                              { value: "hours", label: "Hours" },
-                              { value: "days", label: "Days" },
-                              { value: "weeks", label: "Weeks" },
-                              { value: "months", label: "Months" },
-                            ]}
-                          />
-                        </Field>
+                        {kind === "quotation" ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              id={`durationValue-${item.id}`}
+                              type="number"
+                              min={1}
+                              step={1}
+                              placeholder="Duration"
+                              value={item.durationValue ?? ""}
+                              onChange={(event) =>
+                                setLineItems((current) =>
+                                  current.map((line) =>
+                                    line.id === item.id
+                                      ? {
+                                          ...line,
+                                          durationValue:
+                                            event.target.value === ""
+                                              ? undefined
+                                              : Number(event.target.value),
+                                        }
+                                      : line,
+                                  ),
+                                )
+                              }
+                            />
+                            <Select
+                              id={`durationUnit-${item.id}`}
+                              value={item.durationUnit ?? ""}
+                              placeholder="Unit"
+                              onChange={(v) =>
+                                setLineItems((current) =>
+                                  current.map((line) =>
+                                    line.id === item.id
+                                      ? { ...line, durationUnit: v as DocumentLineItem["durationUnit"] }
+                                      : line,
+                                  ),
+                                )
+                              }
+                              options={[
+                                { value: "hours", label: "Hours" },
+                                { value: "days", label: "Days" },
+                                { value: "weeks", label: "Weeks" },
+                                { value: "months", label: "Months" },
+                              ]}
+                            />
+                          </div>
+                        ) : null}
                       </div>
-                    )}
-                  </Card>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="mt-0.5 shrink-0"
+                        onClick={() =>
+                          setLineItems((current) =>
+                            current.length === 1 ? current : current.filter((line) => line.id !== item.id),
+                          )
+                        }
+                        aria-label={`Remove line item ${index + 1}`}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>

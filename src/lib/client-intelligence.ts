@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { toReportingAmount } from "@/lib/fx";
 
 export interface ReliabilityInput {
   paidInvoices: { dueDate: string; paidAt: string | null }[];
@@ -205,7 +206,7 @@ export async function getClientIntelligence(
 
   const { data: invoices } = await supabase
     .from("invoices")
-    .select("id, total, status, due_date")
+    .select("id, total, status, due_date, currency")
     .eq("client_id", clientId);
 
   if (!invoices || invoices.length === 0) return null;
@@ -236,7 +237,9 @@ export async function getClientIntelligence(
   });
 
   const ltv = computeClientLTV({
-    paidInvoices: settled.map((inv) => ({ total: Number(inv.total) })),
+    paidInvoices: settled.map((inv) => ({
+      total: toReportingAmount(Number(inv.total), String(inv.currency ?? "AED")),
+    })),
   });
 
   const outstandingCount = invoices.filter((inv) =>
