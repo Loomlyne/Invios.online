@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
-import { dashboardRangeKeys, type DashboardMetricKey, type DashboardRangeKey } from "@/lib/billing";
+import { dashboardRangeKeys, type DashboardRangeKey } from "@/lib/billing";
 import { cn } from "@/lib/utils";
 
 const rangeLabels: Record<DashboardRangeKey, string> = {
@@ -14,17 +14,14 @@ const rangeLabels: Record<DashboardRangeKey, string> = {
 
 export function DashboardRangeToggle({
   currentRange,
-  currentMetric,
 }: {
   currentRange: DashboardRangeKey;
-  currentMetric: DashboardMetricKey;
 }) {
   const router = useRouter();
 
   function navigate(nextRange: DashboardRangeKey) {
     const params = new URLSearchParams();
     params.set("range", nextRange);
-    params.set("metric", currentMetric);
     router.push((`/app?${params.toString()}` as Route), { scroll: false });
   }
 

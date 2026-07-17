@@ -16,7 +16,11 @@ import {
 import { isUuid } from "@/lib/billing-utils";
 import { getAppContext } from "@/lib/data";
 import { buildQuotationPreviewFromRecord } from "@/lib/document-preview-data";
+import { env } from "@/lib/env";
+import { formatReportingCurrency } from "@/lib/fx";
 import { formatCurrency } from "@/lib/utils";
+import { ShareButton } from "@/components/documents/share-button";
+import { EmailPdfButton } from "@/components/documents/email-pdf-button";
 import { ExportButton } from "./export-button";
 
 export default async function QuotationDetailPage({
@@ -65,57 +69,79 @@ export default async function QuotationDetailPage({
       </Button>
 
       <section className="flex flex-col gap-[var(--space-grid)]">
-        <Card>
-          <CardHeader className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <CardTitle>{quotation.quotationNumber}</CardTitle>
-              <Badge variant="accent">Quotation detail</Badge>
+        <Card className="overflow-hidden p-0">
+          <CardHeader className="gap-5 bg-surface-subtle p-[var(--space-card)]">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="accent">Quotation</Badge>
               <DocumentStatusBadge status={quotation.status} />
               {isLocked ? <Badge variant="default">Converted</Badge> : null}
             </div>
-            <CardDescription>
-              {quotation.client.name}
-              {quotation.client.company ? ` • ${quotation.client.company}` : ""}
-            </CardDescription>
-            <div className="flex flex-wrap items-center gap-2">
-              {isLocked ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled
-                  className="opacity-50 cursor-not-allowed"
-                  title="This quotation has been converted into an invoice and can no longer be edited."
-                >
-                  <SquarePen className="size-4" />
-                  Edit
-                </Button>
-              ) : (
-                <Button asChild variant="secondary" size="sm">
-                  <Link href={`/app/quotations/${quotation.slug}/edit` as Route}>
+            <div>
+              <CardTitle className="display-text text-3xl">{quotation.quotationNumber}</CardTitle>
+              <CardDescription className="mt-2">
+                {quotation.client.name}
+                {quotation.client.company ? ` • ${quotation.client.company}` : ""}
+              </CardDescription>
+            </div>
+            <div className="grid gap-3 border-t border-border pt-4 2xl:grid-cols-[auto_1fr] 2xl:items-center">
+              <div>
+                {isLocked ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled
+                    className="opacity-50 cursor-not-allowed"
+                    title="This quotation has been converted into an invoice and can no longer be edited."
+                  >
                     <SquarePen className="size-4" />
                     Edit
-                  </Link>
-                </Button>
-              )}
-              <ExportButton quotationId={quotation.id} quotationNumber={quotation.quotationNumber} />
+                  </Button>
+                ) : (
+                  <Button asChild variant="secondary" size="sm">
+                    <Link href={`/app/quotations/${quotation.slug}/edit` as Route}>
+                      <SquarePen className="size-4" />
+                      Edit
+                    </Link>
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 2xl:justify-end">
+                <ShareButton
+                  publicUrl={`${env.siteUrl}/quotations/public/${quotation.shareToken}`}
+                  documentNumber={quotation.quotationNumber}
+                  amountLabel={formatCurrency(quotation.total, quotation.currency)}
+                  documentKind="quotation"
+                />
+                <ExportButton quotationId={quotation.id} quotationNumber={quotation.quotationNumber} />
+                <EmailPdfButton endpoint={`/api/quotations/${quotation.id}/email-pdf`} />
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <CardContent className="m-0 grid gap-5 border-t border-border p-[var(--space-card)]">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 2xl:grid-cols-6">
               <InfoCard label="Quotation date" value={quotation.quotationDate} />
               <InfoCard label="Expiry date" value={quotation.expiryDate} />
               <InfoCard label="Validity" value={`${quotation.validityDays} days`} />
-              <InfoCard label="Currency" value={quotation.currency} />
+              <InfoCard label="Doc currency" value={quotation.currency} />
               <InfoCard label="Client" value={quotation.client.name} />
-              <InfoCard label="Total" value={formatCurrency(quotation.total, quotation.currency)} />
+              <InfoCard
+                label="Total (AED)"
+                value={formatReportingCurrency(quotation.total, quotation.currency)}
+                emphasize
+              />
             </div>
 
-            <DocumentStatusActions
-              kind="quotation"
-              id={quotation.id}
-              status={quotation.status}
-              convertedToInvoiceId={quotation.convertedToInvoiceId}
-            />
+            <div className="border-t border-border pt-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Document actions</p>
+              <div className="mt-3">
+                <DocumentStatusActions
+                  kind="quotation"
+                  id={quotation.id}
+                  status={quotation.status}
+                  convertedToInvoiceId={quotation.convertedToInvoiceId}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -128,14 +154,20 @@ export default async function QuotationDetailPage({
 function InfoCard({
   label,
   value,
+  emphasize = false,
 }: {
   label: string;
   value: string;
+  emphasize?: boolean;
 }) {
   return (
-    <div className="rounded-[var(--radius-inner)] border border-black/7 bg-[#FFF8EE] px-4 py-4">
+    <div
+      className={`min-w-0 rounded-[var(--radius-inner)] border px-4 py-4 ${emphasize ? "border-accent/30 bg-accent-soft" : "border-border bg-surface-subtle"}`}
+    >
       <p className="text-xs uppercase tracking-[0.18em] text-muted">{label}</p>
-      <p className="mt-2 text-sm font-medium text-foreground">{value}</p>
+      <p className={`mt-2 break-words text-sm font-medium ${emphasize ? "text-accent-strong" : "text-foreground"}`}>
+        {value}
+      </p>
     </div>
   );
 }

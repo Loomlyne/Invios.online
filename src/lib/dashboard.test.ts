@@ -357,6 +357,63 @@ describe("dashboard selectors", () => {
     expect(insights.topClients[0]?.clientId).toBe("client-2");
     expect(insights.recentActivity[0]?.kind).toBe("payment");
   });
+
+  it("summarises the pending quotation pipeline without being limited by the visible queue", () => {
+    const rows = buildDashboardInvoiceRows({
+      invoices,
+      payments,
+      expenses,
+      range: "30d",
+      today: "2026-04-08",
+    });
+
+    const insights = buildDashboardInsights({
+      rows,
+      quotations,
+      payments,
+      expenses,
+      range: "30d",
+      today: "2026-04-08",
+    });
+
+    expect(insights.quotationPipeline).toEqual({
+      count: 1,
+      total: 1260,
+      expiresSoonCount: 1,
+    });
+  });
+
+  it("does not count expired quotations as expiring soon", () => {
+    const rows = buildDashboardInvoiceRows({
+      invoices,
+      payments,
+      expenses,
+      range: "30d",
+      today: "2026-04-08",
+    });
+    const expiredQuotation: QuotationRecord = {
+      ...quotations[0]!,
+      id: "quotation-expired",
+      quotationNumber: "QUO-EXPIRED",
+      slug: "quo-expired",
+      expiryDate: "2026-04-01",
+    };
+
+    const insights = buildDashboardInsights({
+      rows,
+      quotations: [...quotations, expiredQuotation],
+      payments,
+      expenses,
+      range: "30d",
+      today: "2026-04-08",
+    });
+
+    expect(insights.quotationPipeline).toEqual({
+      count: 2,
+      total: 2520,
+      expiresSoonCount: 1,
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -374,6 +431,7 @@ function makeRow(overrides: Partial<DashboardInvoiceRow>): DashboardInvoiceRow {
     issueDate: "2026-04-01",
     dueDate: "2026-04-30",
     currency: "AED",
+    documentCurrency: "AED",
     taxRate: 5,
     discount: 0,
     subtotal: 1000,

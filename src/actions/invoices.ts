@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { documentLineItemSchema, invoiceFormSchema, type InvoiceStatus } from "@/lib/billing";
+import {
+  documentLineItemSchema,
+  invoiceFormSchema,
+  type InvoiceStatus,
+} from "@/lib/billing";
 import {
   buildUniqueSlug,
   computeDocumentTotals,
@@ -293,6 +297,7 @@ export async function updateInvoiceAction(
 
 export async function setInvoiceStatusAction(id: string, status: InvoiceStatus) {
   const { supabase, user } = await requireSession();
+
   const { data, error } = await supabase
     .from("invoices")
     .update({ status })

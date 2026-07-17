@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Cancel superseded runs on the same ref to save minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint · Typecheck · Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # pnpm 10: this repo's pnpm-workspace.yaml uses `ignoredBuiltDependencies`,
+      # a pnpm 10 feature. pnpm 9 rejects that file ("packages field missing or
+      # empty"), which is what Vercel and local both run.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      # No `cache: pnpm` here: this repo ships a pnpm-workspace.yaml that only
+      # sets ignoredBuiltDependencies (no `packages:` field), which makes
+      # setup-node's cache step fail at `pnpm store path` ("packages field
+      # missing or empty"). Skipping the cache keeps CI reliable; installs cost
+      # a few extra seconds. Vercel is unaffected (it never runs store path).
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # --no-frozen-lockfile tolerates the known lockfile drift documented in
+      # the functionality audit (M3); tighten to frozen once lockfiles converge.
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test

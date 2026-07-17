@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getQuotationById } from "@/lib/billing-data";
 import { renderDocumentUrlToPdf } from "@/lib/document-pdf";
+import { requireSession } from "@/lib/require-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,9 +12,19 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+
+  // Explicit session + ownership check, matching invoice exports.
+  let userId: string;
+  try {
+    const { user } = await requireSession();
+    userId = user.id;
+  } catch {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   const quotation = await getQuotationById(id);
 
-  if (!quotation) {
+  if (!quotation || quotation.userId !== userId) {
     return NextResponse.json({ error: "Quotation not found." }, { status: 404 });
   }
 

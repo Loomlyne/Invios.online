@@ -7,8 +7,11 @@ import type {
   QuotationRecord,
 } from "@/lib/billing";
 import { computeCollectionRate, computeProfit, roundCurrency } from "@/lib/billing-utils";
+import { REPORTING_CURRENCY, toReportingAmount } from "@/lib/fx";
 
 export interface DashboardInvoiceRow extends InvoiceRecord {
+  /** Original document currency before AED reporting conversion. */
+  documentCurrency: string;
   collectedAmount: number;
   outstandingAmount: number;
   expenseAmount: number;
@@ -52,6 +55,12 @@ export interface DashboardAnalytics {
   averageInvoice: number;
 }
 
+export interface DashboardQuotationPipeline {
+  count: number;
+  total: number;
+  expiresSoonCount: number;
+}
+
 export interface DashboardActivityItem {
   id: string;
   kind: "invoice" | "quotation" | "payment" | "expense";
@@ -67,6 +76,7 @@ export interface DashboardInsights {
   analytics: DashboardAnalytics;
   followUpQueue: DashboardInvoiceRow[];
   pendingQuotations: DashboardQuotationRow[];
+  quotationPipeline: DashboardQuotationPipeline;
   topClients: DashboardClientInsight[];
   recentActivity: DashboardActivityItem[];
 }
@@ -144,24 +154,35 @@ export function buildDashboardInvoiceRows(params: {
     .map((invoice) => {
       const invoicePayments = payments.filter((payment) => payment.invoiceId === invoice.id);
       const invoiceExpenses = expenses.filter((expense) => expense.invoiceId === invoice.id);
-      const collectedAmount = sum(invoicePayments.map((payment) => payment.amount));
+      // Internal dashboard math is always AED; document currency stays on the invoice record fields
+      // until we overwrite display amounts below.
+      const totalAed = toReportingAmount(invoice.total, invoice.currency);
+      const collectedAmount = sum(
+        invoicePayments.map((payment) => toReportingAmount(payment.amount, invoice.currency)),
+      );
       const collectedInRangeAmount = sum(
         invoicePayments
           .filter((payment) => isDateInDashboardRange(payment.datePaid, range, today))
-          .map((payment) => payment.amount),
+          .map((payment) => toReportingAmount(payment.amount, invoice.currency)),
       );
-      const expenseAmount = sum(invoiceExpenses.map((expense) => expense.amount));
+      const expenseAmount = sum(
+        invoiceExpenses.map((expense) => toReportingAmount(expense.amount, invoice.currency)),
+      );
       const expenseInRangeAmount = sum(
         invoiceExpenses
           .filter((expense) => isDateInDashboardRange(expense.date, range, today))
-          .map((expense) => expense.amount),
+          .map((expense) => toReportingAmount(expense.amount, invoice.currency)),
       );
-      const profit = computeProfit({ total: invoice.total, expensesTotal: expenseAmount }).profit;
+      const profit = computeProfit({ total: totalAed, expensesTotal: expenseAmount }).profit;
 
       return {
         ...invoice,
+        documentCurrency: invoice.currency,
+        // Operator-facing totals always AED.
+        total: totalAed,
+        currency: REPORTING_CURRENCY,
         collectedAmount,
-        outstandingAmount: roundCurrency(Math.max(0, invoice.total - collectedAmount)),
+        outstandingAmount: roundCurrency(Math.max(0, totalAed - collectedAmount)),
         expenseAmount,
         profitAmount: roundCurrency(profit),
         lastActivityAt: pickLatestDate(
@@ -262,7 +283,7 @@ export function buildDashboardInsights(params: {
     })
     .slice(0, 6);
 
-  const pendingQuotations = quotations
+  const pendingQuotationPipeline = quotations
     .filter((quotation) => quotation.status === "sent")
     .filter(
       (quotation) =>
@@ -275,9 +296,19 @@ export function buildDashboardInsights(params: {
       return {
         ...quotation,
         daysToExpiry,
-        expiresSoon: daysToExpiry !== null && daysToExpiry <= 7,
+        expiresSoon: daysToExpiry !== null && daysToExpiry >= 0 && daysToExpiry <= 7,
       };
-    })
+    });
+  const quotationPipeline = {
+    count: pendingQuotationPipeline.length,
+    total: sum(
+      pendingQuotationPipeline.map((quotation) =>
+        toReportingAmount(quotation.total, quotation.currency),
+      ),
+    ),
+    expiresSoonCount: pendingQuotationPipeline.filter((quotation) => quotation.expiresSoon).length,
+  };
+  const pendingQuotations = [...pendingQuotationPipeline]
     .sort((a, b) => {
       const aDays = a.daysToExpiry ?? Number.MAX_SAFE_INTEGER;
       const bDays = b.daysToExpiry ?? Number.MAX_SAFE_INTEGER;
@@ -317,11 +348,7 @@ export function buildDashboardInsights(params: {
 
   const totalBilled = sum(billedRows.map((row) => row.total));
   const totalCollected = sum(rows.map((row) => row.collectedInRangeAmount));
-  const totalExpenses = sum(
-    expenses
-      .filter((expense) => isDateInDashboardRange(expense.date, range, today))
-      .map((expense) => expense.amount),
-  );
+  const totalExpenses = sum(rows.map((row) => row.expenseInRangeAmount));
   const netProfit = roundCurrency(totalCollected - totalExpenses);
   const averageInvoice = billedRows.length > 0 ? roundCurrency(totalBilled / billedRows.length) : 0;
 
@@ -337,7 +364,7 @@ export function buildDashboardInsights(params: {
         href: `/app/invoices/${row.slug}`,
         date: row.createdAt,
         amount: row.total,
-        currency: row.currency,
+        currency: REPORTING_CURRENCY,
       })),
     ...quotations
       .filter(
@@ -351,8 +378,8 @@ export function buildDashboardInsights(params: {
         subtitle: `${quotation.client.name} quotation`,
         href: `/app/quotations/${quotation.slug}`,
         date: quotation.createdAt,
-        amount: quotation.total,
-        currency: quotation.currency,
+        amount: toReportingAmount(quotation.total, quotation.currency),
+        currency: REPORTING_CURRENCY,
       })),
     ...payments
       .filter((payment) => isDateInDashboardRange(payment.datePaid, range, today))
@@ -365,8 +392,11 @@ export function buildDashboardInsights(params: {
           subtitle: row ? row.client.name : "Invoice payment",
           href: row ? `/app/invoices/${row.slug}` : "/app/invoices",
           date: payment.createdAt,
-          amount: payment.amount,
-          currency: row?.currency,
+          amount: toReportingAmount(
+            payment.amount,
+            row?.documentCurrency ?? REPORTING_CURRENCY,
+          ),
+          currency: REPORTING_CURRENCY,
         };
       }),
     ...expenses
@@ -380,8 +410,11 @@ export function buildDashboardInsights(params: {
           subtitle: expense.vendor || expense.description,
           href: row ? `/app/invoices/${row.slug}` : "/app/invoices",
           date: expense.createdAt,
-          amount: expense.amount,
-          currency: row?.currency,
+          amount: toReportingAmount(
+            expense.amount,
+            row?.documentCurrency ?? REPORTING_CURRENCY,
+          ),
+          currency: REPORTING_CURRENCY,
         };
       }),
   ]
@@ -398,6 +431,7 @@ export function buildDashboardInsights(params: {
     },
     followUpQueue,
     pendingQuotations,
+    quotationPipeline,
     topClients,
     recentActivity,
   };
@@ -425,6 +459,9 @@ export function buildRevenueTrend(
   today: string,
 ): RevenueTrendMonth[] {
   const base = new Date(`${today}T00:00:00`);
+  const documentCurrencyByInvoice = new Map(
+    rows.map((row) => [row.id, row.documentCurrency] as const),
+  );
 
   const slots: RevenueTrendMonth[] = [];
   for (let i = 11; i >= 0; i--) {
@@ -443,7 +480,15 @@ export function buildRevenueTrend(
     const collected = roundCurrency(
       payments
         .filter((payment) => payment.datePaid.slice(0, 7) === monthKey)
-        .reduce((acc, payment) => acc + payment.amount, 0),
+        .reduce(
+          (acc, payment) =>
+            acc +
+            toReportingAmount(
+              payment.amount,
+              documentCurrencyByInvoice.get(payment.invoiceId) ?? REPORTING_CURRENCY,
+            ),
+          0,
+        ),
     );
 
     slots.push({ month, monthKey, billed, collected });

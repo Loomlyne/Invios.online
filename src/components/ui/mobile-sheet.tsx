@@ -73,14 +73,22 @@ export function MobileSheetContent({ children, className, title }: MobileSheetCo
       <Drawer.Overlay className="fixed inset-0 z-50 bg-[#17120f]/50 backdrop-blur-sm" />
       <Drawer.Content
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[1.6rem] border border-black/8 bg-[#FFFDF9] outline-none",
+          "fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100dvh-1rem)] flex-col rounded-t-[1.6rem] border border-black/8 bg-[#FFFDF9] outline-none",
           className,
         )}
         aria-label={title}
       >
         {/* Handle bar */}
-        <div className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-foreground/15" />
-        <div className="overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
+        <div className="relative flex shrink-0 items-center justify-center pt-3">
+          <div className="h-1.5 w-12 rounded-full bg-foreground/15" />
+          <Drawer.Close
+            aria-label="Close sheet"
+            className="absolute right-4 top-2 flex size-9 items-center justify-center rounded-full text-muted transition hover:bg-black/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/45"
+          >
+            <X className="size-4" />
+          </Drawer.Close>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
           {children}
         </div>
       </Drawer.Content>

@@ -52,6 +52,26 @@ export const clientFormSchema = z.object({
   logoPath: z.string().nullable().optional(),
 });
 
+/**
+ * D-4: Strict ISO calendar-date validation for document dates.
+ * Enforces YYYY-MM-DD shape and rejects impossible dates (e.g. 2026-13-40),
+ * which a plain `new Date(...)` would silently roll over.
+ */
+const isoDateString = (label: string) =>
+  z
+    .string()
+    .min(1, `${label} is required.`)
+    .regex(/^\d{4}-\d{2}-\d{2}$/, `${label} must use the YYYY-MM-DD format.`)
+    .refine((value) => {
+      const [year, month, day] = value.split("-").map(Number);
+      const date = new Date(Date.UTC(year, month - 1, day));
+      return (
+        date.getUTCFullYear() === year &&
+        date.getUTCMonth() === month - 1 &&
+        date.getUTCDate() === day
+      );
+    }, `${label} must be a valid calendar date.`);
+
 const documentBaseFormSchema = z.object({
   id: z.string().uuid().optional(),
   clientId: z.string().uuid("Choose a client."),
@@ -65,19 +85,35 @@ const documentBaseFormSchema = z.object({
   lineItems: z.array(documentLineItemSchema).min(1, "Add at least one line item."),
 });
 
-export const invoiceFormSchema = documentBaseFormSchema.extend({
-  issueDate: z.string().min(1, "Issue date is required."),
-  dueDate: z.string().min(1, "Due date is required."),
-  status: z.enum(invoiceStatuses).default("draft"),
-  invoiceType: z.enum(invoiceTypes).default("invoice"),
-});
+export const invoiceFormSchema = documentBaseFormSchema
+  .extend({
+    issueDate: isoDateString("Issue date"),
+    dueDate: isoDateString("Due date"),
+    status: z.enum(invoiceStatuses).default("draft"),
+    invoiceType: z.enum(invoiceTypes).default("invoice"),
+  })
+  .refine(
+    (data) => !data.issueDate || !data.dueDate || data.dueDate >= data.issueDate,
+    {
+      message: "Due date must be on or after the issue date.",
+      path: ["dueDate"],
+    },
+  );
 
-export const quotationFormSchema = documentBaseFormSchema.extend({
-  quotationDate: z.string().min(1, "Quotation date is required."),
-  expiryDate: z.string().min(1, "Expiry date is required."),
-  status: z.enum(quotationStatuses).default("draft"),
-  validityDays: z.coerce.number().int().positive().default(30),
-});
+export const quotationFormSchema = documentBaseFormSchema
+  .extend({
+    quotationDate: isoDateString("Quotation date"),
+    expiryDate: isoDateString("Expiry date"),
+    status: z.enum(quotationStatuses).default("draft"),
+    validityDays: z.coerce.number().int().positive().default(30),
+  })
+  .refine(
+    (data) => !data.quotationDate || !data.expiryDate || data.expiryDate >= data.quotationDate,
+    {
+      message: "Expiry date must be on or after the quotation date.",
+      path: ["expiryDate"],
+    },
+  );
 
 export type ClientStatus = (typeof clientStatuses)[number];
 export type InvoiceStatus = (typeof invoiceStatuses)[number];
@@ -87,6 +123,31 @@ export type InvoiceType = (typeof invoiceTypes)[number];
 export type DocumentKind = (typeof documentKinds)[number];
 export type DashboardMetricKey = (typeof dashboardMetricKeys)[number];
 export type DashboardRangeKey = (typeof dashboardRangeKeys)[number];
+
+/**
+ * Payment and due-date automation own `partial_paid`, `overpaid`, and `overdue`.
+ * Manual flows may only move draft and sent invoices between one another, or
+ * mark an eligible sent, overdue, or partially paid invoice as paid.
+ */
+export function isManualInvoiceStatusTransitionAllowed(
+  from: InvoiceStatus,
+  to: InvoiceStatus,
+): boolean {
+  if (from === to) return true;
+
+  switch (to) {
+    case "draft":
+    case "sent":
+      return from === "draft" || from === "sent";
+    case "paid":
+      return from === "sent" || from === "overdue" || from === "partial_paid";
+    case "overpaid":
+    case "partial_paid":
+    case "overdue":
+    default:
+      return false;
+  }
+}
 
 export type DocumentLineItem = z.infer<typeof documentLineItemSchema>;
 export type ClientFormInput = z.infer<typeof clientFormSchema>;

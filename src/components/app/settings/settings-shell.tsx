@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "lucide-react";
-import { Drawer } from "vaul";
 import { cn } from "@/lib/utils";
 import type { SettingsSection, AppContext, SubscriptionData } from "@/lib/types";
 import { SettingsSidebar, SIDEBAR_ITEMS } from "./settings-sidebar";
@@ -28,7 +26,7 @@ export function SettingsShell({
 }) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SettingsSection>(initialSection);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   const navigate = useCallback(
     (section: SettingsSection) => {
@@ -38,54 +36,51 @@ export function SettingsShell({
     [router],
   );
 
-  const currentItem = SIDEBAR_ITEMS.find((s) => s.key === activeSection) ?? SIDEBAR_ITEMS[0];
-  const CurrentIcon = currentItem.Icon;
-  const currentLabel = currentItem.label;
+  // Auto-scroll the active pill into view on section change.
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const activeEl = scroller.querySelector<HTMLElement>('[data-active="true"]');
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  }, [activeSection]);
 
   return (
     <div className="flex min-h-0 gap-6">
       <SettingsSidebar active={activeSection} onNavigate={navigate} />
       <main className="flex-1 min-w-0 pb-28 lg:pb-8">
-        {/* Mobile section picker — lg:hidden */}
-        <div className="lg:hidden mb-4">
-          <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
-            <Drawer.Trigger asChild>
-              <button className="w-full flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] border border-border bg-surface text-sm font-medium">
-                <span className="flex items-center gap-2">
-                  <CurrentIcon className="size-4 text-accent" />
-                  {currentLabel}
-                </span>
-                <ChevronDown className="size-4 text-muted" />
-              </button>
-            </Drawer.Trigger>
-            <Drawer.Portal>
-              <Drawer.Overlay className="fixed inset-0 bg-black/40" />
-              <Drawer.Content className="fixed inset-x-0 bottom-0 rounded-t-[var(--radius-lg)] bg-surface p-4">
-                <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted/30" />
-                <p className="text-sm font-semibold mb-3 px-2">Settings</p>
-                <div className="space-y-1">
-                  {SIDEBAR_ITEMS.map((item) => (
-                    <button
-                      key={item.key}
-                      onClick={() => {
-                        navigate(item.key);
-                        setDrawerOpen(false);
-                      }}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-[var(--radius-md)] transition",
-                        activeSection === item.key
-                          ? "bg-accent/10 text-accent-strong"
-                          : "text-muted-strong hover:bg-black/5"
-                      )}
-                    >
-                      <item.Icon className={cn("size-4", activeSection === item.key ? "text-accent" : "text-muted")} />
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </Drawer.Content>
-            </Drawer.Portal>
-          </Drawer.Root>
+        {/* Mobile section picker — horizontally scrollable pills */}
+        <div className="lg:hidden mb-4 -mx-4">
+          <div
+            ref={scrollerRef}
+            className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1"
+            role="tablist"
+            aria-label="Settings sections"
+          >
+            {SIDEBAR_ITEMS.map((item) => {
+              const isActive = activeSection === item.key;
+              const Icon = item.Icon;
+              return (
+                <button
+                  key={item.key}
+                  role="tab"
+                  aria-selected={isActive}
+                  data-active={isActive}
+                  onClick={() => navigate(item.key)}
+                  className={cn(
+                    "flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition-all",
+                    isActive
+                      ? "border-transparent bg-foreground text-on-dark"
+                      : "border-border bg-surface text-muted-strong hover:border-border-brand hover:bg-surface-subtle",
+                  )}
+                >
+                  <Icon className={cn("size-4", isActive ? "text-accent" : "text-muted")} />
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Panel rendering */}

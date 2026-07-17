@@ -24,8 +24,12 @@ import { ProfitSummary } from "@/components/documents/profit-summary";
 import { FinancialQuickActions } from "@/components/documents/financial-quick-actions";
 import { InvoiceDeleteButton } from "@/components/documents/invoice-delete-button";
 import { buildInvoicePreviewFromRecord } from "@/lib/document-preview-data";
+import { env } from "@/lib/env";
+import { formatReportingCurrency, toReportingAmount } from "@/lib/fx";
 import { formatCurrency } from "@/lib/utils";
 import { VersionHistoryPanel } from "@/components/documents/version-history-panel";
+import { ShareButton } from "@/components/documents/share-button";
+import { EmailPdfButton } from "@/components/documents/email-pdf-button";
 import { ExportButton } from "./export-button";
 import { RecurringButton } from "./recurring-button";
 import { StatusButton } from "./status-button";
@@ -62,7 +66,11 @@ export default async function InvoiceDetailPage({
     getRecurringSchedule(invoice.id),
   ]);
 
-  const expensesTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const expensesTotal = expenses.reduce(
+    (sum, e) => sum + toReportingAmount(e.amount, invoice.currency),
+    0,
+  );
+  const totalAed = toReportingAmount(invoice.total, invoice.currency);
 
   const preview = buildInvoicePreviewFromRecord(
     {
@@ -107,14 +115,21 @@ export default async function InvoiceDetailPage({
               </Button>
               <RecurringButton invoiceId={invoice.id} schedule={recurringSchedule} />
               <StatusButton invoiceId={invoice.id} currentStatus={invoice.status} />
+              <ShareButton
+                publicUrl={`${env.siteUrl}/invoices/public/${invoice.shareToken}`}
+                documentNumber={invoice.invoiceNumber}
+                amountLabel={formatCurrency(invoice.total, invoice.currency)}
+                documentKind="invoice"
+              />
               <ExportButton invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
+              <EmailPdfButton endpoint={`/api/invoices/${invoice.id}/email-pdf`} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
             <ProfitSummary
-              total={invoice.total}
+              total={totalAed}
               expensesTotal={expensesTotal}
-              currency={invoice.currency}
+              currency="AED"
             />
 
             <div className="border-t border-black/7 pt-4">
@@ -125,11 +140,11 @@ export default async function InvoiceDetailPage({
                   label="Type"
                   value={invoice.invoiceType === "tax_invoice" ? "Tax invoice" : "Invoice"}
                 />
-                <InvoiceMeta label="Currency" value={invoice.currency} />
+                <InvoiceMeta label="Doc currency" value={invoice.currency} />
                 <InvoiceMeta label="Client" value={invoice.client.name} />
                 <InvoiceMeta
-                  label="Total"
-                  value={formatCurrency(invoice.total, invoice.currency)}
+                  label="Total (AED)"
+                  value={formatReportingCurrency(invoice.total, invoice.currency)}
                   emphasize
                 />
               </div>

@@ -6,11 +6,21 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(value: number, currency = "AED") {
-  return new Intl.NumberFormat("en-AE", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(value);
+  const code = (currency || "AED").trim().toUpperCase();
+  try {
+    return new Intl.NumberFormat("en-AE", {
+      style: "currency",
+      currency: /^[A-Z]{3}$/.test(code) ? code : "AED",
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    // Invalid ISO currency codes throw RangeError and must not crash previews.
+    return new Intl.NumberFormat("en-AE", {
+      style: "currency",
+      currency: "AED",
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
 }
 
 export function toSlug(value: string) {
@@ -48,8 +58,11 @@ export function parseBankDetails(raw: string): { label: string; value: string }[
   for (const part of cleaned) {
     // Detect "Label: Value" pattern (e.g. "Account Name: KOUSSAY ZAYANI", "IBAN: AE96...")
     const colonMatch = part.match(/^([^:]+):\s*(.+)$/);
+    const ibanPrefixMatch = part.match(/^iban\s+(.+)$/i);
     if (colonMatch) {
       result.push({ label: colonMatch[1].trim(), value: colonMatch[2].trim() });
+    } else if (ibanPrefixMatch) {
+      result.push({ label: "IBAN", value: ibanPrefixMatch[1].trim() });
     } else if (/^[A-Z]{2}\d{2}/.test(part)) {
       result.push({ label: "IBAN", value: part });
     } else if (/^\d{6,}$/.test(part.replace(/\s/g, ""))) {

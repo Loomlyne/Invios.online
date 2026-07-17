@@ -5,6 +5,24 @@ import type {
   UserSettings,
 } from "@/lib/types";
 
+// ─── Billing ────────────────────────────────────────────────────────────────
+// Master switch for paid Pro billing. While `false`, NO feature is gated (every
+// route works for every user) and checkout is inert — the Pro plan and its price
+// tag are still shown, but it cannot be purchased ("shown, not activated").
+// Flip to `true` to activate Pro: middleware enforces PAID_ONLY_PREFIXES again
+// and /api/creem/checkout starts a live Creem checkout.
+export const PRO_BILLING_ENABLED: boolean = true;
+
+// Canonical Pro pricing — single source of truth (USD). Rendered everywhere a
+// price is shown so the figure can never drift across surfaces again.
+export const PRICING = {
+  currency: "USD",
+  currencySymbol: "$",
+  proMonthlyAmount: 15,
+  proMonthlyShort: "$15/mo",
+  proMonthlyLabel: "$15/month",
+} as const;
+
 export const bottomNavItems: AppNavItemConfig[] = [
   {
     key: "dashboard",
@@ -64,27 +82,6 @@ export const fabMenuItems: AppNavItemConfig[] = [
     href: "/app/clients",
     icon: "user-round-plus",
     description: "Add a new client.",
-  },
-  {
-    key: "expense",
-    label: "Expense",
-    href: "/app/expenses" as unknown as import("next").Route,
-    icon: "credit-card",
-    description: "Record an expense.",
-  },
-  {
-    key: "project",
-    label: "Project",
-    href: "/app/projects" as unknown as import("next").Route,
-    icon: "folder-open",
-    description: "Start a new project.",
-  },
-  {
-    key: "notes",
-    label: "Notes",
-    href: "/app/notes",
-    icon: "notebook-pen",
-    description: "Quick notes and reminders.",
   },
 ];
 
@@ -223,7 +220,6 @@ export const defaultSettings: UserSettings = {
   timezone: "Asia/Dubai",
   invoicePrefix: "INV",
   quotationPrefix: "QUO",
-  documentTemplate: "classic",
   reminderEnabled: false,
   reminderDaysBefore: 3,
   reminderDaysAfter: 7,

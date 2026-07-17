@@ -1,0 +1,17 @@
+-- HOTFIX for 20260623000000_security_hardening.sql.
+--
+-- That migration revoked EXECUTE on next_document_number from
+-- PUBLIC, anon, AND authenticated. The revoke from `authenticated` was wrong:
+-- the core document-creation flow calls this function as the signed-in user
+--   - src/actions/invoices.ts
+--   - src/actions/quotations.ts
+-- (only the recurring cron uses the service role). The over-broad revoke broke
+-- invoice/quotation creation with:
+--   "permission denied for function next_document_number"
+--
+-- The function is SECURITY DEFINER and gates on auth.uid() (it raises
+-- 'Not authenticated' when auth.uid() is null) and only ever mutates the
+-- caller's OWN row in document_counters — so granting EXECUTE back to
+-- `authenticated` is safe. anon and PUBLIC remain revoked: anonymous callers
+-- never create documents and the function would reject them regardless.
+GRANT EXECUTE ON FUNCTION public.next_document_number(text, text) TO authenticated;

@@ -118,6 +118,14 @@ img {
   box-shadow: var(--shadow-md);
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .mask-fade-bottom {
   mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
 }

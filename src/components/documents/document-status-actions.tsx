@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { ArrowRight, Send, Trash2 } from "lucide-react";
@@ -29,6 +29,19 @@ export function DocumentStatusActions({
 }: DocumentStatusActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isConfirmingDelete) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsConfirmingDelete(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isConfirmingDelete]);
 
   const handleDeleteInvoice = () => {
     startTransition(async () => {
@@ -47,7 +60,8 @@ export function DocumentStatusActions({
       if (result.status === "success" && result.redirectTo) {
         router.push(result.redirectTo as Route);
       } else if (result.status === "error") {
-        alert(`Error: ${result.message}`);
+        setDeleteError(result.message ?? "Could not delete quotation.");
+        setIsConfirmingDelete(false);
       }
     });
   };
@@ -90,13 +104,13 @@ export function DocumentStatusActions({
     }
 
     return (
-      <div className={hideDelete ? "grid gap-3" : "grid gap-3 sm:grid-cols-2"}>
+      <div className="flex flex-wrap items-center gap-3">
         {status === "draft" && (
           <Button
             onClick={() => handleSetInvoiceStatus("sent")}
             disabled={isPending}
             variant="accent"
-            className="w-full"
+            className="min-w-[11rem]"
           >
             <Send className="size-4" />
             {isPending ? "Sending..." : "Mark as sent"}
@@ -108,7 +122,7 @@ export function DocumentStatusActions({
             onClick={handleDeleteInvoice}
             disabled={isPending}
             variant="danger"
-            className="w-full"
+            className="min-w-[11rem]"
           >
             <Trash2 className="size-4" />
             {isPending ? "Deleting..." : "Delete invoice"}
@@ -119,62 +133,89 @@ export function DocumentStatusActions({
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {status === "draft" && (
-        <Button
-          onClick={() => handleSetQuotationStatus("sent")}
-          disabled={isPending}
-          variant="accent"
-          className="w-full"
-        >
-          <Send className="size-4" />
-          {isPending ? "Sending..." : "Mark as sent"}
-        </Button>
-      )}
+    <div className="grid gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        {status === "draft" && (
+          <Button
+            onClick={() => handleSetQuotationStatus("sent")}
+            disabled={isPending}
+            variant="accent"
+            className="w-full sm:min-w-[11rem] sm:w-auto"
+          >
+            <Send className="size-4" />
+            {isPending ? "Sending..." : "Mark as sent"}
+          </Button>
+        )}
 
-      {status === "sent" && (
-        <Button
-          onClick={() => handleSetQuotationStatus("accepted")}
-          disabled={isPending}
-          variant="secondary"
-          className="w-full"
-        >
-          {isPending ? "Processing..." : "Mark as accepted"}
-        </Button>
-      )}
+        {status === "sent" && (
+          <Button
+            onClick={() => handleSetQuotationStatus("accepted")}
+            disabled={isPending}
+            variant="accent"
+            className="w-full sm:min-w-[11rem] sm:w-auto"
+          >
+            {isPending ? "Processing..." : "Mark as accepted"}
+          </Button>
+        )}
 
-      {status === "sent" && (
-        <Button
-          onClick={() => handleSetQuotationStatus("rejected")}
-          disabled={isPending}
-          variant="secondary"
-          className="w-full"
-        >
-          {isPending ? "Processing..." : "Mark as rejected"}
-        </Button>
-      )}
+        {status === "sent" && (
+          <Button
+            onClick={() => handleSetQuotationStatus("rejected")}
+            disabled={isPending}
+            variant="secondary"
+            className="w-full sm:min-w-[11rem] sm:w-auto"
+          >
+            {isPending ? "Processing..." : "Mark as rejected"}
+          </Button>
+        )}
 
-      {status === "accepted" && convertedToInvoiceId === null && (
-        <Button
-          onClick={handleConvertQuotation}
-          disabled={isPending}
-          variant="accent"
-          className="w-full"
-        >
-          <ArrowRight className="size-4" />
-          {isPending ? "Converting..." : "Convert to invoice"}
-        </Button>
-      )}
+        {status === "accepted" && convertedToInvoiceId === null && (
+          <Button
+            onClick={handleConvertQuotation}
+            disabled={isPending}
+            variant="accent"
+            className="w-full sm:min-w-[11rem] sm:w-auto"
+          >
+            <ArrowRight className="size-4" />
+            {isPending ? "Converting..." : "Convert to invoice"}
+          </Button>
+        )}
+      </div>
 
-      <Button
-        onClick={handleDeleteQuotation}
-        disabled={isPending}
-        variant="danger"
-        className="w-full"
-      >
-        <Trash2 className="size-4" />
-        {isPending ? "Deleting..." : "Delete quotation"}
-      </Button>
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        {isConfirmingDelete ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="basis-full text-sm font-medium text-foreground">Delete this quotation permanently?</span>
+            <Button onClick={handleDeleteQuotation} disabled={isPending} variant="danger" size="sm">
+              <Trash2 className="size-4" />
+              {isPending ? "Deleting..." : "Confirm"}
+            </Button>
+            <Button
+              onClick={() => setIsConfirmingDelete(false)}
+              disabled={isPending}
+              variant="secondary"
+              size="sm"
+            >
+              Cancel
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={() => {
+              setDeleteError(null);
+              setIsConfirmingDelete(true);
+            }}
+            disabled={isPending}
+            variant="secondary"
+            size="sm"
+            className="border-danger/40 text-danger hover:border-danger hover:bg-danger/10"
+          >
+            <Trash2 className="size-4" />
+            Delete quotation
+          </Button>
+        )}
+        {deleteError ? <p className="text-sm text-danger">{deleteError}</p> : null}
+      </div>
     </div>
   );
 }

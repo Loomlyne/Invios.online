@@ -33,7 +33,6 @@ const defaultsSchema = z.object({
   timezone: z.string().min(3, "Choose a timezone."),
   invoicePrefix: z.string().min(2, "Add an invoice prefix."),
   quotationPrefix: z.string().min(2, "Add a quotation prefix."),
-  documentTemplate: z.enum(["classic", "executive", "minimal"]),
 });
 
 async function requireSupabase() {
@@ -183,12 +182,19 @@ export async function saveBusinessProfileAction(
   }
 }
 
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+
+function validateHexColor(value: string): string | null {
+  const v = value.trim();
+  return HEX_COLOR_RE.test(v) ? v : null;
+}
+
 export async function saveBrandingStepAction(formData: FormData): Promise<ActionState> {
   try {
     const { supabase, user } = await requireSupabase();
 
-    const primaryColor = String(formData.get("primaryColor") || "");
-    const secondaryColor = String(formData.get("secondaryColor") || "");
+    const primaryColor = validateHexColor(String(formData.get("primaryColor") || ""));
+    const secondaryColor = validateHexColor(String(formData.get("secondaryColor") || ""));
     const signatureMode = String(formData.get("signatureMode") || "none") as SignatureMode;
     const signatureText = String(formData.get("signatureText") || "");
     const signatureFont = String(formData.get("signatureFont") || "Signature");
@@ -218,8 +224,8 @@ export async function saveBrandingStepAction(formData: FormData): Promise<Action
       .upsert(
         {
           user_id: user.id,
-          primary_color: primaryColor || null,
-          secondary_color: secondaryColor || null,
+          primary_color: primaryColor,
+          secondary_color: secondaryColor,
           logo_path: logoPath,
           signature_mode: signatureMode,
           signature_path: signatureMode === "typed" || signatureMode === "none" ? null : signaturePath,
@@ -276,7 +282,6 @@ export async function saveDefaultsAction(
           default_terms: parsed.data.defaultTerms,
           default_notes: parsed.data.defaultNotes,
           timezone: parsed.data.timezone,
-          document_template: parsed.data.documentTemplate,
         },
         { onConflict: "user_id" },
       );
@@ -496,20 +501,17 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
   try {
     const { supabase, user } = await requireSupabase();
 
-    const primaryColor = String(formData.get("primaryColor") || "");
-    const secondaryColor = String(formData.get("secondaryColor") || "");
+    const primaryColor = validateHexColor(String(formData.get("primaryColor") || ""));
+    const secondaryColor = validateHexColor(String(formData.get("secondaryColor") || ""));
     const baseFont = String(formData.get("baseFont") || "DM Sans");
     const signatureMode = String(formData.get("signatureMode") || "none") as SignatureMode;
     const signatureText = String(formData.get("signatureText") || "");
     const signatureFont = String(formData.get("signatureFont") || "Signature");
     const drawSignature = String(formData.get("drawSignature") || "");
-    const pageBackground = String(formData.get("pageBackground") || "");
     const keepLogoPath = String(formData.get("keepLogoPath") || "");
-    const keepHeaderCoverPath = String(formData.get("keepHeaderCoverPath") || "");
     const keepSignaturePath = String(formData.get("keepSignaturePath") || "");
     const keepFaviconPath = String(formData.get("keepFaviconPath") || "");
     const logoFile = formData.get("logo") as File | null;
-    const headerCoverFile = formData.get("headerCover") as File | null;
     const signatureFile = formData.get("signatureFile") as File | null;
     const faviconFile = formData.get("favicon") as File | null;
 
@@ -517,11 +519,6 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
       logoFile && logoFile.size > 0
         ? await uploadFileToStorage(user.id, logoFile, "logo")
         : keepLogoPath || null;
-
-    const headerCoverPath =
-      headerCoverFile && headerCoverFile.size > 0
-        ? await uploadFileToStorage(user.id, headerCoverFile, "header-cover")
-        : keepHeaderCoverPath || null;
 
     const faviconPath =
       faviconFile && faviconFile.size > 0
@@ -541,11 +538,9 @@ export async function saveIdentityAction(formData: FormData): Promise<ActionStat
       .upsert(
         {
           user_id: user.id,
-          primary_color: primaryColor || null,
-          secondary_color: secondaryColor || null,
-          page_background: pageBackground || null,
+          primary_color: primaryColor,
+          secondary_color: secondaryColor,
           logo_path: logoPath,
-          header_cover_path: headerCoverPath,
           favicon_path: faviconPath,
           base_font: baseFont,
           signature_mode: signatureMode,
@@ -624,7 +619,6 @@ const templateSchema = z.object({
   spacing: z.enum(["compact", "normal", "spacious"]),
   headerLayout: z.enum(["left", "centered", "split"]),
   lineItemsStyle: z.enum(["table", "cards"]),
-  documentTemplate: z.enum(["classic", "executive", "minimal"]).optional(),
 });
 
 export async function saveTemplateAction(
@@ -654,17 +648,6 @@ export async function saveTemplateAction(
       );
 
     if (error) throw new Error(error.message);
-
-    if (parsed.data.documentTemplate) {
-      const { error: settingsError } = await supabase
-        .from("user_settings")
-        .upsert(
-          { user_id: user.id, document_template: parsed.data.documentTemplate },
-          { onConflict: "user_id" },
-        );
-
-      if (settingsError) throw new Error(settingsError.message);
-    }
 
     revalidatePath("/app", "layout");
     revalidatePath("/app/settings");

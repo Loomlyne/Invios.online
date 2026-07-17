@@ -4,7 +4,7 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { LogOut, Palette, Settings2, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { signOutAction } from "@/actions/auth";
 import { cn } from "@/lib/utils";
 
@@ -19,16 +19,16 @@ function getInitials(name: string): string {
 
 const menuItems = [
   { label: "Profile", href: "/app/settings" as Route, icon: User },
-  { label: "Branding", href: "/app/branding" as Route, icon: Palette },
-  { label: "Settings", href: "/app/settings" as Route, icon: Settings2 },
 ] as const;
 
 export function UserAvatarMenu({
   fullName,
   email,
+  avatarUrl,
 }: {
   fullName: string;
   email: string;
+  avatarUrl?: string | null;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -38,10 +38,19 @@ export function UserAvatarMenu({
       <DropdownMenu.Trigger asChild>
         <button
           type="button"
-          className="size-10 rounded-full bg-accent/15 text-sm font-semibold text-accent-strong transition hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+          className="relative size-10 overflow-hidden rounded-full bg-accent/15 text-sm font-semibold text-accent-strong transition hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
           aria-label="Account menu"
         >
-          {getInitials(fullName)}
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt={fullName}
+              className="size-full object-cover"
+            />
+          ) : (
+            getInitials(fullName)
+          )}
         </button>
       </DropdownMenu.Trigger>
 

@@ -1,3 +1,4 @@
+import { roundCurrency } from "@/lib/billing-utils";
 import { defaultSettings, sampleLineItems } from "@/lib/constants";
 import { formatCurrency, hasValue } from "@/lib/utils";
 import type {
@@ -22,7 +23,7 @@ export const defaultProfile: BusinessProfile = {
 
 export const defaultBranding: BrandingSettings = {
   primaryColor: "#CA8A04",
-  secondaryColor: "#44403C",
+  secondaryColor: "#FFFFFF",
   logoPath: null,
   faviconPath: null,
   baseFont: "DM Sans",
@@ -55,7 +56,6 @@ export function buildInvoicePreviewData(
   overrides?: Partial<InvoicePreviewData>,
 ) {
   const base: InvoicePreviewData = {
-    templateId: userState.settings.documentTemplate || defaultSettings.documentTemplate,
     kind: "invoice",
     title: "Invoice",
     businessName: userState.profile.businessName || defaultProfile.businessName,
@@ -98,21 +98,34 @@ export function buildInvoicePreviewData(
     spacing: userState.branding.spacing || defaultBranding.spacing,
     headerLayout: userState.branding.headerLayout || defaultBranding.headerLayout,
     lineItemsStyle: userState.branding.lineItemsStyle || defaultBranding.lineItemsStyle,
-    pageBackground: userState.branding.pageBackground ?? null,
   };
 
   return { ...base, ...overrides };
 }
 
 export function getInvoiceTotals(preview: InvoicePreviewData) {
-  const subtotal = preview.lineItems.reduce(
-    (total, item) => total + item.quantity * item.unitPrice,
-    0,
+  // Mirror computeDocumentTotals (src/lib/billing-utils.ts) exactly so the
+  // preview/print path never diverges by a cent from the persisted, CSV, and
+  // stored authoritative values (D-2). Rounding order:
+  //   1. subtotal   = round(sum of round(qty * unitPrice))
+  //   2. discount   = round(subtotal * discount%)
+  //   3. taxBase    = max(subtotal - discount, 0)
+  //   4. tax        = round(taxBase * taxRate%)  (0 when tax disabled)
+  //   5. total      = round(taxBase + tax)
+  // The only intentional difference from computeDocumentTotals is the
+  // taxEnabled toggle, which forces the tax rate to 0 when tax is off.
+  const effectiveTaxRate = preview.taxEnabled ? preview.taxRate : 0;
+
+  const subtotal = roundCurrency(
+    preview.lineItems.reduce(
+      (total, item) => total + roundCurrency(item.quantity * item.unitPrice),
+      0,
+    ),
   );
-  const discountAmount = subtotal * ((preview.discount ?? 0) / 100);
+  const discountAmount = roundCurrency(subtotal * ((preview.discount ?? 0) / 100));
   const discountedSubtotal = Math.max(subtotal - discountAmount, 0);
-  const tax = preview.taxEnabled ? discountedSubtotal * (preview.taxRate / 100) : 0;
-  const total = discountedSubtotal + tax;
+  const tax = roundCurrency(discountedSubtotal * (effectiveTaxRate / 100));
+  const total = roundCurrency(discountedSubtotal + tax);
 
   return {
     subtotal,

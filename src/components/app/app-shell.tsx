@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/app/bottom-nav";
 import { InviosLogo } from "@/components/app/invios-logo";
 import { PageTransition } from "@/components/app/page-transition";
 import { UserAvatarMenu } from "@/components/app/user-avatar-menu";
+import { PRICING } from "@/lib/constants";
 import type { AppContext, SubscriptionData } from "@/lib/types";
 
 export function AppShell({
@@ -45,7 +46,7 @@ export function AppShell({
                       type="submit"
                       className="w-full rounded-[var(--radius-inner)] bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
                     >
-                      Become Pro — $15/mo
+                      Become Pro — {PRICING.proMonthlyShort}
                     </button>
                   </form>
                 </div>
@@ -55,7 +56,7 @@ export function AppShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-[var(--space-grid)] pb-32 lg:pb-8">
-          <header className="glass-panel sticky top-4 z-20 rounded-[var(--radius-card)] border border-black/8 px-4 py-3 subtle-shadow">
+          <header className="glass-panel sticky top-4 z-20 rounded-[var(--radius-card)] border border-black/8 px-4 py-3 subtle-shadow lg:hidden">
             <div className="flex items-center justify-between gap-4">
               <Link href="/app" className="inline-flex items-center gap-2">
                 <InviosLogo markOnly className="h-5" />
@@ -65,6 +66,7 @@ export function AppShell({
               <UserAvatarMenu
                 fullName={context.userState.profile.fullName}
                 email={context.email ?? ""}
+                avatarUrl={context.avatarUrl}
               />
             </div>
           </header>
