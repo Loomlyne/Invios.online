@@ -118,9 +118,9 @@ export async function listAccounts(admin: SupabaseClient): Promise<AccountRow[]>
     admin.from("user_settings").select("user_id,default_currency"),
     admin.from("subscriptions").select("user_id,status,current_period_end"),
     admin.from("clients").select("user_id"),
-    admin.from("invoices").select("user_id,status,total,updated_at"),
+    admin.from("invoices").select("id,user_id,status,total,updated_at"),
     admin.from("quotations").select("user_id,updated_at"),
-    admin.from("payments").select("user_id,amount"),
+    admin.from("payments").select("user_id,invoice_id,amount"),
   ]);
 
   for (const [label, res] of Object.entries({
@@ -157,12 +157,27 @@ export async function listAccounts(admin: SupabaseClient): Promise<AccountRow[]>
     clientCount.set(uid, (clientCount.get(uid) ?? 0) + 1);
   }
 
-  const invStats = new Map<string, { count: number; billed: number; lastActivity: string | null }>();
+  // Payments per invoice, so outstanding can be computed per invoice below —
+  // an overpayment on one invoice must not erase receivables on another.
+  const paidByInvoice = new Map<string, number>();
+  for (const r of (paymentsRes.data ?? []) as Row[]) {
+    const iid = r.invoice_id as string;
+    paidByInvoice.set(iid, (paidByInvoice.get(iid) ?? 0) + Number(r.amount ?? 0));
+  }
+
+  const invStats = new Map<
+    string,
+    { count: number; billed: number; outstanding: number; lastActivity: string | null }
+  >();
   for (const r of (invoicesRes.data ?? []) as Row[]) {
     const uid = r.user_id as string;
-    const cur = invStats.get(uid) ?? { count: 0, billed: 0, lastActivity: null };
+    const cur = invStats.get(uid) ?? { count: 0, billed: 0, outstanding: 0, lastActivity: null };
     cur.count += 1;
-    if (r.status !== "draft") cur.billed += Number(r.total ?? 0);
+    if (r.status !== "draft") {
+      const total = Number(r.total ?? 0);
+      cur.billed += total;
+      cur.outstanding += Math.max(total - (paidByInvoice.get(r.id as string) ?? 0), 0);
+    }
     cur.lastActivity = maxIso(cur.lastActivity, r.updated_at as string | null);
     invStats.set(uid, cur);
   }
@@ -192,11 +207,11 @@ export async function listAccounts(admin: SupabaseClient): Promise<AccountRow[]>
     const periodEnd = (sub?.current_period_end as string | null) ?? null;
     const isPro = isActiveStatus(subStatus, periodEnd);
 
-    const inv = invStats.get(userId) ?? { count: 0, billed: 0, lastActivity: null };
+    const inv = invStats.get(userId) ?? { count: 0, billed: 0, outstanding: 0, lastActivity: null };
     const quo = quoStats.get(userId) ?? { count: 0, lastActivity: null };
     const billed = inv.billed;
     const coll = collected.get(userId) ?? 0;
-    const outstanding = Math.max(billed - coll, 0);
+    const outstanding = inv.outstanding;
     const onboardingComplete = Boolean(p.onboarding_completed_at);
     const createdAt = (p.created_at as string) ?? "";
     const lastActivityAt = maxIso(maxIso(inv.lastActivity, quo.lastActivity), createdAt || null);
@@ -297,7 +312,7 @@ export async function getAccountDetail(
       admin.from("clients").select("id,name,company,email,created_at").eq("user_id", userId).order("created_at", { ascending: false }),
       admin.from("invoices").select("id,invoice_number,status,total,currency,issue_date,share_token,updated_at").eq("user_id", userId).order("updated_at", { ascending: false }),
       admin.from("quotations").select("id,quotation_number,status,total,currency,quotation_date,share_token,updated_at").eq("user_id", userId).order("updated_at", { ascending: false }),
-      admin.from("payments").select("amount").eq("user_id", userId),
+      admin.from("payments").select("invoice_id,amount").eq("user_id", userId),
       admin.from("expenses").select("amount").eq("user_id", userId),
     ]);
 
@@ -333,6 +348,16 @@ export async function getAccountDetail(
     .reduce((sum, i) => sum + i.total, 0);
   const collected = ((paymentsRes.data ?? []) as Row[]).reduce((s, r) => s + Number(r.amount ?? 0), 0);
   const expenses = ((expensesRes.data ?? []) as Row[]).reduce((s, r) => s + Number(r.amount ?? 0), 0);
+  // Outstanding is summed per invoice (clamped at 0 each) so an overpaid
+  // invoice cannot cancel out receivables still owed on another one.
+  const paidByInvoice = new Map<string, number>();
+  for (const r of (paymentsRes.data ?? []) as Row[]) {
+    const iid = r.invoice_id as string;
+    paidByInvoice.set(iid, (paidByInvoice.get(iid) ?? 0) + Number(r.amount ?? 0));
+  }
+  const outstanding = invoices
+    .filter((i) => i.status !== "draft")
+    .reduce((sum, i) => sum + Math.max(i.total - (paidByInvoice.get(i.id) ?? 0), 0), 0);
 
   return {
     userId: profile.id as string,
@@ -344,7 +369,7 @@ export async function getAccountDetail(
     onboardingComplete: Boolean(profile.onboarding_completed_at),
     subscriptionStatus: subStatus,
     isPro: isActiveStatus(subStatus, periodEnd),
-    totals: { billed, collected, outstanding: Math.max(billed - collected, 0), expenses },
+    totals: { billed, collected, outstanding, expenses },
     clients: ((clientsRes.data ?? []) as Row[]).map((r) => ({
       id: r.id as string,
       name: (r.name as string) ?? "—",
