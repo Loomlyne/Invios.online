@@ -477,11 +477,13 @@ export function DocumentBuilder({
                             }
                           />
                         </div>
-                        <Input
+                        <Textarea
                           id={`notes-${item.id}`}
                           value={item.notes ?? ""}
                           placeholder="Notes (optional)"
                           aria-label={`Line ${index + 1} notes`}
+                          rows={2}
+                          className="min-h-[3.5rem] resize-y"
                           onChange={(event) =>
                             setLineItems((current) =>
                               current.map((line) =>

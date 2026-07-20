@@ -609,7 +609,7 @@ function BilingualLineItems({
           <div>
             <div className="flex items-baseline gap-2">
               <span className="text-sm tabular-nums text-muted">{i + 1}.</span>
-              <span className="whitespace-pre-wrap text-sm font-medium text-foreground">{item.description}</span>
+              <span className="whitespace-pre-wrap break-words text-sm font-medium text-foreground">{item.description}</span>
             </div>
             <div className="mt-1 flex gap-4 text-sm tabular-nums text-muted">
               <span>Qty: {item.quantity}</span>
@@ -624,7 +624,7 @@ function BilingualLineItems({
           </div>
           <div dir="rtl" lang="ar" className="mt-2 md:mt-0">
             <span className="text-sm font-medium text-foreground">{getArabicDescription(item)}</span>
-            {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-muted">{item.notes}</span> : null}
+            {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap break-words text-xs text-muted">{item.notes}</span> : null}
           </div>
         </div>
       ))}
@@ -652,11 +652,11 @@ function CardLineItems({
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-2">
                 <span className="text-xs tabular-nums text-muted">{i + 1}.</span>
-                <span className="whitespace-pre-wrap text-sm font-medium text-foreground">
+                <span className="whitespace-pre-wrap break-words text-sm font-medium text-foreground">
                   {isArabicOnly ? getArabicDescription(item) : item.description}
                 </span>
               </div>
-              {item.notes ? <p className="mt-1 text-xs text-muted whitespace-pre-wrap">{item.notes}</p> : null}
+              {item.notes ? <p className="mt-1 text-xs text-muted whitespace-pre-wrap break-words">{item.notes}</p> : null}
             </div>
             <div className="shrink-0 text-right text-sm tabular-nums">
               <p className="font-medium text-foreground" dir="ltr">{formatCurrency(item.unitPrice * item.quantity, preview.currency)}</p>
@@ -696,7 +696,7 @@ function TableLineItems({
         <thead>
           <tr className={cn("border-b border-t text-[11px] font-medium uppercase tracking-[0.16em]", template.tableHeadClassName)}>
             <th className="w-10 py-3 pr-2 font-medium">#</th>
-            <th className="py-3 pr-4 font-medium">{isArabicOnly ? "الوصف" : "Title / Description"}</th>
+            <th className="w-auto py-3 pr-4 font-medium">{isArabicOnly ? "الوصف" : "Title / Description"}</th>
             <th className="py-3 pr-4 text-right font-medium">{isArabicOnly ? "الكمية" : "Qty"}</th>
             {showDurationColumn && (
               <th className="py-3 pr-4 text-right font-medium">{isArabicOnly ? "المدة" : "Duration"}</th>
@@ -709,9 +709,9 @@ function TableLineItems({
           {preview.lineItems.map((item, i) => (
             <tr key={item.id} className="border-b border-black/5">
               <td className="py-4 pr-2 text-sm tabular-nums text-muted">{i + 1}</td>
-              <td className="py-4 pr-4 text-sm text-foreground">
-                <span className="whitespace-pre-wrap font-medium">{isArabicOnly ? getArabicDescription(item) : item.description}</span>
-                {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap text-xs text-muted">{item.notes}</span> : null}
+              <td className="max-w-0 w-full py-4 pr-4 text-sm text-foreground">
+                <span className="whitespace-pre-wrap break-words font-medium">{isArabicOnly ? getArabicDescription(item) : item.description}</span>
+                {item.notes ? <span className="mt-0.5 block whitespace-pre-wrap break-words text-xs text-muted">{item.notes}</span> : null}
               </td>
               <td className="py-4 pr-4 text-right text-sm tabular-nums text-muted">{item.quantity}</td>
               {showDurationColumn && (
@@ -809,13 +809,13 @@ function StackedFooter({
         {preview.terms ? (
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">{bilingualLabel("Terms", "الشروط والأحكام")}</p>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-muted">{preview.terms}</p>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-muted">{preview.terms}</p>
           </div>
         ) : null}
         {preview.notes ? (
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">{bilingualLabel("Notes", "ملاحظات")}</p>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-muted">{preview.notes}</p>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-muted">{preview.notes}</p>
           </div>
         ) : null}
       </div>
@@ -867,13 +867,13 @@ function SideBySideFooter({
           {hasTerms ? (
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">{bilingualLabel("Terms", "الشروط والأحكام")}</p>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-muted">{preview.terms}</p>
+              <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-muted">{preview.terms}</p>
             </div>
           ) : null}
           {hasNotes ? (
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">{bilingualLabel("Notes", "ملاحظات")}</p>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-muted">{preview.notes}</p>
+              <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-muted">{preview.notes}</p>
             </div>
           ) : null}
         </div>
